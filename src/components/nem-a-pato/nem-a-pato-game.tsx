@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/react"
+import { Button } from "@heroui/react"
 import Link from "next/link"
 import { useEffect, useReducer, useRef } from "react"
 import { AppContainer } from "@/components/design-system"
@@ -145,7 +145,7 @@ export function NemAPatoGame({ sessionId }: { sessionId: string }) {
 						: (state.error ?? (state.phase === "revealed" ? "Resposta revelada" : ""))}
 				</div>
 				{state.phase === "loading" && (
-					<div className="paper-card rounded-3xl p-10 text-center text-muted">
+					<div className="paper-card text-muted rounded-3xl p-10 text-center">
 						Preparando a mesa...
 					</div>
 				)}
@@ -154,7 +154,7 @@ export function NemAPatoGame({ sessionId }: { sessionId: string }) {
 					<>
 						<header className="mb-5 flex flex-wrap items-center justify-between gap-3">
 							<div>
-								<p className="text-sm font-extrabold uppercase tracking-[0.18em] text-accent">
+								<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">
 									Nem a Pato
 								</p>
 								<h1 className="font-display text-3xl sm:text-4xl">
@@ -162,12 +162,11 @@ export function NemAPatoGame({ sessionId }: { sessionId: string }) {
 								</h1>
 							</div>
 							<div className="flex gap-2">
-								<Button variant="bordered" onPress={toggleFullscreen}>
+								<Button variant="outline" onPress={toggleFullscreen}>
 									Tela cheia <kbd className="ml-1 text-xs">F</kbd>
 								</Button>
 								<Button
-									color="danger"
-									variant="flat"
+									variant="danger-soft"
 									onPress={() => dispatch({ type: "FINISH_DIALOG", value: true })}
 								>
 									Finalizar <kbd className="ml-1 text-xs">E</kbd>
@@ -186,53 +185,59 @@ export function NemAPatoGame({ sessionId }: { sessionId: string }) {
 							<StartRound />
 						)}
 						{state.phase === "error" && (
-							<p role="alert" className="mt-5 rounded-xl bg-danger/10 p-4 font-bold text-danger">
+							<p role="alert" className="bg-danger/10 text-danger mt-5 rounded-xl p-4 font-bold">
 								{state.error}
 							</p>
 						)}
 						<div className="mt-6 flex flex-wrap justify-center gap-3">
 							{!state.question && (
-								<Button color="primary" size="lg" isLoading={state.busy} onPress={nextRound}>
-									Obter primeira pergunta <kbd className="ml-1 text-xs">N</kbd>
+								<Button variant="primary" size="lg" isDisabled={state.busy} onPress={nextRound}>
+									{state.busy ? "Carregando..." : "Obter primeira pergunta"}{" "}
+									<kbd className="ml-1 text-xs">N</kbd>
 								</Button>
 							)}
 							{state.phase === "ready" && (
-								<Button color="secondary" size="lg" isLoading={state.busy} onPress={reveal}>
-									Revelar resposta <kbd className="ml-1 text-xs">Space / R</kbd>
+								<Button variant="secondary" size="lg" isDisabled={state.busy} onPress={reveal}>
+									{state.busy ? "Carregando..." : "Revelar resposta"}{" "}
+									<kbd className="ml-1 text-xs">Space / R</kbd>
 								</Button>
 							)}
 							{state.phase === "revealed" && (
-								<Button color="primary" size="lg" isLoading={state.busy} onPress={nextRound}>
-									Próxima rodada <kbd className="ml-1 text-xs">N</kbd>
+								<Button variant="primary" size="lg" isDisabled={state.busy} onPress={nextRound}>
+									{state.busy ? "Carregando..." : "Próxima rodada"}{" "}
+									<kbd className="ml-1 text-xs">N</kbd>
 								</Button>
 							)}
 						</div>
 					</>
 				)}
 			</AppContainer>
-			<Modal
-				isOpen={state.finishOpen}
-				onOpenChange={(open) => dispatch({ type: "FINISH_DIALOG", value: open })}
-			>
-				<ModalContent>
-					{(onClose) => (
-						<>
-							<ModalHeader>Finalizar a partida?</ModalHeader>
-							<ModalBody>
-								<p>A rodada atual será encerrada e não poderá ser retomada.</p>
-							</ModalBody>
-							<ModalFooter>
-								<Button variant="light" onPress={onClose}>
-									Continuar jogando
-								</Button>
-								<Button color="danger" isLoading={state.busy} onPress={finish}>
-									Finalizar partida
-								</Button>
-							</ModalFooter>
-						</>
-					)}
-				</ModalContent>
-			</Modal>
+			{state.finishOpen && (
+				<div
+					className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4"
+					role="dialog"
+					aria-modal="true"
+					aria-labelledby="finish-dialog-title"
+				>
+					<div className="bg-surface w-full max-w-md rounded-2xl p-6 shadow-xl">
+						<h2 id="finish-dialog-title" className="text-xl font-bold">
+							Finalizar a partida?
+						</h2>
+						<p className="mt-3">A rodada atual será encerrada e não poderá ser retomada.</p>
+						<div className="mt-6 flex justify-end gap-3">
+							<Button
+								variant="ghost"
+								onPress={() => dispatch({ type: "FINISH_DIALOG", value: false })}
+							>
+								Continuar jogando
+							</Button>
+							<Button variant="danger" isDisabled={state.busy} onPress={finish}>
+								{state.busy ? "Finalizando..." : "Finalizar partida"}
+							</Button>
+						</div>
+					</div>
+				</div>
+			)}
 		</main>
 	)
 }
@@ -241,7 +246,7 @@ function StartRound() {
 	return (
 		<section className="paper-card rounded-3xl p-8 text-center sm:p-14">
 			<h2 className="font-display text-4xl">A mesa está pronta.</h2>
-			<p className="mt-3 text-lg text-muted">
+			<p className="text-muted mt-3 text-lg">
 				Quando todos estiverem atentos, peça a primeira pergunta.
 			</p>
 		</section>
@@ -251,14 +256,17 @@ function StartRound() {
 function EmptyPool({ message }: { message: string | null }) {
 	return (
 		<section className="paper-card rounded-3xl p-8 text-center sm:p-14">
-			<p className="text-sm font-extrabold uppercase tracking-[0.18em] text-accent">
+			<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">
 				Fim das perguntas
 			</p>
-			<h2 className="mt-2 font-display text-4xl">Esta seleção acabou.</h2>
-			<p className="mt-4 text-lg text-muted">{message}</p>
-			<Button as={Link} href="/games/nem-a-pato/play" color="primary" className="mt-7">
+			<h2 className="font-display mt-2 text-4xl">Esta seleção acabou.</h2>
+			<p className="text-muted mt-4 text-lg">{message}</p>
+			<Link
+				href="/games/nem-a-pato/play"
+				className="bg-primary text-surface mt-7 inline-flex rounded-xl px-4 py-2 font-bold"
+			>
 				Nova partida
-			</Button>
+			</Link>
 		</section>
 	)
 }
@@ -274,13 +282,13 @@ function QuestionCard({
 }) {
 	return (
 		<section className="paper-card overflow-hidden rounded-3xl" aria-labelledby="question-title">
-			<div className="border-b border-border bg-primary px-5 py-3 text-sm font-extrabold uppercase tracking-[0.16em] text-surface sm:px-8">
+			<div className="border-border bg-primary text-surface border-b px-5 py-3 text-sm font-extrabold tracking-[0.16em] uppercase sm:px-8">
 				Rodada {question.roundNumber} · {question.category.name} · {labels[question.difficulty]}
 			</div>
 			<div className="p-6 text-center sm:p-12">
 				<p
 					id="question-title"
-					className="mx-auto max-w-4xl font-display text-4xl leading-tight text-foreground sm:text-6xl"
+					className="font-display text-foreground mx-auto max-w-4xl text-4xl leading-tight sm:text-6xl"
 				>
 					{question.prompt}
 				</p>
@@ -288,23 +296,23 @@ function QuestionCard({
 					<div
 						className={`relative min-h-48 transition-transform duration-700 [transform-style:preserve-3d] motion-reduce:transition-none ${revealed ? "[transform:rotateY(180deg)]" : ""}`}
 					>
-						<div className="absolute inset-0 grid place-items-center rounded-2xl border-2 border-secondary bg-primary p-6 text-surface [backface-visibility:hidden]">
+						<div className="border-secondary bg-primary text-surface absolute inset-0 grid place-items-center rounded-2xl border-2 p-6 [backface-visibility:hidden]">
 							<p className="font-display text-3xl">Nem a Pato?</p>
 						</div>
-						<div className="absolute inset-0 grid place-items-center rounded-2xl border-2 border-secondary bg-secondary p-6 text-center [backface-visibility:hidden] [transform:rotateY(180deg)]">
+						<div className="border-secondary bg-secondary absolute inset-0 grid [transform:rotateY(180deg)] place-items-center rounded-2xl border-2 p-6 text-center [backface-visibility:hidden]">
 							<div>
-								<p className="text-sm font-extrabold uppercase tracking-[0.16em]">Resposta</p>
-								<p className="mt-2 font-display text-3xl leading-tight">{answer?.answerText}</p>
+								<p className="text-sm font-extrabold tracking-[0.16em] uppercase">Resposta</p>
+								<p className="font-display mt-2 text-3xl leading-tight">{answer?.answerText}</p>
 							</div>
 						</div>
 					</div>
 				</div>
 				{revealed && answer && (
 					<div className="mx-auto mt-7 max-w-2xl text-left">
-						<p className="text-lg leading-7 text-muted">{answer.explanation}</p>
+						<p className="text-muted text-lg leading-7">{answer.explanation}</p>
 						{answer.source.url ? (
 							<a
-								className="mt-4 inline-block font-extrabold text-primary underline"
+								className="text-primary mt-4 inline-block font-extrabold underline"
 								href={answer.source.url}
 								target="_blank"
 								rel="noreferrer"
@@ -313,7 +321,7 @@ function QuestionCard({
 							</a>
 						) : (
 							answer.source.name && (
-								<p className="mt-4 font-bold text-muted">Fonte: {answer.source.name}</p>
+								<p className="text-muted mt-4 font-bold">Fonte: {answer.source.name}</p>
 							)
 						)}
 					</div>
@@ -326,18 +334,21 @@ function QuestionCard({
 function Summary({ session }: { session: Session | null }) {
 	return (
 		<section className="paper-card mx-auto max-w-2xl rounded-3xl p-8 text-center sm:p-14">
-			<p className="text-sm font-extrabold uppercase tracking-[0.18em] text-accent">
+			<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">
 				Partida finalizada
 			</p>
-			<h1 className="mt-2 font-display text-5xl">Boa mesa!</h1>
-			<p className="mt-5 text-xl text-muted">
+			<h1 className="font-display mt-2 text-5xl">Boa mesa!</h1>
+			<p className="text-muted mt-5 text-xl">
 				Vocês jogaram {session?.roundsPlayed ?? 0}{" "}
 				{session?.roundsPlayed === 1 ? "rodada" : "rodadas"} com {session?.playerCount ?? 0}{" "}
 				jogadores.
 			</p>
-			<Button as={Link} href="/games/nem-a-pato/play" color="primary" size="lg" className="mt-8">
+			<Link
+				href="/games/nem-a-pato/play"
+				className="bg-primary text-surface mt-8 inline-flex rounded-xl px-5 py-3 font-bold"
+			>
 				Jogar novamente
-			</Button>
+			</Link>
 		</section>
 	)
 }

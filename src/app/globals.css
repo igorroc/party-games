@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "@heroui/styles";
 
 :root {
 	--color-background: 244 235 221;
@@ -16,6 +15,24 @@
 	--color-border: 213 199 178;
 	--color-focus: 50 111 223;
 	--color-success: 52 118 78;
+}
+
+@theme inline {
+	--color-background: rgb(var(--color-background));
+	--color-foreground: rgb(var(--color-foreground));
+	--color-surface: rgb(var(--color-surface));
+	--color-surface-strong: rgb(var(--color-surface-strong));
+	--color-primary: rgb(var(--color-primary));
+	--color-primary-hover: rgb(var(--color-primary-hover));
+	--color-secondary: rgb(var(--color-secondary));
+	--color-accent: rgb(var(--color-accent));
+	--color-danger: rgb(var(--color-danger));
+	--color-muted: rgb(var(--color-muted));
+	--color-border: rgb(var(--color-border));
+	--color-focus: rgb(var(--color-focus));
+	--color-success: rgb(var(--color-success));
+	--font-display: var(--font-display);
+	--font-body: var(--font-body);
 }
 
 * {

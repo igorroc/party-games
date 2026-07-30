@@ -22,13 +22,14 @@
 	},
 	"scripts": {
 		"dev": "next dev",
-		"build": "next build --webpack",
+		"build": "next build",
+		"check:production": "bun run format:check && bun run lint && bun run ts-check && bun run build",
 		"start": "next start",
 		"lint": "eslint . --max-warnings=0",
 		"format": "prettier . --write",
 		"format:check": "prettier . --check",
 		"compose:up": "docker compose up -d",
-		"vercel-build": "prisma generate && prisma migrate deploy && next build --webpack",
+		"vercel-build": "prisma generate && prisma migrate deploy && next build",
 		"migrate": "bunx prisma migrate dev && bunx prisma generate",
 		"migrate:reset": "bunx prisma migrate reset --force",
 		"migrate:create-only": "bunx prisma migrate dev --create-only",
@@ -39,7 +40,7 @@
 		"ts-check": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@nextui-org/react": "^2.6.11",
+		"@heroui/react": "^3.2.2",
 		"@node-rs/argon2": "^2.0.2",
 		"@prisma/client": "^5.22.0",
 		"framer-motion": "^12.43.0",
@@ -50,6 +51,7 @@
 		"zod": "^4.4.3"
 	},
 	"devDependencies": {
+		"@tailwindcss/postcss": "^4.1.16",
 		"@types/node": "^20.19.43",
 		"@types/react": "^18.3.31",
 		"@types/react-dom": "^18.3.7",
@@ -60,7 +62,7 @@
 		"prettier": "^3.9.6",
 		"prettier-plugin-tailwindcss": "^0.8.1",
 		"prisma": "^5.22.0",
-		"tailwindcss": "^3.4.19",
+		"tailwindcss": "^4.1.16",
 		"typescript": "^5.9.3"
 	},
 	"prisma": {

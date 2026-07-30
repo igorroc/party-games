@@ -1,12 +1,12 @@
 import type { Config } from "tailwindcss"
-import { nextui } from "@nextui-org/react"
 
 const config: Config = {
 	content: [
 		"./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
 		"./src/components/**/*.{js,ts,jsx,tsx,mdx}",
 		"./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-		"./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
+		"./node_modules/@heroui/react/dist/**/*.{js,ts,jsx,tsx}",
+		"./node_modules/@heroui/styles/dist/**/*.{js,ts,jsx,tsx}",
 	],
 	theme: {
 		extend: {
@@ -32,21 +32,6 @@ const config: Config = {
 		},
 	},
 	darkMode: "class",
-	plugins: [
-		nextui({
-			themes: {
-				light: {
-					colors: {
-						background: "#F4EBDD",
-						foreground: "#202822",
-						primary: { foreground: "#FFF9EE", DEFAULT: "#245B49" },
-						secondary: { foreground: "#202822", DEFAULT: "#E4AA3A" },
-						danger: { foreground: "#FFF9EE", DEFAULT: "#B7423A" },
-						focus: "#326FDF",
-					},
-				},
-			},
-		}),
-	],
+	plugins: [],
 }
 export default config

@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardBody, CardHeader, Button, Chip, Avatar, Divider } from "@nextui-org/react"
+import { Avatar, Card, Chip } from "@heroui/react"
 import Link from "next/link"
 
 import type { CurrentUser } from "@/modules/auth"
@@ -23,13 +23,13 @@ export function ProfileContent({ user, sessions }: ProfileContentProps) {
 
 	return (
 		<main className="relative flex min-h-dvh flex-col items-center overflow-hidden px-6 py-12">
-			<div className="absolute left-1/2 top-10 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-400/15 blur-3xl" />
+			<div className="absolute top-10 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-400/15 blur-3xl" />
 			<div className="w-full max-w-3xl space-y-6">
 				<Card className="w-full border border-white/15 bg-white/10 shadow-2xl shadow-emerald-950/30 backdrop-blur-xl">
-					<CardHeader className="flex flex-col items-center gap-4 pb-4 pt-8 text-center">
+					<Card.Header className="flex flex-col items-center gap-4 pt-8 pb-4 text-center">
 						<Chip
 							color="success"
-							variant="flat"
+							variant="soft"
 							size="sm"
 							className="border border-emerald-300/20 bg-emerald-400/15 text-emerald-100"
 						>
@@ -39,15 +39,15 @@ export function ProfileContent({ user, sessions }: ProfileContentProps) {
 						<p className="max-w-md text-sm text-slate-300">
 							Acompanhe seus dados e as partidas finalizadas nesta conta.
 						</p>
-					</CardHeader>
-					<CardBody className="gap-6 px-6 pb-8">
+					</Card.Header>
+					<Card.Content className="gap-6 px-6 pb-8">
 						<div className="flex flex-col items-center gap-4">
 							<Avatar
-								name={user.name?.charAt(0).toUpperCase() || "U"}
 								size="lg"
-								showFallback
-								className="h-24 w-24 bg-gradient-to-br from-emerald-300 to-sky-400 text-large text-slate-950"
-							/>
+								className="text-large h-24 w-24 bg-gradient-to-br from-emerald-300 to-sky-400 text-slate-950"
+							>
+								<Avatar.Fallback>{user.name?.charAt(0).toUpperCase() || "U"}</Avatar.Fallback>
+							</Avatar>
 							<div className="text-center">
 								<h2 className="text-2xl font-bold text-white">{user.name || "Usuário"}</h2>
 								<p className="text-sm text-slate-300">{user.email}</p>
@@ -59,7 +59,7 @@ export function ProfileContent({ user, sessions }: ProfileContentProps) {
 							</div>
 						</div>
 
-						<Divider className="bg-white/10" />
+						<hr className="border-white/10" />
 
 						<section aria-labelledby="history-heading">
 							<div className="flex items-baseline justify-between gap-4">
@@ -98,20 +98,20 @@ export function ProfileContent({ user, sessions }: ProfileContentProps) {
 						</section>
 
 						<div className="flex flex-col gap-3 sm:flex-row">
-							<Button
-								as={Link}
+							<Link
 								href="/"
-								variant="bordered"
-								className="border-white/60 bg-white/5 font-semibold text-slate-100 hover:bg-white/10"
-								fullWidth
+								className="rounded-xl border border-white/60 bg-white/5 px-4 py-2 text-center font-semibold text-slate-100 hover:bg-white/10"
 							>
 								Voltar ao início
-							</Button>
-							<Button as={Link} href="/auth/logout" color="danger" variant="shadow" fullWidth>
+							</Link>
+							<Link
+								href="/auth/logout"
+								className="bg-danger rounded-xl px-4 py-2 text-center font-semibold text-white"
+							>
 								Sair
-							</Button>
+							</Link>
 						</div>
-					</CardBody>
+					</Card.Content>
 				</Card>
 			</div>
 		</main>

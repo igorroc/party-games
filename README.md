@@ -15,7 +15,7 @@ O repositório contém o MVP funcional: catálogo, sessões anônimas e autentic
 - Next.js com App Router e TypeScript estrito
 - PostgreSQL e Prisma
 - Autenticação por sessões opacas e Argon2id
-- NextUI, Tailwind CSS e Framer Motion
+- HeroUI, Tailwind CSS e Framer Motion
 - Zod para contratos e validação em runtime
 - Bun como runtime e gerenciador de pacotes
 

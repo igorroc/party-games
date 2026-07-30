@@ -10,7 +10,7 @@ A especificação de produto completa está em [README.md](README.md). Este plan
 
 ## Diagnóstico
 
-- A base atual já oferece Next.js App Router, TypeScript estrito, PostgreSQL/Prisma, Zod, NextUI, Tailwind e autenticação com sessão opaca em cookie `httpOnly`.
+- A base atual já oferece Next.js App Router, TypeScript estrito, PostgreSQL/Prisma, Zod, HeroUI, Tailwind e autenticação com sessão opaca em cookie `httpOnly`.
 - A base inicial oferecia cadastro, login, logout e perfil, mas ainda não possuía domínio, persistência, API ou interface de jogos.
 - `src/modules/auth`, `src/lib/api` e `src/lib/auth` devem ser estendidos, e não substituídos.
 - O `ApiResponse` atual é específico de autenticação e deve ser generalizado de forma compatível antes de atender os novos domínios.
@@ -18,7 +18,7 @@ A especificação de produto completa está em [README.md](README.md). Este plan
 
 ## Princípios de entrega
 
-- Preservar autenticação, Prisma, NextUI e os padrões de rotas existentes.
+- Preservar autenticação, Prisma, HeroUI e os padrões de rotas existentes.
 - Manter lógica de domínio em `src/modules`, interface em `src/components` e rotas em `src/app`.
 - Usar Server Components por padrão e Client Components apenas para configuração e interação da partida.
 - Tratar resposta de pergunta como dado sensível: ela não pode estar em props, HTML, payload de pergunta, cache público ou estado inicial do cliente.
@@ -74,7 +74,7 @@ Critério de aceite: não há repetição de pergunta na sessão e nenhuma respo
 
 Status: concluída.
 
-- Definir tokens semânticos, tema NextUI, fontes via `next/font`, layout, metadados e componentes compartilhados.
+- Definir tokens semânticos, tema HeroUI, fontes via `next/font`, layout, metadados e componentes compartilhados.
 - Construir home e página de apresentação de Nem a Pato com regras, exemplo e metadados centralizados do jogo.
 - Garantir responsividade de 320px a televisão, contraste AA e navegação por teclado.
 

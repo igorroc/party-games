@@ -12,7 +12,7 @@ Antes de modificar qualquer arquivo:
 4. Reutilize o máximo possível da implementação existente.
 5. Não substitua a autenticação atual por outra biblioteca.
 6. Não crie uma segunda arquitetura paralela.
-7. Não migre NextUI para outra biblioteca de componentes.
+7. Use HeroUI como biblioteca de componentes.
 8. Não altere versões de dependências sem necessidade técnica real.
 9. Ao mover ou renomear arquivos existentes, utilize `git mv`.
 
@@ -348,7 +348,7 @@ Crie tokens centralizados para:
 - focus;
 - success.
 
-Utilize esses tokens tanto no Tailwind quanto na configuração de tema do NextUI.
+Utilize esses tokens tanto no Tailwind quanto na configuração de tema do HeroUI.
 
 ## 7.3 Tipografia
 

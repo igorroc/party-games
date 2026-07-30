@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Select, SelectItem } from "@nextui-org/react"
+import { Button } from "@heroui/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { AppContainer } from "@/components/design-system"
@@ -61,52 +61,57 @@ export function PlaySetup({ categories, difficulties }: PlaySetupProps) {
 		<main className="flex-1 py-10 sm:py-16">
 			<AppContainer className="max-w-3xl">
 				<section className="paper-card rounded-3xl p-6 sm:p-10" aria-labelledby="setup-title">
-					<p className="text-sm font-extrabold uppercase tracking-[0.18em] text-accent">
+					<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">
 						Nem a Pato
 					</p>
-					<h1 id="setup-title" className="mt-2 font-display text-4xl text-foreground sm:text-5xl">
+					<h1 id="setup-title" className="font-display text-foreground mt-2 text-4xl sm:text-5xl">
 						Quem está na mesa?
 					</h1>
-					<p className="mt-3 text-lg text-muted">
+					<p className="text-muted mt-3 text-lg">
 						Ajuste a partida. As perguntas serão escolhidas quando a rodada começar.
 					</p>
 					<div className="mt-8 grid gap-5 sm:grid-cols-2">
-						<Select
-							label="Jogadores"
-							selectedKeys={[playerCount]}
-							onChange={(event) => setPlayerCount(event.target.value)}
-						>
-							{Array.from({ length: 11 }, (_, index) => String(index + 2)).map((count) => (
-								<SelectItem key={count}>{count} jogadores</SelectItem>
-							))}
-						</Select>
-						<Select
-							label="Categoria"
-							selectedKeys={[categoryId]}
-							onChange={(event) => setCategoryId(event.target.value)}
-							items={categoryOptions}
-						>
-							{(item) => <SelectItem key={item.id}>{item.name}</SelectItem>}
-						</Select>
-						<Select
-							label="Dificuldade"
-							selectedKeys={[difficulty]}
-							onChange={(event) => setDifficulty(event.target.value)}
-							items={difficultyOptions}
-						>
-							{(item) => <SelectItem key={item.id}>{item.name}</SelectItem>}
-						</Select>
+						<label className="text-foreground grid gap-2 font-bold">
+							Jogadores
+							<select value={playerCount} onChange={(event) => setPlayerCount(event.target.value)}>
+								{Array.from({ length: 11 }, (_, index) => String(index + 2)).map((count) => (
+									<option key={count} value={count}>
+										{count} jogadores
+									</option>
+								))}
+							</select>
+						</label>
+						<label className="text-foreground grid gap-2 font-bold">
+							Categoria
+							<select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
+								{categoryOptions.map((item) => (
+									<option key={item.id} value={item.id}>
+										{item.name}
+									</option>
+								))}
+							</select>
+						</label>
+						<label className="text-foreground grid gap-2 font-bold">
+							Dificuldade
+							<select value={difficulty} onChange={(event) => setDifficulty(event.target.value)}>
+								{difficultyOptions.map((item) => (
+									<option key={item.id} value={item.id}>
+										{item.name}
+									</option>
+								))}
+							</select>
+						</label>
 					</div>
 					{error && (
-						<p role="alert" className="mt-5 rounded-xl bg-danger/10 p-3 font-bold text-danger">
+						<p role="alert" className="bg-danger/10 text-danger mt-5 rounded-xl p-3 font-bold">
 							{error}
 						</p>
 					)}
 					<Button
-						color="primary"
+						variant="primary"
 						size="lg"
 						className="mt-8 min-h-12 w-full font-extrabold sm:w-auto"
-						isLoading={isSubmitting}
+						isDisabled={isSubmitting}
 						onPress={startGame}
 					>
 						Começar partida

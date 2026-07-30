@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Checkbox, Input, Textarea } from "@nextui-org/react"
+import { Button } from "@heroui/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "react-toastify"
@@ -11,13 +11,6 @@ type QuestionFormProps = {
 	question?: AdminQuestion
 	games: GameOption[]
 	categories: QuestionCategoryOption[]
-}
-
-const fieldClassNames = {
-	inputWrapper:
-		"border-border bg-surface hover:border-primary group-data-[focus=true]:border-primary",
-	label: "font-bold text-foreground",
-	input: "text-foreground",
 }
 
 export function QuestionForm({ question, games, categories }: QuestionFormProps) {
@@ -69,13 +62,13 @@ export function QuestionForm({ question, games, categories }: QuestionFormProps)
 	return (
 		<form onSubmit={submit} className="space-y-6" aria-busy={isLoading}>
 			<div className="grid gap-5 md:grid-cols-2">
-				<label className="grid gap-2 font-bold text-foreground">
+				<label className="text-foreground grid gap-2 font-bold">
 					Jogo
 					<select
 						name="gameId"
 						defaultValue={question?.gameId}
 						required
-						className="min-h-12 rounded-xl border border-border bg-surface px-3 font-normal"
+						className="border-border bg-surface min-h-12 rounded-xl border px-3 font-normal"
 					>
 						<option value="">Selecione um jogo</option>
 						{games.map((game) => (
@@ -85,13 +78,13 @@ export function QuestionForm({ question, games, categories }: QuestionFormProps)
 						))}
 					</select>
 				</label>
-				<label className="grid gap-2 font-bold text-foreground">
+				<label className="text-foreground grid gap-2 font-bold">
 					Categoria
 					<select
 						name="categoryId"
 						defaultValue={question?.categoryId}
 						required
-						className="min-h-12 rounded-xl border border-border bg-surface px-3 font-normal"
+						className="border-border bg-surface min-h-12 rounded-xl border px-3 font-normal"
 					>
 						<option value="">Selecione uma categoria</option>
 						{categories.map((category) => (
@@ -102,41 +95,37 @@ export function QuestionForm({ question, games, categories }: QuestionFormProps)
 					</select>
 				</label>
 			</div>
-			<Textarea
+			<textarea
 				name="prompt"
-				label="Pergunta"
 				defaultValue={question?.prompt}
-				minRows={3}
-				isRequired
-				classNames={fieldClassNames}
+				rows={3}
+				required
+				aria-label="Pergunta"
 			/>
 			<div className="grid gap-5 md:grid-cols-2">
-				<Input
+				<input
 					name="answerText"
-					label="Resposta"
 					defaultValue={question?.answerText}
-					isRequired
-					classNames={fieldClassNames}
+					required
+					aria-label="Resposta"
 				/>
-				<Input
+				<input
 					name="answerValue"
-					label="Valor numérico (opcional)"
 					defaultValue={question?.answerValue ?? ""}
 					inputMode="decimal"
-					classNames={fieldClassNames}
+					aria-label="Valor numérico (opcional)"
 				/>
-				<Input
+				<input
 					name="answerUnit"
-					label="Unidade (opcional)"
 					defaultValue={question?.answerUnit ?? ""}
-					classNames={fieldClassNames}
+					aria-label="Unidade (opcional)"
 				/>
-				<label className="grid gap-2 font-bold text-foreground">
+				<label className="text-foreground grid gap-2 font-bold">
 					Dificuldade
 					<select
 						name="difficulty"
 						defaultValue={question?.difficulty ?? "MEDIUM"}
-						className="min-h-12 rounded-xl border border-border bg-surface px-3 font-normal"
+						className="border-border bg-surface min-h-12 rounded-xl border px-3 font-normal"
 					>
 						<option value="EASY">Fácil</option>
 						<option value="MEDIUM">Média</option>
@@ -144,61 +133,58 @@ export function QuestionForm({ question, games, categories }: QuestionFormProps)
 					</select>
 				</label>
 			</div>
-			<Textarea
+			<textarea
 				name="explanation"
-				label="Explicação (opcional)"
 				defaultValue={question?.explanation ?? ""}
-				minRows={3}
-				classNames={fieldClassNames}
+				rows={3}
+				aria-label="Explicação (opcional)"
 			/>
 			<div className="grid gap-5 md:grid-cols-2">
-				<Input
+				<input
 					name="sourceName"
-					label="Nome da fonte (opcional)"
 					defaultValue={question?.sourceName ?? ""}
-					classNames={fieldClassNames}
+					aria-label="Nome da fonte (opcional)"
 				/>
-				<Input
+				<input
 					name="sourceUrl"
 					type="url"
-					label="URL da fonte (opcional)"
 					defaultValue={question?.sourceUrl ?? ""}
-					classNames={fieldClassNames}
+					aria-label="URL da fonte (opcional)"
 				/>
-				<Input
+				<input
 					name="verifiedAt"
 					type="date"
-					label="Data da verificação (opcional)"
 					defaultValue={question?.verifiedAt?.slice(0, 10) ?? ""}
-					classNames={fieldClassNames}
+					aria-label="Data da verificação (opcional)"
 				/>
-				<Input
+				<input
 					name="locale"
-					label="Idioma"
 					defaultValue={question?.locale ?? "pt-BR"}
-					isRequired
-					classNames={fieldClassNames}
+					required
+					aria-label="Idioma"
 				/>
 			</div>
-			<div className="flex flex-wrap gap-6 rounded-xl border border-border bg-surface-strong p-4">
-				<Checkbox name="isReviewed" defaultSelected={question?.isReviewed ?? false}>
+			<div className="border-border bg-surface-strong flex flex-wrap gap-6 rounded-xl border p-4">
+				<label>
+					<input type="checkbox" name="isReviewed" defaultChecked={question?.isReviewed ?? false} />{" "}
 					Revisada
-				</Checkbox>
-				<Checkbox name="isActive" defaultSelected={question?.isActive ?? true}>
+				</label>
+				<label>
+					<input type="checkbox" name="isActive" defaultChecked={question?.isActive ?? true} />{" "}
 					Ativa para sorteio
-				</Checkbox>
+				</label>
 			</div>
 			<div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 				<Button
 					type="button"
-					variant="bordered"
+					variant="outline"
 					onPress={() => router.back()}
 					isDisabled={isLoading}
 				>
 					Cancelar
 				</Button>
-				<Button type="submit" color="primary" isLoading={isLoading}>
-					{question ? "Salvar alterações" : "Criar pergunta"}
+				<Button type="submit" variant="primary" isDisabled={isLoading}>
+					{isLoading ? "Salvando..." : question ? "Salvar alterações" : "Criar pergunta"}
 				</Button>
 			</div>
 		</form>

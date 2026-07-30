@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@nextui-org/react"
+import { Button } from "@heroui/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "react-toastify"
@@ -28,8 +28,8 @@ export function QuestionActions({
 		router.refresh()
 	}
 	return (
-		<Button size="sm" color="danger" variant="light" isLoading={isDeleting} onPress={deactivate}>
-			Desativar
+		<Button size="sm" variant="danger" isDisabled={isDeleting} onPress={deactivate}>
+			{isDeleting ? "Desativando..." : "Desativar"}
 		</Button>
 	)
 }
