@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import Link from "next/link"
 import { AppContainer, SectionHeading } from "@/components/design-system"
 import { GameMetadata, GameRules, nemAPatoGame } from "@/components/games"
@@ -46,19 +47,14 @@ export default function NemAPatoPage() {
 								Iniciar partida
 							</Link>
 						</div>
-						<div className="bg-primary relative flex min-h-64 items-end overflow-hidden p-8 sm:p-12">
-							<div
-								className="border-secondary absolute -top-12 -right-16 h-64 w-64 rounded-full border-[24px]"
-								aria-hidden="true"
+						<div className="bg-primary relative min-h-64 overflow-hidden">
+							<Image
+								src="/assets/games/nem-a-pato.png"
+								alt={`Capa do jogo ${nemAPatoGame.name}`}
+								fill
+								sizes="(min-width: 1024px) 45vw, 100vw"
+								className="object-cover"
 							/>
-							<div className="border-border bg-surface relative w-full rotate-[-3deg] rounded-2xl border-2 p-6 shadow-[7px_7px_0_rgb(var(--color-accent))]">
-								<p className="text-accent text-sm font-extrabold tracking-[0.15em] uppercase">
-									Pergunta da rodada
-								</p>
-								<p className="font-display text-foreground mt-3 text-3xl leading-tight">
-									Quanto é longe demais?
-								</p>
-							</div>
 						</div>
 					</div>
 				</section>

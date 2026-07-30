@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import Link from "next/link"
 import { AppContainer, SectionHeading } from "@/components/design-system"
 import { GameMetadata, GameRules, magicalRaceGame } from "@/components/games"
@@ -38,11 +39,14 @@ export default function MagicalRacePage() {
 								Iniciar partida
 							</Link>
 						</div>
-						<div className="bg-primary grid min-h-64 place-items-center p-8">
-							<div className="border-secondary bg-surface rotate-[-4deg] rounded-2xl border-2 p-7 shadow-lg">
-								<p className="font-display text-4xl">30 espaços.</p>
-								<p className="text-muted mt-2">Quatro corridas. Poderes imprevisíveis.</p>
-							</div>
+						<div className="bg-primary relative min-h-64 overflow-hidden">
+							<Image
+								src="/assets/games/corrida-arcana.png"
+								alt={`Capa do jogo ${magicalRaceGame.name}`}
+								fill
+								sizes="(min-width: 1024px) 45vw, 100vw"
+								className="object-cover"
+							/>
 						</div>
 					</div>
 				</section>
