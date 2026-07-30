@@ -266,9 +266,7 @@ function Draft({
 									<strong className="font-display block text-2xl leading-none">
 										{racer.publicName}
 									</strong>
-									<span className="text-muted mt-2 block text-sm">
-										Um talento único para virar a corrida.
-									</span>
+									<span className="text-muted mt-2 block text-sm">{racer.lore}</span>
 								</span>
 							</div>
 							<span className="border-primary/15 bg-primary/5 mt-4 block rounded-xl border p-3">
@@ -277,8 +275,7 @@ function Draft({
 								</span>
 								<span className="mt-1 block text-sm leading-snug">{racer.abilitySummary}</span>
 							</span>
-							<span className="text-primary mt-4 flex items-center justify-between text-sm font-black">
-								<span>{racer.isOptional ? "Poder opcional" : "Efeito automático"}</span>
+							<span className="text-primary mt-4 flex justify-end text-sm font-black">
 								<span className="transition-transform group-hover:translate-x-1">Recrutar →</span>
 							</span>
 						</button>
