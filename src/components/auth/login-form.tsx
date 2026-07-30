@@ -46,8 +46,8 @@ export function LoginForm() {
 				placeholder="voce@email.com"
 				name="email"
 				required
-				variant="primary"
 				disabled={isLoading}
+				className="!border-border !bg-surface !text-foreground placeholder:!text-muted focus:!border-primary w-full rounded-xl px-4 py-3"
 			/>
 			<Input
 				type="password"
@@ -55,14 +55,13 @@ export function LoginForm() {
 				placeholder="Sua senha"
 				name="password"
 				required
-				variant="primary"
 				disabled={isLoading}
+				className="!border-border !bg-surface !text-foreground placeholder:!text-muted focus:!border-primary w-full rounded-xl px-4 py-3"
 			/>
 			<Button
 				type="submit"
-				variant="primary"
 				size="lg"
-				className="mt-2 font-semibold"
+				className="!bg-primary !text-surface hover:!bg-primary-hover mt-2 font-semibold"
 				isDisabled={isLoading}
 			>
 				Entrar

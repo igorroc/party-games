@@ -47,8 +47,8 @@ export function RegisterForm() {
 				placeholder="Seu nome"
 				name="name"
 				required
-				variant="secondary"
 				disabled={isLoading}
+				className="!border-border !bg-surface !text-foreground placeholder:!text-muted focus:!border-primary w-full rounded-xl px-4 py-3"
 			/>
 			<Input
 				type="email"
@@ -56,8 +56,8 @@ export function RegisterForm() {
 				placeholder="voce@email.com"
 				name="email"
 				required
-				variant="secondary"
 				disabled={isLoading}
+				className="!border-border !bg-surface !text-foreground placeholder:!text-muted focus:!border-primary w-full rounded-xl px-4 py-3"
 			/>
 			<Input
 				type="password"
@@ -65,14 +65,13 @@ export function RegisterForm() {
 				placeholder="Crie uma senha segura"
 				name="password"
 				required
-				variant="secondary"
 				disabled={isLoading}
+				className="!border-border !bg-surface !text-foreground placeholder:!text-muted focus:!border-primary w-full rounded-xl px-4 py-3"
 			/>
 			<Button
 				type="submit"
-				variant="secondary"
 				size="lg"
-				className="mt-2 font-semibold"
+				className="!bg-primary !text-surface hover:!bg-primary-hover mt-2 font-semibold"
 				isDisabled={isLoading}
 			>
 				Criar conta
