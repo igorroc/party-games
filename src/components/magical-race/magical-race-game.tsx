@@ -250,7 +250,7 @@ function Draft({
 						>
 							<div className="flex items-start gap-3">
 								<span
-									className="draft-racer-art grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl border-2 border-white/70 text-4xl shadow-sm"
+									className="draft-racer-art grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border-2 border-white/70 text-4xl shadow-sm"
 									style={{ background: visual.color }}
 								>
 									<RacerArt definitionId={racer.id} />
@@ -389,12 +389,6 @@ function Selection({
 		<>
 			<div className="secret-selection-banner rounded-2xl p-5 sm:p-6">
 				<div className="flex items-start gap-4">
-					<span
-						className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/30 bg-black/15 text-2xl"
-						aria-hidden="true"
-					>
-						⌁
-					</span>
 					<div>
 						<p className="text-xs font-black tracking-[.16em] text-white/75 uppercase">
 							Escolha secreta
@@ -419,6 +413,7 @@ function Selection({
 					.filter((id) => !state.usedRacerDefinitionIds.includes(id))
 					.map((id) => {
 						const racer = racerDefinitions.find((item) => item.id === id)!
+						const visual = racerVisual(racer.id)
 						const isPicked = picked.includes(id)
 						return (
 							<button
@@ -434,11 +429,16 @@ function Selection({
 								}
 								className={`cursor-pointer rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${isPicked ? "border-primary bg-primary/10" : "border-border hover:border-primary hover:bg-primary/5"}`}
 							>
-								<span className="mr-2 inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-current bg-white text-xl">
+								<span
+									className="mr-3 inline-flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-white/70 text-4xl shadow-sm"
+									style={{ background: visual.color }}
+								>
 									<RacerArt definitionId={racer.id} />
 								</span>
-								<strong>{racer.publicName}</strong>
-								<span className="text-muted mt-1 block text-sm">{racer.abilitySummary}</span>
+								<span className="inline-block align-top">
+									<strong className="font-display block text-2xl">{racer.publicName}</strong>
+									<span className="text-muted mt-1 block text-sm">{racer.abilitySummary}</span>
+								</span>
 							</button>
 						)
 					})}
@@ -507,7 +507,7 @@ function Race({
 							<div
 								key={index}
 								style={{ order }}
-								className={`arcade-space arcade-space-${space?.type ?? "start"} relative min-h-20 rounded-lg p-1.5 sm:min-h-24`}
+								className={`arcade-space arcade-space-${space?.type ?? "start"} relative min-h-20 rounded-lg p-1.5 hover:z-[30] sm:min-h-24`}
 							>
 								<div className="flex items-start justify-between">
 									<span className="rounded bg-black/20 px-1 text-[10px] font-black text-white">
@@ -847,9 +847,9 @@ function RacerArt({ definitionId }: { definitionId: string }) {
 		<Image
 			src={racerAssetSrc(definition.publicName)}
 			alt=""
-			width={96}
-			height={96}
-			sizes="96px"
+			width={512}
+			height={512}
+			sizes="208px"
 			className="h-full w-full object-contain"
 			onError={() => setFailed(true)}
 		/>
