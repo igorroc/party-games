@@ -34,3 +34,11 @@ export type ProfileGameSession = {
 	durationMinutes: number
 	roundsPlayed: number
 }
+
+export type AdminUser = {
+	id: string
+	name: string
+	email: string
+	role: "USER" | "ADMIN"
+	createdAt: string
+}

@@ -17,7 +17,7 @@ export default function NemAPatoPage() {
 					<div className="grid lg:grid-cols-[1.1fr_0.9fr]">
 						<div className="p-6 sm:p-10 lg:p-14">
 							<Link
-								href="/"
+								href="/games"
 								className="text-primary hover:text-primary-hover rounded-lg text-sm font-extrabold"
 							>
 								Voltar aos jogos

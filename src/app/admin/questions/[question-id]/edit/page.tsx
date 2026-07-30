@@ -26,10 +26,10 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
 		<main className="flex-1 py-10 sm:py-16">
 			<AppContainer className="max-w-4xl">
 				<Link
-					href="/admin/questions"
+					href="/admin/games/nem-a-pato/questions"
 					className="text-primary hover:text-primary-hover text-sm font-extrabold"
 				>
-					Voltar às perguntas
+					Voltar às perguntas do Nem A Pato
 				</Link>
 				<div className="paper-card mt-6 rounded-3xl p-6 sm:p-10">
 					<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">Catálogo</p>

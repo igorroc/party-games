@@ -2,12 +2,15 @@ import "server-only"
 
 import { Prisma } from "@/generated/prisma/client"
 import db from "@/lib/db"
-import type { AdminQuestion, AdminQuestionList, ProfileGameSession } from "./types"
+import { PasswordService } from "@/lib/auth/password"
+import type { AdminQuestion, AdminQuestionList, AdminUser, ProfileGameSession } from "./types"
 import type { z } from "zod"
 import type { questionInputSchema, questionListQuerySchema } from "./schemas"
+import type { adminUserUpdateSchema } from "./schemas"
 
 type QuestionInput = z.infer<typeof questionInputSchema>
 type QuestionListQuery = z.infer<typeof questionListQuerySchema>
+type AdminUserUpdate = z.infer<typeof adminUserUpdateSchema>
 
 const questionInclude = {
 	category: { select: { name: true } },
@@ -93,6 +96,34 @@ export class AdministrationService {
 			),
 			roundsPlayed: session.nemAPatoSession?._count.rounds ?? 0,
 		}))
+	}
+
+	static async listUsers(): Promise<AdminUser[]> {
+		const users = await db.user.findMany({
+			select: { id: true, name: true, email: true, role: true, createdAt: true },
+			orderBy: { createdAt: "desc" },
+		})
+		return users.map((user) => ({ ...user, createdAt: user.createdAt.toISOString() }))
+	}
+
+	static async updateUser(id: string, input: AdminUserUpdate): Promise<AdminUser | null> {
+		const existing = await db.user.findUnique({ where: { id }, select: { id: true } })
+		if (!existing) return null
+		const user = await db.user.update({
+			where: { id },
+			data: {
+				name: input.name,
+				email: input.email.toLowerCase(),
+				...(input.password ? { password: await PasswordService.hash(input.password) } : {}),
+			},
+			select: { id: true, name: true, email: true, role: true, createdAt: true },
+		})
+		return { ...user, createdAt: user.createdAt.toISOString() }
+	}
+
+	static async deleteUser(id: string): Promise<boolean> {
+		const result = await db.user.deleteMany({ where: { id } })
+		return result.count > 0
 	}
 
 	private static toQuestionData(input: QuestionInput): Prisma.NemAPatoQuestionUncheckedCreateInput {

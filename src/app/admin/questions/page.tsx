@@ -5,7 +5,10 @@ import { QuestionActions } from "@/components/administration"
 import { AuthSession } from "@/modules/auth"
 import { AdministrationService, questionListQuerySchema } from "@/modules/administration"
 
-export const metadata: Metadata = { title: "Perguntas", robots: { index: false, follow: false } }
+export const metadata: Metadata = {
+	title: "Perguntas do Nem A Pato",
+	robots: { index: false, follow: false },
+}
 
 type QuestionsPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> }
 
@@ -30,13 +33,13 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 						<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">
 							Administração
 						</p>
-						<h1 className="font-display text-foreground mt-2 text-5xl">Perguntas</h1>
+						<h1 className="font-display text-foreground mt-2 text-5xl">Perguntas do Nem A Pato</h1>
 						<p className="text-muted mt-3">
 							Revise o conteúdo antes de disponibilizá-lo nas partidas.
 						</p>
 					</div>
 					<Link
-						href="/admin/questions/new"
+						href="/admin/games/nem-a-pato/questions/new"
 						className="shadow-print bg-primary hover:bg-primary-hover focus-visible:outline-focus inline-flex min-h-11 items-center justify-center rounded-xl px-4 font-extrabold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
 					>
 						Nova pergunta
@@ -148,7 +151,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 								</div>
 								<div className="flex shrink-0 gap-2">
 									<Link
-										href={`/admin/questions/${question.id}/edit`}
+										href={`/admin/games/nem-a-pato/questions/${question.id}/edit`}
 										className="border-border text-foreground hover:bg-surface-strong focus-visible:outline-focus inline-flex min-h-10 items-center justify-center rounded-lg border px-3 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
 									>
 										Editar

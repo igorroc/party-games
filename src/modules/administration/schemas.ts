@@ -6,6 +6,12 @@ export const questionDifficultySchema = z.enum(["EASY", "MEDIUM", "HARD"])
 
 export const questionStatusSchema = z.enum(["ALL", "ACTIVE", "INACTIVE", "REVIEWED", "PENDING"])
 
+export const adminUserUpdateSchema = z.object({
+	name: z.string().trim().min(1, "Informe o nome.").max(120),
+	email: z.email("Informe um e-mail válido.").trim().max(255),
+	password: z.string().min(8, "A senha deve ter ao menos 8 caracteres.").max(255).optional(),
+})
+
 export const questionInputSchema = z.object({
 	categoryId: z.string().trim().min(1, "Selecione a categoria."),
 	prompt: z.string().trim().min(10, "A pergunta deve ter ao menos 10 caracteres.").max(1_000),

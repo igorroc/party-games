@@ -47,7 +47,7 @@ export function QuestionForm({ question, categories }: QuestionFormProps) {
 			const result = (await response.json()) as { success: boolean; error?: { message: string } }
 			if (!response.ok || !result.success) throw new Error(result.error?.message)
 			toast.success(question ? "Pergunta atualizada." : "Pergunta criada.")
-			router.push("/admin/questions")
+			router.push("/admin/games/nem-a-pato/questions")
 			router.refresh()
 		} catch (error) {
 			toast.error(
