@@ -8,6 +8,8 @@ model User {
   sessions     Session[]
   gameSessions GameSession[]
 
+  operationalSettingsUpdates OperationalSettings[] @relation("OperationalSettingsUpdatedBy")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

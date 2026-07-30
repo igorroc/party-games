@@ -1,0 +1,9 @@
+model OperationalSettings {
+  id                String   @id
+  attackModeEnabled Boolean  @default(false)
+  updatedByUserId   String?
+
+  updatedByUser User? @relation("OperationalSettingsUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  updatedAt DateTime @updatedAt
+}
