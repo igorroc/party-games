@@ -28,6 +28,7 @@ export type MagicalRaceEvent = {
 export type PendingDecision =
 	| { type: "rocket-scientist"; racerId: string; die: number }
 	| { type: "cheerleader"; racerId: string }
+	| { type: "dicemonger"; racerId: string; die: number; merchantRacerId: string }
 export type MagicalRaceState = {
 	version: number
 	status: MagicalRaceStatus
@@ -44,6 +45,7 @@ export type MagicalRaceState = {
 	activePlayerId: string | null
 	activeRacerId: string | null
 	turnQueue: string[]
+	turnStartPosition: number | null
 	finishers: string[]
 	pendingDecision: PendingDecision | null
 	events: MagicalRaceEvent[]
@@ -55,6 +57,7 @@ export type MagicalRaceAction =
 	| { type: "ROLL_MAIN_DIE" }
 	| { type: "RESOLVE_ROCKET_SCIENTIST"; double: boolean }
 	| { type: "RESOLVE_CHEERLEADER"; useAbility: boolean }
+	| { type: "RESOLVE_DICEMONGER"; useReroll: boolean }
 	| { type: "CONFIRM_NEXT_RACE" }
 	| { type: "ABANDON_MATCH" }
 

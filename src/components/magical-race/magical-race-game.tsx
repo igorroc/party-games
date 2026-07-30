@@ -41,7 +41,11 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 	async function act(action: Record<string, unknown>) {
 		if (!state || busy) return
 		setBusy(true)
-		if (action.type === "RESOLVE_ROCKET_SCIENTIST" || action.type === "RESOLVE_CHEERLEADER")
+		if (
+			action.type === "RESOLVE_ROCKET_SCIENTIST" ||
+			action.type === "RESOLVE_CHEERLEADER" ||
+			action.type === "RESOLVE_DICEMONGER"
+		)
 			setDecisionClosing(true)
 		setError(null)
 		try {
@@ -55,6 +59,8 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 				throw new Error(result.success ? "Ação inválida." : result.error.message)
 			announceAutomaticEvents(state.events.length, result.data.events)
 			if (action.type === "ROLL_MAIN_DIE") await animateTurn(state, result.data, true)
+			else if (action.type === "RESOLVE_DICEMONGER")
+				await animateTurn(state, result.data, Boolean(action.useReroll))
 			else if (action.type === "RESOLVE_ROCKET_SCIENTIST" || action.type === "RESOLVE_CHEERLEADER")
 				await animateTurn(state, result.data, false)
 			else setState(result.data)
@@ -661,6 +667,7 @@ function PendingDecisionModal({
 	const decision = state.pendingDecision
 	if (!decision) return null
 	const rocket = decision.type === "rocket-scientist"
+	const merchant = decision.type === "dicemonger"
 	return (
 		<div
 			className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-4"
@@ -671,12 +678,18 @@ function PendingDecisionModal({
 			<section className="decision-modal w-full max-w-lg rounded-3xl p-6 shadow-2xl sm:p-8">
 				<p className="text-xs font-black tracking-[.16em] uppercase">Poder opcional</p>
 				<h2 id="decision-title" className="font-display mt-2 text-3xl">
-					{rocket ? "Acionar o propulsor?" : "Animar quem está em último?"}
+					{rocket
+						? "Acionar o propulsor?"
+						: merchant
+							? "Aceitar uma rerrolagem?"
+							: "Animar quem está em último?"}
 				</h2>
 				<p className="mt-3 leading-relaxed">
 					{rocket
 						? `O resultado foi ${decision.die}. Você pode mover ${decision.die * 2} casas, mas o Cientista Foguete tropeçará no próximo turno.`
-						: "Todos os corredores empatados na última posição avançam 2 casas. Depois, a Torcida Lunar avança mais 1 casa e rola o dado normalmente."}
+						: merchant
+							? `O Mercador de Dados oferece trocar o ${decision.die} por uma nova rolagem. Se outro corredor aceitar, o Mercador avança 1 casa.`
+							: "Todos os corredores empatados na última posição avançam 2 casas. Depois, a Torcida Lunar avança mais 1 casa e rola o dado normalmente."}
 				</p>
 				<div className="mt-6 flex flex-wrap justify-end gap-3">
 					<Button
@@ -686,11 +699,13 @@ function PendingDecisionModal({
 							act(
 								rocket
 									? { type: "RESOLVE_ROCKET_SCIENTIST", double: false }
-									: { type: "RESOLVE_CHEERLEADER", useAbility: false },
+									: merchant
+										? { type: "RESOLVE_DICEMONGER", useReroll: false }
+										: { type: "RESOLVE_CHEERLEADER", useAbility: false },
 							)
 						}
 					>
-						{rocket ? `Manter ${decision.die}` : "Não animar"}
+						{rocket ? `Manter ${decision.die}` : merchant ? `Manter ${decision.die}` : "Não animar"}
 					</Button>
 					<Button
 						variant="primary"
@@ -699,11 +714,13 @@ function PendingDecisionModal({
 							act(
 								rocket
 									? { type: "RESOLVE_ROCKET_SCIENTIST", double: true }
-									: { type: "RESOLVE_CHEERLEADER", useAbility: true },
+									: merchant
+										? { type: "RESOLVE_DICEMONGER", useReroll: true }
+										: { type: "RESOLVE_CHEERLEADER", useAbility: true },
 							)
 						}
 					>
-						{rocket ? "Usar propulsor" : "Animar a torcida"}
+						{rocket ? "Usar propulsor" : merchant ? "Rerrolar dado" : "Animar a torcida"}
 					</Button>
 				</div>
 			</section>

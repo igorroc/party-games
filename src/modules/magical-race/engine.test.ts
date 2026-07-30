@@ -99,4 +99,70 @@ describe("magical race engine", () => {
 		expect(state.racers[0]!.position).toBe(6)
 		expect(state.racers[1]!.position).toBe(2)
 	})
+
+	test("offers the Dicemonger reroll and advances the merchant when another racer accepts", () => {
+		let state = createMatch(["Ana", "Bia"], "standard", new FakeRandomProvider([]))
+		while (state.status === "drafting")
+			state = dispatch(
+				state,
+				state.activePlayerId!,
+				{ type: "DRAFT_RACER", racerDefinitionId: state.draftPool[0]! },
+				new FakeRandomProvider([]),
+			)
+		for (const player of state.players)
+			state = dispatch(
+				state,
+				player.id,
+				{ type: "SUBMIT_RACE_SELECTION", racerDefinitionIds: [player.draftedRacerIds[0]!] },
+				new FakeRandomProvider([1]),
+			)
+		state.racers[0]!.definitionId = "dicemonger"
+		state.activeRacerId = state.racers[1]!.id
+		state.activePlayerId = state.racers[1]!.ownerId
+		state.turnQueue = [state.racers[1]!.id, state.racers[0]!.id]
+		state = dispatch(
+			state,
+			state.activePlayerId!,
+			{ type: "ROLL_MAIN_DIE" },
+			new FakeRandomProvider([2]),
+		)
+		expect(state.pendingDecision?.type).toBe("dicemonger")
+		state = dispatch(
+			state,
+			state.activePlayerId!,
+			{ type: "RESOLVE_DICEMONGER", useReroll: true },
+			new FakeRandomProvider([5]),
+		)
+		expect(state.racers[0]!.position).toBe(1)
+		expect(state.racers[1]!.position).toBe(5)
+	})
+
+	test("moves the Heckler after a racer ends a turn within one space of its start", () => {
+		let state = createMatch(["Ana", "Bia"], "standard", new FakeRandomProvider([]))
+		while (state.status === "drafting")
+			state = dispatch(
+				state,
+				state.activePlayerId!,
+				{ type: "DRAFT_RACER", racerDefinitionId: state.draftPool[0]! },
+				new FakeRandomProvider([]),
+			)
+		for (const player of state.players)
+			state = dispatch(
+				state,
+				player.id,
+				{ type: "SUBMIT_RACE_SELECTION", racerDefinitionIds: [player.draftedRacerIds[0]!] },
+				new FakeRandomProvider([1]),
+			)
+		state.racers[0]!.definitionId = "heckler"
+		state.activeRacerId = state.racers[1]!.id
+		state.activePlayerId = state.racers[1]!.ownerId
+		state.turnQueue = [state.racers[1]!.id, state.racers[0]!.id]
+		state = dispatch(
+			state,
+			state.activePlayerId!,
+			{ type: "ROLL_MAIN_DIE" },
+			new FakeRandomProvider([1]),
+		)
+		expect(state.racers[0]!.position).toBe(2)
+	})
 })

@@ -78,6 +78,7 @@ export function createMatch(
 		activePlayerId: draftOrder[0] ?? null,
 		activeRacerId: null,
 		turnQueue: [],
+		turnStartPosition: null,
 		finishers: [],
 		pendingDecision: null,
 		events: [{ sequence: 1, type: "MATCH_CREATED", message: "Partida criada.", payload: {} }],
@@ -110,6 +111,8 @@ export function dispatch(
 		resolveRocketScientist(next, actorId, action.double)
 	else if (action.type === "RESOLVE_CHEERLEADER")
 		resolveCheerleader(next, actorId, action.useAbility, random)
+	else if (action.type === "RESOLVE_DICEMONGER")
+		resolveDicemonger(next, actorId, action.useReroll, random)
 	else if (action.type === "CONFIRM_NEXT_RACE") nextRace(next, actorId)
 	else {
 		next.status = "abandoned"
@@ -188,10 +191,11 @@ function roll(state: MagicalRaceState, actorId: string, random: RandomProvider) 
 	const racer = activeRacer(state, actorId)
 	if (!racer) throw new Error("Não há corredor ativo.")
 	state.activeRacerId = racer.id
+	state.turnStartPosition ??= racer.position
 	if (racer.tripPending) {
 		racer.tripPending = false
 		event(state, "MAIN_MOVE_SKIPPED", "O corredor se recuperou do tropeço.", { racerId: racer.id })
-		advanceTurn(state)
+		completeTurn(state, racer.id)
 		return
 	}
 	if (racer.definitionId === "cheerleader") {
@@ -209,6 +213,61 @@ function rollDieAndMove(state: MagicalRaceState, racerId: string, random: Random
 	if (!racer || racer.status !== "active") return
 	const die = random.rollDie(6)
 	event(state, "MAIN_DIE_ROLLED", `Dado: ${die}.`, { racerId: racer.id, die })
+	const merchant = state.racers.find(
+		(item) => item.definitionId === "dicemonger" && item.status === "active",
+	)
+	if (merchant) {
+		state.pendingDecision = {
+			type: "dicemonger",
+			racerId: racer.id,
+			die,
+			merchantRacerId: merchant.id,
+		}
+		event(state, "DECISION_REQUESTED", "O Mercador de Dados oferece uma rerrolagem.", {
+			racerId: racer.id,
+			merchantRacerId: merchant.id,
+			die,
+		})
+		return
+	}
+	resolveFinalDie(state, racer.id, die)
+}
+
+function resolveDicemonger(
+	state: MagicalRaceState,
+	actorId: string,
+	useReroll: boolean,
+	random: RandomProvider,
+) {
+	const decision = state.pendingDecision
+	if (!decision || decision.type !== "dicemonger" || state.activePlayerId !== actorId)
+		throw new Error("Esta decisão não está disponível.")
+	state.pendingDecision = null
+	let die = decision.die
+	if (useReroll) {
+		event(state, "DIE_RESULT_DISCARDED", `O resultado ${die} foi descartado.`, {
+			racerId: decision.racerId,
+			die,
+		})
+		die = random.rollDie(6)
+		event(state, "DIE_REROLLED", `Nova rolagem: ${die}.`, { racerId: decision.racerId, die })
+		if (decision.racerId !== decision.merchantRacerId) {
+			event(state, "ABILITY_RESOLVED", "O Mercador de Dados avançou por emprestar sua sorte.", {
+				racerId: decision.merchantRacerId,
+			})
+			move(state, decision.merchantRacerId, 1)
+		}
+	} else {
+		event(state, "ABILITY_SKIPPED", "A oferta do Mercador de Dados foi recusada.", {
+			racerId: decision.racerId,
+		})
+	}
+	resolveFinalDie(state, decision.racerId, die)
+}
+
+function resolveFinalDie(state: MagicalRaceState, racerId: string, die: number) {
+	const racer = state.racers.find((item) => item.id === racerId)
+	if (!racer || racer.status !== "active") return
 	if (racer.definitionId === "rocket-scientist") {
 		state.pendingDecision = { type: "rocket-scientist", racerId: racer.id, die }
 		event(state, "DECISION_REQUESTED", "O Cientista Foguete pode dobrar o movimento.", {
@@ -218,7 +277,7 @@ function rollDieAndMove(state: MagicalRaceState, racerId: string, random: Random
 		return
 	}
 	move(state, racer.id, die)
-	if (state.status === "racing") advanceTurn(state)
+	if (state.status === "racing") completeTurn(state, racer.id)
 }
 
 function resolveCheerleader(
@@ -276,7 +335,7 @@ function resolveRocketScientist(state: MagicalRaceState, actorId: string, double
 			racerId: racer.id,
 		})
 	}
-	if (state.status === "racing") advanceTurn(state)
+	if (state.status === "racing") completeTurn(state, racer.id)
 }
 
 function move(state: MagicalRaceState, racerId: string, amount: number) {
@@ -346,6 +405,7 @@ function nextRace(state: MagicalRaceState, actorId: string) {
 	state.activePlayerId = null
 	state.activeRacerId = null
 	state.turnQueue = []
+	state.turnStartPosition = null
 	state.pendingDecision = null
 	event(state, "NEXT_RACE_PREPARED", `Corrida ${state.raceNumber} preparada.`, {})
 }
@@ -355,6 +415,28 @@ function activeRacer(state: MagicalRaceState, playerId: string | null) {
 		state.racers.find((racer) => racer.id === state.activeRacerId && racer.status === "active") ??
 		state.racers.find((racer) => racer.ownerId === playerId && racer.status === "active")
 	)
+}
+function completeTurn(state: MagicalRaceState, racerId: string) {
+	const racer = state.racers.find((item) => item.id === racerId)
+	const startPosition = state.turnStartPosition
+	state.turnStartPosition = null
+	if (racer && startPosition !== null && Math.abs(racer.position - startPosition) <= 1) {
+		for (const heckler of state.racers.filter(
+			(item) => item.definitionId === "heckler" && item.status === "active",
+		)) {
+			event(
+				state,
+				"ABILITY_RESOLVED",
+				"O Bardo Zombeteiro aproveitou um turno sem graça e avançou 2.",
+				{
+					racerId: heckler.id,
+					targetRacerId: racer.id,
+				},
+			)
+			move(state, heckler.id, 2)
+		}
+	}
+	if (state.status === "racing") advanceTurn(state)
 }
 function advanceTurn(state: MagicalRaceState) {
 	const current = state.turnQueue.shift()
