@@ -1,3 +1,4 @@
+export { AttackModeControl } from "./attack-mode-control"
 export { QuestionActions } from "./question-actions"
 export { QuestionForm } from "./question-form"
 export { NemAPatoCatalogManager } from "./nem-a-pato-catalog-manager"

@@ -2,8 +2,11 @@ import { ApiResponse } from "@/lib/api/api-response"
 import { AuthSession } from "@/modules/auth"
 import { GameSessionCookie } from "@/modules/game-sessions"
 import { createMagicalRaceSchema, MagicalRaceService } from "@/modules/magical-race"
+import { attackModeBlockResponse } from "@/modules/administration"
 
 export async function POST(request: Request) {
+	const blocked = await attackModeBlockResponse()
+	if (blocked) return blocked
 	const parsed = createMagicalRaceSchema.safeParse(await request.json().catch(() => null))
 	if (!parsed.success)
 		return ApiResponse.error(

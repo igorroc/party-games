@@ -1,6 +1,7 @@
 import { ApiResponse } from "@/lib/api/api-response"
 import {
 	AdministrationService,
+	attackModeBlockResponse,
 	questionInputSchema,
 	questionListQuerySchema,
 } from "@/modules/administration"
@@ -24,6 +25,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
 	const authorization = await requireAdminApi()
 	if ("response" in authorization) return authorization.response
+	const blocked = await attackModeBlockResponse()
+	if (blocked) return blocked
 	const parsed = questionInputSchema.safeParse(await request.json().catch(() => null))
 	if (!parsed.success)
 		return ApiResponse.error(

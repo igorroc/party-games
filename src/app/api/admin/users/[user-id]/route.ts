@@ -1,5 +1,9 @@
 import { ApiResponse } from "@/lib/api/api-response"
-import { AdministrationService, adminUserUpdateSchema } from "@/modules/administration"
+import {
+	AdministrationService,
+	adminUserUpdateSchema,
+	attackModeBlockResponse,
+} from "@/modules/administration"
 import { requireAdminApi } from "@/modules/administration/admin-api-auth"
 
 type RouteContext = { params: Promise<{ "user-id": string }> }
@@ -7,6 +11,8 @@ type RouteContext = { params: Promise<{ "user-id": string }> }
 export async function PATCH(request: Request, { params }: RouteContext) {
 	const authorization = await requireAdminApi()
 	if ("response" in authorization) return authorization.response
+	const blocked = await attackModeBlockResponse()
+	if (blocked) return blocked
 	const parsed = adminUserUpdateSchema.safeParse(await request.json().catch(() => null))
 	if (!parsed.success) {
 		return ApiResponse.error(
@@ -27,6 +33,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 export async function DELETE(_request: Request, { params }: RouteContext) {
 	const authorization = await requireAdminApi()
 	if ("response" in authorization) return authorization.response
+	const blocked = await attackModeBlockResponse()
+	if (blocked) return blocked
 	const userId = (await params)["user-id"]
 	if (userId === authorization.user.id) {
 		return ApiResponse.error(

@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { SeedButton } from "@/components/administration"
+import { AttackModeControl, SeedButton } from "@/components/administration"
 import { AppContainer } from "@/components/design-system"
 import { AuthSession } from "@/modules/auth"
+import { OperationalSettingsService } from "@/modules/administration"
 
 export const metadata: Metadata = {
 	title: "Administração",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function AdminPage() {
 	await AuthSession.requireAdmin()
+	const operationalSettings = await OperationalSettingsService.get()
 	return (
 		<main className="flex-1 py-10 sm:py-16">
 			<AppContainer>
@@ -67,6 +69,9 @@ export default async function AdminPage() {
 						<SeedButton />
 					</div>
 				</section>
+				<div className="mt-6">
+					<AttackModeControl attackModeEnabled={operationalSettings.attackModeEnabled} />
+				</div>
 			</AppContainer>
 		</main>
 	)

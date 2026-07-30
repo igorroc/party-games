@@ -1,5 +1,6 @@
 import { AuthSession } from "@/modules/auth"
 import { ApiResponse } from "@/lib/api/api-response"
+import { attackModeBlockResponse } from "@/modules/administration"
 import {
 	GameSessionCookie,
 	GameSessionDomainError,
@@ -8,6 +9,8 @@ import {
 } from "@/modules/game-sessions"
 
 export async function POST(request: Request) {
+	const blocked = await attackModeBlockResponse()
+	if (blocked) return blocked
 	const body = await request.json().catch(() => null)
 	const parsed = createGameSessionSchema.safeParse(body)
 	if (!parsed.success)

@@ -2,9 +2,12 @@ import { ApiResponse } from "@/lib/api/api-response"
 import { AuthSession } from "@/modules/auth"
 import { GameSessionCookie } from "@/modules/game-sessions"
 import { magicalRaceActionSchema, MagicalRaceService } from "@/modules/magical-race"
+import { attackModeBlockResponse } from "@/modules/administration"
 
 type Context = { params: Promise<{ "match-id": string }> }
 export async function POST(request: Request, { params }: Context) {
+	const blocked = await attackModeBlockResponse()
+	if (blocked) return blocked
 	const sessionId = (await params)["match-id"]
 	const parsed = magicalRaceActionSchema.safeParse(await request.json().catch(() => null))
 	if (!parsed.success) return ApiResponse.error("VALIDATION_ERROR", "Ação inválida.", 400)

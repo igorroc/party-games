@@ -1,8 +1,11 @@
 import { AuthService, loginRequestSchema } from "@/modules/auth"
 import { ApiResponse } from "@/lib/api/api-response"
 import { TypeGuard } from "@/lib/api/api-result"
+import { attackModeBlockResponse } from "@/modules/administration"
 
 export async function POST(request: Request) {
+	const blocked = await attackModeBlockResponse()
+	if (blocked) return blocked
 	const body = await request.json().catch(() => null)
 	const parsed = loginRequestSchema.safeParse(body)
 

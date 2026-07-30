@@ -5,6 +5,10 @@ const optionalText = z.string().trim().max(2_000).optional().nullable()
 
 export const questionStatusSchema = z.enum(["ALL", "ACTIVE", "INACTIVE", "REVIEWED", "PENDING"])
 
+export const attackModeSchema = z.object({
+	attackModeEnabled: z.boolean(),
+})
+
 export const adminUserUpdateSchema = z.object({
 	name: z.string().trim().min(1, "Informe o nome.").max(120),
 	email: z.email("Informe um e-mail válido.").trim().max(255),

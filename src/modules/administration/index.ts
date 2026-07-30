@@ -1,5 +1,8 @@
 export { AdministrationService } from "./administration-service"
+export { attackModeBlockResponse } from "./attack-mode-guard"
+export { OperationalSettingsService } from "./operational-settings-service"
 export {
+	attackModeSchema,
 	adminUserUpdateSchema,
 	questionInputSchema,
 	questionListQuerySchema,
