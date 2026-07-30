@@ -399,278 +399,51 @@ O polling deve ser encapsulado em um hook ou serviço reutilizável.
 Não espalhar setInterval por vários componentes.
 
 ======================================================================
-6. GERAÇÃO DETERMINÍSTICA DE ROSTOS
+6. EXIBIÇÃO DETERMINÍSTICA DE ROSTOS
    ======================================================================
 
-Este é um requisito central.
+Não será implementado um algoritmo próprio de geração de rostos. Os rostos serão avatares ilustrados e determinísticos fornecidos pela API do DiceBear.
 
-O jogo precisa gerar rostos diferentes para cada nova partida, mas deve conseguir identificar e recuperar exatamente o mesmo rosto durante toda a rodada.
+Para cada posição do tabuleiro, o servidor deve gerar uma seed aleatória única e persistir essa seed como a identidade do rosto naquela partida. Os dois jogadores recebem as mesmas seeds, na mesma ordem. A seed do alvo secreto deve ser tratada com as mesmas regras de privacidade aplicadas aos demais dados secretos da partida.
 
-Não dependa de uma URL que devolve uma imagem aleatória a cada acesso.
+O mesmo valor de seed deve sempre resultar no mesmo avatar. Não use URLs aleatórias, listas fixas de imagens, fotos de pessoas reais, prompts, modelos de IA, object storage ou processamento próprio de assets.
 
-Não dependa de thispersondoesnotexist.com.
+6.1 Componente central de avatar
 
-Não use uma lista fixa de fotos.
+Criar um componente central reutilizável, por exemplo `HiddenFaceAvatar`, responsável por receber uma `seed` e exibir o rosto correspondente. Nenhum outro componente deve montar diretamente a URL do DiceBear.
 
-Não guarde fotos de pessoas reais.
+O componente deve usar inicialmente o estilo `adventurer` da versão 10 da API:
 
-A solução deve utilizar três camadas:
+https://api.dicebear.com/10.x/adventurer/svg?seed=<seed>
 
-1. Identidade determinística.
-2. Especificação determinística.
-3. Asset persistido e imutável.
-
-6.1 Identidade do rosto
-
-Para cada posição do tabuleiro, derive um seed.
+A URL deve ser construída de forma segura, codificando a seed como parâmetro de consulta. O estilo e a versão devem permanecer centralizados no componente para que uma futura troca de fornecedor ou estilo não exija alterações no domínio ou nas telas do jogo.
 
 Exemplo conceitual:
 
-faceSeed = HMAC_SHA256(
-FACE_SEED_SECRET,
-`${roundSeed}:${faceIndex}:${generationVersion}`
-)
-
-Nunca exponha FACE_SEED_SECRET.
-
-O faceHash deve considerar tudo que define a imagem:
-
-faceHash = SHA256(
-canonicalJson({
-faceSeed,
-generationVersion,
-modelId,
-modelRevision,
-promptVersion,
-profile
-})
-)
-
-O faceHash é o identificador estável do rosto.
-
-Não utilizar o hash como único mecanismo de segurança.
-
-Ele é uma identidade técnica, não uma credencial.
-
-6.2 Perfil visual determinístico
-
-Derive um FaceProfile usando um PRNG determinístico alimentado pelo faceSeed.
-
-Exemplo:
-
-type SyntheticFaceProfile = {
-ageBand: "young-adult" | "adult" | "older-adult"
-presentation: "masculine" | "feminine" | "androgynous"
-skinTone: "very-light" | "light" | "medium" | "medium-dark" | "dark" | "very-dark"
-hairPresence: "full" | "receding" | "bald"
-hairLength: "none" | "short" | "medium" | "long"
-hairTexture: "straight" | "wavy" | "curly" | "coily"
-hairColor: "black" | "brown" | "blonde" | "red" | "gray" | "white"
-hairStyle: string
-facialHair: "none" | "mustache" | "goatee" | "short-beard" | "full-beard"
-glasses: "none" | "round" | "square" | "thin-frame" | "thick-frame"
-eyeColor: "brown" | "hazel" | "green" | "blue" | "gray"
-faceShape: "round" | "oval" | "square" | "long" | "heart"
-expression: "neutral" | "subtle-smile" | "broad-smile"
-headwear: "none" | "cap" | "beanie" | "headband"
+type HiddenFaceAvatarProps = {
+seed: string
+alt: string
 }
 
-Aplicar regras de consistência:
+function HiddenFaceAvatar({ seed, alt }: HiddenFaceAvatarProps) {
+  const src = `https://api.dicebear.com/10.x/adventurer/svg?seed=${encodeURIComponent(seed)}`
 
-- bald implica hairLength none;
-- hairPresence receding não pode ter hairLength long;
-- facialHair deve ser visualmente legível;
-- óculos não podem ocultar completamente os olhos;
-- chapéu não pode esconder totalmente o cabelo;
-- não gerar características contraditórias;
-- não gerar acessórios que escondam o rosto;
-- não gerar máscara;
-- não gerar óculos escuros;
-- não gerar texto;
-- não gerar uniforme com marca;
-- não gerar fundo complexo.
-
-6.3 Diversidade do tabuleiro
-
-Não basta gerar 24 seeds sem controle.
-
-O tabuleiro deve possuir diversidade visual útil para perguntas.
-
-Criar um BoardDiversityPlanner.
-
-O conjunto deve garantir, quando faceCount for 24:
-
-- múltiplas apresentações visuais;
-- múltiplos tons de pele;
-- pessoas com e sem óculos;
-- pessoas carecas e com cabelo;
-- cabelos curtos, médios e longos;
-- cabelos lisos, ondulados, cacheados e crespos;
-- pessoas com e sem barba;
-- pelo menos alguns bigodes;
-- cores de cabelo variadas;
-- diferentes formatos de rosto;
-- diferentes faixas adultas de idade;
-- expressões variadas;
-- nenhuma característica presente em todos os rostos;
-- nenhuma característica rara presente em apenas um rosto por acidente, salvo quando aceitável pelo balanceamento;
-- rostos suficientemente diferentes entre si.
-
-Evitar tabuleiros onde:
-
-- quase todos usam óculos;
-- quase todos possuem o mesmo tom de pele;
-- quase todos possuem o mesmo cabelo;
-- muitos rostos parecem ser a mesma pessoa;
-- dois rostos são visualmente quase idênticos;
-- um rosto é claramente destoante por erro de geração.
-
-O planejamento de diversidade deve acontecer antes da geração das imagens.
-
-6.4 Prompt de geração
-
-Cada imagem deve ser um retrato sintético consistente.
-
-Direção recomendada:
-
-- fotografia de estúdio;
-- pessoa adulta inexistente;
-- cabeça e ombros;
-- rosto centralizado;
-- olhando para a câmera;
-- enquadramento semelhante entre todos;
-- iluminação suave;
-- fundo neutro simples;
-- expressão legível;
-- sem texto;
-- sem marca;
-- sem outra pessoa;
-- sem mãos cobrindo o rosto;
-- sem objetos em primeiro plano;
-- sem estética de celebridade;
-- sem semelhança intencional com pessoa real;
-- proporção quadrada;
-- resolução de origem mínima de 512x512;
-- saída WebP ou AVIF otimizada.
-
-O prompt deve ser construído a partir do SyntheticFaceProfile.
-
-Não use um prompt completamente aleatório.
-
-6.5 Persistência do asset
-
-Mesmo quando o gerador suporta seed, não regenere a imagem em cada acesso.
-
-A imagem deve ser criada uma vez e persistida.
-
-Depois de gerar:
-
-- salvar em object storage;
-- usar caminho imutável baseado no faceHash;
-- armazenar modelId;
-- armazenar modelRevision;
-- armazenar promptVersion;
-- armazenar generationVersion;
-- armazenar profile;
-- armazenar dimensões;
-- armazenar contentType;
-- armazenar checksum do arquivo;
-- nunca sobrescrever um asset existente com o mesmo faceHash.
-
-Exemplo de chave:
-
-synthetic-faces/v1/[face-hash].webp
-
-Utilizar cache imutável:
-
-Cache-Control: public, max-age=31536000, immutable
-
-6.6 Provedor de geração
-
-Criar uma abstração:
-
-interface SyntheticFaceGenerator {
-generate(input: GenerateSyntheticFaceInput): Promise<GeneratedSyntheticFace>
+  return <img src={src} alt={alt} />
 }
 
-Implementações sugeridas:
+6.2 Identidade e persistência
 
-- ProductionSyntheticFaceGenerator:
-  chama um serviço de inferência configurado;
-- DevelopmentSyntheticFaceGenerator:
-  gera avatares ilustrados determinísticos somente para desenvolvimento e testes;
-- FakeSyntheticFaceGenerator:
-  usado em testes automatizados.
+A seed é o identificador estável do rosto dentro da partida. Ela deve ser suficiente para renderizar novamente o avatar em qualquer tela, sem salvar a imagem ou metadados de geração.
 
-A implementação de desenvolvimento não substitui o requisito de fotos sintéticas em produção.
+O modelo de dados da partida deve armazenar as seeds dos rostos do tabuleiro e referenciá-las para os alvos secretos e para os rostos abaixados. A comparação para determinar vitória deve usar a identidade persistida do rosto, e não a URL da imagem.
 
-Não acople o domínio a um fornecedor específico.
+Não há necessidade de hash de asset, perfil visual, versão de prompt, revisão de modelo, fila de geração, geração em lote, validação de arquivo ou variáveis de ambiente para provedor de imagens.
 
-Variáveis sugeridas:
+6.3 Disponibilidade e apresentação
 
-FACE_GENERATOR_PROVIDER=
-FACE_GENERATOR_BASE_URL=
-FACE_GENERATOR_API_KEY=
-FACE_MODEL_ID=
-FACE_MODEL_REVISION=
-FACE_GENERATION_VERSION=v1
-FACE_PROMPT_VERSION=v1
-FACE_SEED_SECRET=
-FACE_ASSET_BUCKET=
-FACE_ASSET_PUBLIC_BASE_URL=
+As imagens SVG são carregadas diretamente da API pública do DiceBear. A interface deve reservar dimensões estáveis para o avatar e apresentar um estado visual de carregamento ou falha que não altere a identidade da seed nem bloqueie o estado da partida.
 
-Nunca envie FACE_GENERATOR_API_KEY ao navegador.
-
-6.7 Geração em lote
-
-O serviço deve suportar geração em lote.
-
-Entrada conceitual:
-
-type GenerateFaceBatchInput = {
-roundId: string
-generationVersion: string
-faces: Array<{
-faceHash: string
-numericSeed: number
-profile: SyntheticFaceProfile
-}>
-}
-
-Saída:
-
-type GenerateFaceBatchResult = {
-completed: GeneratedSyntheticFace[]
-failed: Array<{
-faceHash: string
-reason: string
-}>
-}
-
-A rodada só fica READY quando todos os rostos estiverem disponíveis.
-
-6.8 Validação das imagens
-
-Após geração, validar:
-
-- arquivo existe;
-- formato permitido;
-- dimensões mínimas;
-- checksum;
-- apenas um rosto principal;
-- rosto centralizado;
-- ausência de erro de arquivo;
-- ausência de conteúdo impróprio;
-- ausência de marca d’água;
-- ausência de texto relevante;
-- sem pessoa real enviada pelo usuário.
-
-Caso uma geração falhe:
-
-- gerar novamente utilizando retryIndex determinístico;
-- derivar novo seed a partir do mesmo slot;
-- atualizar o faceHash do slot antes da partida começar;
-- nunca trocar o asset durante uma partida ativa.
+Como o estilo `adventurer` é ilustrado, os textos da interface e das regras devem descrevê-los como avatares ou rostos ilustrados sintéticos, e não como fotografias de pessoas reais.
 
 ======================================================================
 7. MODELO DE DADOS
