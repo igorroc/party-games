@@ -1,11 +1,9 @@
-import type { QuestionDifficulty } from "@/generated/prisma/client"
-
 export type PublicRoundQuestion = {
 	roundId: string
 	roundNumber: number
 	prompt: string
 	category: { slug: string; name: string }
-	difficulty: QuestionDifficulty
+	difficulty: "EASY" | "MEDIUM" | "HARD"
 }
 
 export type RevealedRoundAnswer = {

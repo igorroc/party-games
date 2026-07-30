@@ -12,8 +12,6 @@ export const metadata: Metadata = {
 
 type QuestionsPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> }
 
-const difficultyLabels = { EASY: "Fácil", MEDIUM: "Média", HARD: "Difícil" }
-
 export default async function QuestionsPage({ searchParams }: QuestionsPageProps) {
 	await AuthSession.requireAdmin()
 	const raw = await searchParams
@@ -23,7 +21,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 		difficulty: typeof raw.difficulty === "string" ? raw.difficulty : "",
 		status: typeof raw.status === "string" ? raw.status : "ALL",
 	})
-	const { questions, categories } = await AdministrationService.listQuestions(query)
+	const { questions, categories, difficulties } = await AdministrationService.listQuestions(query)
 
 	return (
 		<main className="flex-1 py-10 sm:py-16">
@@ -78,9 +76,11 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 							className="border-border bg-surface min-h-11 rounded-lg border px-3 font-normal"
 						>
 							<option value="">Todas</option>
-							<option value="EASY">Fácil</option>
-							<option value="MEDIUM">Média</option>
-							<option value="HARD">Difícil</option>
+							{difficulties.map((difficulty) => (
+								<option key={difficulty.value} value={difficulty.value}>
+									{difficulty.name}
+								</option>
+							))}
 						</select>
 					</label>
 					<label className="grid gap-1 text-sm font-bold">
@@ -120,7 +120,10 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 											{question.category.name}
 										</span>
 										<span className="bg-surface-strong text-foreground rounded-full px-3 py-1 text-xs font-bold">
-											{difficultyLabels[question.difficulty]}
+											{
+												difficulties.find((difficulty) => difficulty.value === question.difficulty)
+													?.name
+											}
 										</span>
 										<span
 											className={`rounded-full px-3 py-1 text-xs font-bold ${

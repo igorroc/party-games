@@ -1,10 +1,10 @@
-import type { QuestionDifficulty } from "@/generated/prisma/client"
-
 export type GameCategory = {
 	id: string
 	slug: string
 	name: string
 }
+
+export type GameDifficulty = { value: "EASY" | "MEDIUM" | "HARD"; name: string }
 
 export type GameCatalogItem = {
 	slug: string
@@ -17,5 +17,5 @@ export type GameCatalogItem = {
 
 export type GameDetails = GameCatalogItem & {
 	categories: GameCategory[]
-	difficulties: QuestionDifficulty[]
+	difficulties: GameDifficulty[]
 }

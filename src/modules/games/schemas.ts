@@ -6,6 +6,11 @@ export const gameCategorySchema = z.object({
 	name: z.string(),
 })
 
+export const gameDifficultySchema = z.object({
+	value: z.enum(["EASY", "MEDIUM", "HARD"]),
+	name: z.string(),
+})
+
 export const gameCatalogItemSchema = z.object({
 	slug: z.string(),
 	name: z.string(),
@@ -17,5 +22,5 @@ export const gameCatalogItemSchema = z.object({
 
 export const gameDetailsSchema = gameCatalogItemSchema.extend({
 	categories: z.array(gameCategorySchema),
-	difficulties: z.array(z.enum(["EASY", "MEDIUM", "HARD"])),
+	difficulties: z.array(gameDifficultySchema),
 })

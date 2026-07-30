@@ -36,8 +36,8 @@ export class GameSessionService {
 			throw new GameSessionDomainError("GAME_NOT_ACTIVE", "Este jogo não está disponível.")
 
 		if (input.categoryId) {
-			const category = await db.nemAPatoQuestion.findFirst({
-				where: { categoryId: input.categoryId },
+			const category = await db.nemAPatoCategory.findFirst({
+				where: { id: input.categoryId },
 				select: { id: true },
 			})
 			if (!category)
@@ -46,7 +46,6 @@ export class GameSessionService {
 					"Categoria não disponível para este jogo.",
 				)
 		}
-
 		const anonymousToken = GameSessionCookie.createToken()
 		const expiresAt = GameSessionCookie.getExpiration()
 		const session = await db.gameSession.create({

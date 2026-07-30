@@ -1,4 +1,4 @@
-import type { PrismaClient, QuestionDifficulty } from "../src/generated/prisma/client"
+import type { PrismaClient } from "../src/generated/prisma/client"
 const verifiedAt = new Date("2026-07-30T00:00:00.000Z")
 
 const categories = [
@@ -12,6 +12,12 @@ const categories = [
 	{ slug: "cotidiano", name: "Cotidiano" },
 ] as const
 
+const difficulties = [
+	{ slug: "facil", name: "Fácil", legacyValue: "EASY" },
+	{ slug: "media", name: "Média", legacyValue: "MEDIUM" },
+	{ slug: "dificil", name: "Difícil", legacyValue: "HARD" },
+] as const
+
 type SeedQuestion = {
 	categorySlug: (typeof categories)[number]["slug"]
 	prompt: string
@@ -21,7 +27,7 @@ type SeedQuestion = {
 	explanation: string
 	sourceName: string
 	sourceUrl: string
-	difficulty: QuestionDifficulty
+	difficulty: (typeof difficulties)[number]["legacyValue"]
 }
 
 const questions: SeedQuestion[] = [
@@ -399,7 +405,6 @@ export async function seedDatabase(prisma: PrismaClient) {
 		})
 		categoryIds.set(category.slug, savedCategory.id)
 	}
-
 	for (const question of questions) {
 		const categoryId = categoryIds.get(question.categorySlug)
 		if (!categoryId) throw new Error(`Category not found: ${question.categorySlug}`)

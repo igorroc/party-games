@@ -8,13 +8,13 @@ import {
 	gameReducer,
 	initialGameState,
 	type Answer,
-	type Difficulty,
 	type Question,
 	type Session,
 } from "./game-state"
 type ApiResult<T> =
 	{ success: true; data: T } | { success: false; error: { code: string; message: string } }
-const labels: Record<Difficulty, string> = { EASY: "Fácil", MEDIUM: "Média", HARD: "Difícil" }
+
+const difficultyLabels = { EASY: "Fácil", MEDIUM: "Média", HARD: "Difícil" } as const
 
 async function request<T>(url: string, method = "GET"): Promise<T> {
 	const response = await fetch(url, {
@@ -198,7 +198,7 @@ export function NemAPatoGame({ sessionId }: { sessionId: string }) {
 							)}
 							{state.phase === "ready" && (
 								<Button variant="secondary" size="lg" isDisabled={state.busy} onPress={reveal}>
-									{state.busy ? "Carregando..." : "Revelar resposta"}{" "}
+									{state.busy ? "Carregando..." : "Nem a Pato!"}{" "}
 									<kbd className="ml-1 text-xs">Space / R</kbd>
 								</Button>
 							)}
@@ -281,52 +281,56 @@ function QuestionCard({
 	revealed: boolean
 }) {
 	return (
-		<section className="paper-card overflow-hidden rounded-3xl" aria-labelledby="question-title">
-			<div className="border-border bg-primary text-surface border-b px-5 py-3 text-sm font-extrabold tracking-[0.16em] uppercase sm:px-8">
-				Rodada {question.roundNumber} · {question.category.name} · {labels[question.difficulty]}
-			</div>
-			<div className="p-6 text-center sm:p-12">
-				<p
-					id="question-title"
-					className="font-display text-foreground mx-auto max-w-4xl text-4xl leading-tight sm:text-6xl"
+		<section aria-labelledby="question-title">
+			<div className="[perspective:1000px]">
+				<div
+					className={`relative min-h-80 transition-transform duration-700 [transform-style:preserve-3d] motion-reduce:transition-none ${revealed ? "[transform:rotateY(180deg)]" : ""}`}
 				>
-					{question.prompt}
-				</p>
-				<div className={`mx-auto mt-10 max-w-2xl [perspective:1000px] ${revealed ? "" : ""}`}>
-					<div
-						className={`relative min-h-48 transition-transform duration-700 [transform-style:preserve-3d] motion-reduce:transition-none ${revealed ? "[transform:rotateY(180deg)]" : ""}`}
-					>
-						<div className="border-secondary bg-primary text-surface absolute inset-0 grid place-items-center rounded-2xl border-2 p-6 [backface-visibility:hidden]">
-							<p className="font-display text-3xl">Nem a Pato?</p>
+					<div className="paper-card absolute inset-0 overflow-hidden rounded-3xl [backface-visibility:hidden]">
+						<div className="border-border bg-primary text-surface border-b px-5 py-3 text-sm font-extrabold tracking-[0.16em] uppercase sm:px-8">
+							Rodada {question.roundNumber} · {question.category.name} ·{" "}
+							{difficultyLabels[question.difficulty]}
 						</div>
-						<div className="border-secondary bg-secondary absolute inset-0 grid [transform:rotateY(180deg)] place-items-center rounded-2xl border-2 p-6 text-center [backface-visibility:hidden]">
-							<div>
-								<p className="text-sm font-extrabold tracking-[0.16em] uppercase">Resposta</p>
-								<p className="font-display mt-2 text-3xl leading-tight">{answer?.answerText}</p>
-							</div>
+						<div className="grid min-h-64 place-items-center p-6 text-center sm:p-12">
+							<p
+								id="question-title"
+								className="font-display text-foreground mx-auto max-w-4xl text-4xl leading-tight sm:text-6xl"
+							>
+								{question.prompt}
+							</p>
+						</div>
+					</div>
+					<div className="paper-card absolute inset-0 grid [transform:rotateY(180deg)] place-items-center overflow-hidden rounded-3xl p-6 text-center [backface-visibility:hidden] sm:p-12">
+						<div>
+							<p className="text-accent text-sm font-extrabold tracking-[0.16em] uppercase">
+								Resposta
+							</p>
+							<p className="font-display text-foreground mt-3 text-4xl leading-tight sm:text-6xl">
+								{answer?.answerText}
+							</p>
 						</div>
 					</div>
 				</div>
-				{revealed && answer && (
-					<div className="mx-auto mt-7 max-w-2xl text-left">
-						<p className="text-muted text-lg leading-7">{answer.explanation}</p>
-						{answer.source.url ? (
-							<a
-								className="text-primary mt-4 inline-block font-extrabold underline"
-								href={answer.source.url}
-								target="_blank"
-								rel="noreferrer"
-							>
-								Fonte: {answer.source.name ?? answer.source.url}
-							</a>
-						) : (
-							answer.source.name && (
-								<p className="text-muted mt-4 font-bold">Fonte: {answer.source.name}</p>
-							)
-						)}
-					</div>
-				)}
 			</div>
+			{revealed && answer && (
+				<div className="mx-auto mt-7 max-w-2xl text-left">
+					<p className="text-muted text-lg leading-7">{answer.explanation}</p>
+					{answer.source.url ? (
+						<a
+							className="text-primary mt-4 inline-block font-extrabold underline"
+							href={answer.source.url}
+							target="_blank"
+							rel="noreferrer"
+						>
+							Fonte: {answer.source.name ?? answer.source.url}
+						</a>
+					) : (
+						answer.source.name && (
+							<p className="text-muted mt-4 font-bold">Fonte: {answer.source.name}</p>
+						)
+					)}
+				</div>
+			)}
 		</section>
 	)
 }

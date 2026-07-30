@@ -16,7 +16,7 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
 	await AuthSession.requireAdmin()
 	const question = await AdministrationService.getQuestion((await params)["question-id"])
 	if (!question) notFound()
-	const { categories } = await AdministrationService.listQuestions({
+	const { categories, difficulties } = await AdministrationService.listQuestions({
 		search: "",
 		categoryId: "",
 		difficulty: "",
@@ -35,7 +35,7 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
 					<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">Catálogo</p>
 					<h1 className="font-display text-foreground mt-2 text-4xl">Editar pergunta</h1>
 					<div className="mt-8">
-						<QuestionForm question={question} categories={categories} />
+						<QuestionForm question={question} categories={categories} difficulties={difficulties} />
 					</div>
 				</div>
 			</AppContainer>

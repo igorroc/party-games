@@ -21,16 +21,14 @@ export default async function AdminGamesPage() {
 					<p className="text-muted mt-3">Escolha um jogo para administrar seu conteúdo.</p>
 				</header>
 				<Link
-					href="/admin/games/nem-a-pato/questions"
+					href="/admin/games/nem-a-pato"
 					className="paper-card block rounded-3xl p-7 transition-transform hover:-translate-y-1"
 				>
 					<p className="text-primary text-sm font-extrabold tracking-[0.16em] uppercase">
 						Nem a Pato
 					</p>
-					<h2 className="font-display text-foreground mt-3 text-3xl">Perguntas do Nem A Pato</h2>
-					<p className="text-muted mt-3">
-						Crie, revise e mantenha as perguntas que aparecem nas rodadas.
-					</p>
+					<h2 className="font-display text-foreground mt-3 text-3xl">Nem a Pato</h2>
+					<p className="text-muted mt-3">Gerencie perguntas, categorias e disponibilidade.</p>
 				</Link>
 			</AppContainer>
 		</main>

@@ -1,4 +1,5 @@
 export { QuestionActions } from "./question-actions"
 export { QuestionForm } from "./question-form"
+export { NemAPatoCatalogManager } from "./nem-a-pato-catalog-manager"
 export { SeedButton } from "./seed-button"
 export { UserManager } from "./user-manager"

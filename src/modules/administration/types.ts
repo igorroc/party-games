@@ -1,6 +1,5 @@
-import type { QuestionDifficulty } from "@/generated/prisma/client"
-
 export type QuestionCategoryOption = { id: string; name: string }
+export type QuestionDifficultyOption = { value: "EASY" | "MEDIUM" | "HARD"; name: string }
 
 export type AdminQuestion = {
 	id: string
@@ -13,7 +12,7 @@ export type AdminQuestion = {
 	sourceName: string | null
 	sourceUrl: string | null
 	verifiedAt: string | null
-	difficulty: QuestionDifficulty
+	difficulty: "EASY" | "MEDIUM" | "HARD"
 	locale: string
 	isActive: boolean
 	isReviewed: boolean
@@ -24,6 +23,7 @@ export type AdminQuestion = {
 export type AdminQuestionList = {
 	questions: AdminQuestion[]
 	categories: QuestionCategoryOption[]
+	difficulties: readonly QuestionDifficultyOption[]
 }
 
 export type ProfileGameSession = {
