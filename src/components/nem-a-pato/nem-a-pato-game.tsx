@@ -196,7 +196,7 @@ export function NemAPatoGame({ sessionId }: { sessionId: string }) {
 									<kbd className="ml-1 text-xs">N</kbd>
 								</Button>
 							)}
-							{state.phase === "ready" && (
+							{state.phase === "ready" && state.question && (
 								<Button variant="secondary" size="lg" isDisabled={state.busy} onPress={reveal}>
 									{state.busy ? "Carregando..." : "Nem a Pato!"}{" "}
 									<kbd className="ml-1 text-xs">Space / R</kbd>
@@ -284,9 +284,9 @@ function QuestionCard({
 		<section aria-labelledby="question-title">
 			<div className="[perspective:1000px]">
 				<div
-					className={`relative min-h-80 transition-transform duration-700 [transform-style:preserve-3d] motion-reduce:transition-none ${revealed ? "[transform:rotateY(180deg)]" : ""}`}
+					className={`grid min-h-80 transition-transform duration-700 [transform-style:preserve-3d] motion-reduce:transition-none ${revealed ? "[transform:rotateY(180deg)]" : ""}`}
 				>
-					<div className="paper-card absolute inset-0 overflow-hidden rounded-3xl [backface-visibility:hidden]">
+					<div className="paper-card col-start-1 row-start-1 overflow-hidden rounded-3xl [backface-visibility:hidden]">
 						<div className="border-border bg-primary text-surface border-b px-5 py-3 text-sm font-extrabold tracking-[0.16em] uppercase sm:px-8">
 							Rodada {question.roundNumber} · {question.category.name} ·{" "}
 							{difficultyLabels[question.difficulty]}
@@ -300,7 +300,7 @@ function QuestionCard({
 							</p>
 						</div>
 					</div>
-					<div className="paper-card absolute inset-0 grid [transform:rotateY(180deg)] place-items-center overflow-hidden rounded-3xl p-6 text-center [backface-visibility:hidden] sm:p-12">
+					<div className="paper-card col-start-1 row-start-1 grid [transform:rotateY(180deg)] place-items-center overflow-hidden rounded-3xl p-6 text-center [backface-visibility:hidden] sm:p-12">
 						<div>
 							<p className="text-accent text-sm font-extrabold tracking-[0.16em] uppercase">
 								Resposta
