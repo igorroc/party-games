@@ -73,6 +73,107 @@ body {
 		box-shadow: 7px 7px 0 rgb(var(--color-accent) / 0.4);
 	}
 
+	.draft-banner {
+		background: linear-gradient(125deg, #243d63, #77487f 55%, #dd6b4d);
+		box-shadow: 5px 5px 0 rgb(var(--color-primary) / 0.25);
+	}
+
+	.draft-racer-card {
+		border: 2px solid rgb(var(--color-border));
+		background: linear-gradient(145deg, #fffdf7, #f4ead7);
+		box-shadow: 4px 4px 0 rgb(var(--color-primary) / 0.12);
+	}
+
+	.draft-racer-card:hover {
+		border-color: rgb(var(--color-primary));
+	}
+
+	.setup-hero {
+		background: linear-gradient(125deg, #283f66, #4f7290 55%, #dc7350);
+	}
+
+	.setup-step {
+		display: grid;
+		width: 2rem;
+		height: 2rem;
+		flex: none;
+		place-items: center;
+		border-radius: 999px;
+		background: rgb(var(--color-accent));
+		color: white;
+		font-weight: 900;
+	}
+
+	.setup-field {
+		display: grid;
+		gap: 0.4rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: 1rem;
+		background: rgb(var(--color-surface));
+		padding: 1rem;
+		font-weight: 700;
+	}
+
+	.setup-label {
+		display: block;
+		color: rgb(var(--color-foreground));
+		font-size: 0.9rem;
+		font-weight: 900;
+	}
+
+	.setup-control,
+	.setup-name-input {
+		width: 100%;
+		min-height: 3rem;
+		border: 2px solid rgb(var(--color-primary) / 0.35);
+		border-radius: 0.7rem;
+		background: white;
+		padding: 0 0.75rem;
+		color: rgb(var(--color-foreground));
+		font-weight: 800;
+		transition:
+			border-color 0.2s,
+			box-shadow 0.2s;
+	}
+
+	.setup-control {
+		cursor: pointer;
+	}
+
+	.setup-control:hover,
+	.setup-name-input:hover {
+		border-color: rgb(var(--color-primary));
+		box-shadow: 2px 2px 0 rgb(var(--color-primary) / 0.15);
+	}
+
+	.setup-player-field {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		gap: 0.75rem;
+		border: 1px solid rgb(var(--color-border));
+		border-radius: 1rem;
+		background: rgb(var(--color-surface));
+		padding: 0.75rem;
+	}
+
+	.setup-player-field .setup-name-input {
+		grid-column: 1 / -1;
+	}
+
+	.setup-player-number {
+		display: grid;
+		width: 2.25rem;
+		height: 2.25rem;
+		flex: none;
+		place-items: center;
+		border-radius: 999px;
+		background: rgb(var(--color-secondary));
+		color: rgb(var(--color-foreground));
+		font-family: var(--font-display);
+		font-size: 1.2rem;
+	}
+
 	.arcade-space {
 		border: 2px solid #17212b;
 		background: #4f9dd3;
@@ -119,6 +220,14 @@ body {
 
 	.arcade-token-moving {
 		animation: arcade-hop 620ms ease-out;
+	}
+
+	.arcade-racer-card {
+		border: 2px solid #f7d56b;
+		border-radius: 0.8rem;
+		background: #172a3a;
+		padding: 0.55rem;
+		box-shadow: 4px 4px 0 rgb(0 0 0 / 0.35);
 	}
 	.arcade-die {
 		display: grid;

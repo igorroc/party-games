@@ -14,6 +14,8 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 	const [error, setError] = useState<string | null>(null)
 	const [busy, setBusy] = useState(false)
 	const [rolling, setRolling] = useState(false)
+	const [rollingValue, setRollingValue] = useState<number | null>(null)
+	const [boardPositions, setBoardPositions] = useState<Record<string, number> | null>(null)
 	useEffect(() => {
 		let active = true
 		void fetch(`/api/games/magical-race/matches/${sessionId}`)
@@ -35,7 +37,6 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 	async function act(action: Record<string, unknown>) {
 		if (!state || busy) return
 		setBusy(true)
-		if (action.type === "ROLL_MAIN_DIE") setRolling(true)
 		setError(null)
 		try {
 			const response = await fetch(`/api/games/magical-race/matches/${sessionId}/actions`, {
@@ -46,13 +47,51 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 			const result = (await response.json()) as ApiResult
 			if (!response.ok || !result.success)
 				throw new Error(result.success ? "Ação inválida." : result.error.message)
-			setState(result.data)
+			if (action.type === "ROLL_MAIN_DIE") await animateRoll(state, result.data)
+			else setState(result.data)
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : "Erro ao jogar.")
 		} finally {
 			setBusy(false)
-			if (action.type === "ROLL_MAIN_DIE") window.setTimeout(() => setRolling(false), 550)
 		}
+	}
+	async function animateRoll(previous: PublicMagicalRaceState, next: PublicMagicalRaceState) {
+		const dieEvent = [...next.events].reverse().find((event) => event.type === "MAIN_DIE_ROLLED")
+		setRollingValue(dieEvent ? Number(dieEvent.payload.die) : null)
+		setRolling(true)
+		await delay(550)
+		setRolling(false)
+		const startPositions = Object.fromEntries(
+			previous.racers.map((racer) => [racer.id, racer.position]),
+		)
+		const changes = next.racers
+			.map((racer) => ({ racer, from: startPositions[racer.id], to: racer.position }))
+			.filter(
+				(
+					change,
+				): change is {
+					racer: PublicMagicalRaceState["racers"][number]
+					from: number
+					to: number
+				} => change.from !== undefined && change.from !== change.to,
+			)
+		setBoardPositions(startPositions)
+		const distance = Math.max(0, ...changes.map((change) => Math.abs(change.to - change.from)))
+		for (let step = 1; step <= distance; step++) {
+			await delay(180)
+			setBoardPositions((current) => {
+				if (!current) return current
+				const updated = { ...current }
+				for (const change of changes) {
+					if (step <= Math.abs(change.to - change.from))
+						updated[change.racer.id] = change.from + Math.sign(change.to - change.from) * step
+				}
+				return updated
+			})
+		}
+		setBoardPositions(null)
+		setRollingValue(null)
+		setState(next)
 	}
 	if (!state) return <main className="flex-1 p-8 text-center">Preparando a pista...</main>
 	const active = state.players.find((player) => player.id === state.activePlayerId)
@@ -89,7 +128,14 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 							/>
 						)}
 						{state.status === "racing" && (
-							<Race state={state} act={act} busy={busy} rolling={rolling} />
+							<Race
+								state={state}
+								act={act}
+								busy={busy}
+								rolling={rolling}
+								rollingValue={rollingValue}
+								boardPositions={boardPositions}
+							/>
 						)}
 						{state.status === "race-result" && (
 							<div className="text-center">
@@ -157,29 +203,114 @@ function Draft({
 	busy: boolean
 }) {
 	const active = state.players.find((player) => player.id === state.activePlayerId)
+	const completedPicks = state.draftPickIndex
+	const totalPicks = state.draftOrder.length
 	return (
 		<>
-			<h2 className="font-display text-3xl">{active?.name}, escolha um corredor</h2>
-			<div className="mt-5 grid gap-3 sm:grid-cols-2">
-				{state.draftPool.map((id) => {
-					const racer = racerDefinitions.find((item) => item.id === id)
-					return (
-						racer && (
+			<div className="draft-banner rounded-2xl p-5 sm:p-6">
+				<div className="flex flex-wrap items-start justify-between gap-4">
+					<div>
+						<p className="text-xs font-black tracking-[0.18em] text-white/75 uppercase">
+							Recrutamento arcano
+						</p>
+						<h2 className="font-display mt-1 text-3xl text-white">
+							{active?.name}, escolha seu próximo corredor
+						</h2>
+						<p className="mt-2 text-sm text-white/80">
+							Leia o poder antes de recrutar. Cada corredor entra em apenas uma corrida.
+						</p>
+					</div>
+					<div className="rounded-xl border border-white/25 bg-black/15 px-4 py-3 text-center text-white">
+						<p className="text-xs font-black tracking-[0.14em] uppercase">Escolha</p>
+						<p className="font-display text-2xl">
+							{completedPicks + 1} <span className="text-base text-white/70">/ {totalPicks}</span>
+						</p>
+					</div>
+				</div>
+				<div className="mt-4 h-2 overflow-hidden rounded-full bg-black/25">
+					<div
+						className="bg-secondary h-full rounded-full transition-[width] duration-500"
+						style={{ width: `${(completedPicks / totalPicks) * 100}%` }}
+					/>
+				</div>
+			</div>
+			<div className="mt-5 grid gap-5 xl:grid-cols-[1fr_16rem]">
+				<div className="grid gap-4 sm:grid-cols-2">
+					{state.draftPool.map((id) => {
+						const racer = racerDefinitions.find((item) => item.id === id)
+						if (!racer) return null
+						const visual = racerVisual(racer.id)
+						return (
 							<button
 								disabled={busy}
 								key={id}
 								onClick={() => act({ type: "DRAFT_RACER", racerDefinitionId: id })}
-								className="border-border bg-surface hover:border-primary hover:bg-primary/5 cursor-pointer rounded-xl border p-4 text-left transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+								className="draft-racer-card group cursor-pointer rounded-2xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
 							>
-								<strong>{racer.publicName}</strong>
-								<span className="mr-2 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-current bg-white text-xl">
-									{racerVisual(racer.id).icon}
+								<div className="flex items-start gap-3">
+									<span
+										className="grid h-16 w-16 shrink-0 place-items-center rounded-xl border-2 border-white/70 text-4xl shadow-sm"
+										style={{ background: visual.color }}
+									>
+										{visual.icon}
+									</span>
+									<span>
+										<span className="text-primary text-[10px] font-black tracking-[0.16em] uppercase">
+											Corredor disponível
+										</span>
+										<strong className="font-display mt-1 block text-2xl leading-none">
+											{racer.publicName}
+										</strong>
+										<span className="text-muted mt-2 block text-sm">{racer.shortDescription}</span>
+									</span>
+								</div>
+								<span className="border-primary/15 bg-primary/5 mt-4 block rounded-xl border p-3">
+									<span className="text-primary text-[10px] font-black tracking-[0.14em] uppercase">
+										Poder de corrida
+									</span>
+									<span className="mt-1 block text-sm leading-snug">{racer.abilitySummary}</span>
 								</span>
-								<span className="text-muted mt-1 block text-sm">{racer.abilitySummary}</span>
+								<span className="text-primary mt-4 flex items-center justify-between text-sm font-black">
+									<span>{racer.isOptional ? "Decisão tática" : "Efeito automático"}</span>
+									<span className="transition-transform group-hover:translate-x-1">Recrutar →</span>
+								</span>
 							</button>
 						)
-					)
-				})}
+					})}
+				</div>
+				<aside className="space-y-3">
+					<p className="text-muted text-xs font-black tracking-[0.16em] uppercase">
+						Equipes na mesa
+					</p>
+					{state.players.map((player) => (
+						<div
+							key={player.id}
+							className={`rounded-xl border p-3 ${player.id === active?.id ? "border-primary bg-primary/10" : "border-border bg-surface"}`}
+						>
+							<p className="flex items-center justify-between font-black">
+								<span>{player.name}</span>
+								<span className="text-primary text-sm">
+									{player.draftedRacerIds.length}/{state.mode === "standard" ? 4 : 8}
+								</span>
+							</p>
+							<div className="mt-2 flex flex-wrap gap-1">
+								{player.draftedRacerIds.length === 0 ? (
+									<span className="text-muted text-xs">Ainda sem corredores</span>
+								) : (
+									player.draftedRacerIds.map((racerId) => (
+										<span
+											key={racerId}
+											title={racerDefinitions.find((racer) => racer.id === racerId)?.publicName}
+											className="bg-surface grid h-7 w-7 place-items-center rounded-full border border-white text-sm shadow-sm"
+										>
+											{racerVisual(racerId).icon}
+										</span>
+									))
+								)}
+							</div>
+						</div>
+					))}
+				</aside>
 			</div>
 		</>
 	)
@@ -255,16 +386,24 @@ function Race({
 	act,
 	busy,
 	rolling,
+	rollingValue,
+	boardPositions,
 }: {
 	state: PublicMagicalRaceState
 	act: (action: Record<string, unknown>) => Promise<void>
 	busy: boolean
 	rolling: boolean
+	rollingValue: number | null
+	boardPositions: Record<string, number> | null
 }) {
 	const lastEvent = state.events.at(-1)
 	const dieEvent = [...state.events].reverse().find((event) => event.type === "MAIN_DIE_ROLLED")
-	const die = dieEvent ? Number(dieEvent.payload.die) : null
-	const movedRacerId = lastEvent?.type === "RACER_MOVED" ? String(lastEvent.payload.racerId) : null
+	const die = rollingValue ?? (dieEvent ? Number(dieEvent.payload.die) : null)
+	const movedRacerId = boardPositions
+		? state.activeRacerId
+		: lastEvent?.type === "RACER_MOVED"
+			? String(lastEvent.payload.racerId)
+			: null
 	const track = getTrack(state.trackId)
 	return (
 		<>
@@ -288,7 +427,7 @@ function Race({
 							<div
 								key={index}
 								style={{ order }}
-								className={`arcade-space arcade-space-${space?.type ?? (index === 0 ? "start" : "finish")} relative min-h-20 overflow-hidden rounded-lg p-1.5 sm:min-h-24`}
+								className={`arcade-space arcade-space-${space?.type ?? (index === 0 ? "start" : "finish")} relative min-h-20 rounded-lg p-1.5 sm:min-h-24`}
 							>
 								<div className="flex items-start justify-between">
 									<span className="rounded bg-black/20 px-1 text-[10px] font-black text-white">
@@ -300,9 +439,15 @@ function Race({
 								</div>
 								<div className="absolute right-1 bottom-1 left-1 flex flex-wrap justify-center gap-0.5">
 									{state.racers
-										.filter((racer) => racer.position === index)
+										.filter((racer) => (boardPositions?.[racer.id] ?? racer.position) === index)
 										.map((racer) => (
-											<RacerToken key={racer.id} racer={racer} moving={racer.id === movedRacerId} />
+											<RacerToken
+												key={racer.id}
+												racer={racer}
+												player={state.players.find((player) => player.id === racer.ownerId)}
+												position={boardPositions?.[racer.id] ?? racer.position}
+												moving={racer.id === movedRacerId && Boolean(boardPositions)}
+											/>
 										))}
 								</div>
 							</div>
@@ -353,21 +498,48 @@ function Die({ value, rolling }: { value: number | null; rolling: boolean }) {
 }
 function RacerToken({
 	racer,
+	player,
+	position,
 	moving,
 }: {
 	racer: PublicMagicalRaceState["racers"][number]
+	player: PublicMagicalRaceState["players"][number] | undefined
+	position: number
 	moving: boolean
 }) {
 	const definition = racerDefinitions.find((item) => item.id === racer.definitionId)
 	const visual = racerVisual(racer.definitionId)
 	return (
 		<span
-			title={definition?.publicName}
-			aria-label={definition?.publicName}
-			className={`arcade-token ${moving ? "arcade-token-moving" : ""}`}
-			style={{ "--token": visual.color } as React.CSSProperties}
+			tabIndex={0}
+			aria-label={`Ver carta de ${definition?.publicName}`}
+			className="group relative"
 		>
-			{visual.icon}
+			<span
+				className={`arcade-token ${moving ? "arcade-token-moving" : ""}`}
+				style={{ "--token": visual.color } as React.CSSProperties}
+			>
+				{visual.icon}
+			</span>
+			<span className="arcade-racer-card pointer-events-none absolute bottom-[calc(100%+.45rem)] left-1/2 z-20 w-52 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100 group-focus-visible:-translate-y-1 group-focus-visible:opacity-100">
+				<span
+					className="mb-2 flex h-20 items-center justify-center rounded-lg border-2 border-dashed border-white/70 text-5xl"
+					style={{ background: visual.color }}
+				>
+					{visual.icon}
+				</span>
+				<span className="block text-sm font-black text-white">{definition?.publicName}</span>
+				<span className="mt-1 block text-xs leading-snug text-white/80">
+					{definition?.abilitySummary}
+				</span>
+				<span className="mt-3 flex justify-between border-t border-white/25 pt-2 text-[10px] font-bold tracking-wide text-white/80">
+					<span>{player?.name}</span>
+					<span>CASA {position}</span>
+				</span>
+				{racer.tripPending && (
+					<span className="mt-1 block text-[10px] font-black text-[#ffd55c]">TROPEÇO PENDENTE</span>
+				)}
+			</span>
 		</span>
 	)
 }
@@ -386,4 +558,7 @@ function racerVisual(id: string) {
 	return visuals[
 		[...id].reduce((total, character) => total + character.charCodeAt(0), 0) % visuals.length
 	]!
+}
+function delay(milliseconds: number) {
+	return new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds))
 }
