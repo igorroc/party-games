@@ -29,7 +29,7 @@ export class NemAPatoAdminService {
 		return result.count > 0
 	}
 
-	static async deactivateGame() {
-		await db.game.update({ where: { slug: NEM_A_PATO_SLUG }, data: { status: "INACTIVE" } })
+	static async updateGameStatus(status: "ACTIVE" | "INACTIVE") {
+		await db.game.update({ where: { slug: NEM_A_PATO_SLUG }, data: { status } })
 	}
 }

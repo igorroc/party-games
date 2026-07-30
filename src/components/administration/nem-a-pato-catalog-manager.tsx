@@ -97,17 +97,25 @@ function ItemManager({
 export function NemAPatoCatalogManager({ categories, gameIsActive }: Props) {
 	const router = useRouter()
 	const [loading, setLoading] = useState(false)
-	async function deactivate() {
-		if (!confirm("Desativar Nem a Pato? Novas partidas não poderão ser iniciadas.")) return
+	async function updateGameStatus() {
+		const status = gameIsActive ? "INACTIVE" : "ACTIVE"
+		if (
+			status === "INACTIVE" &&
+			!confirm("Desativar Nem a Pato? Novas partidas não poderão ser iniciadas.")
+		)
+			return
 		setLoading(true)
 		const response = await fetch("/api/admin/games/nem-a-pato", {
 			method: "PATCH",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ status: "INACTIVE" }),
+			body: JSON.stringify({ status }),
 		})
 		setLoading(false)
-		if (!response.ok) return toast.error("Não foi possível desativar o jogo.")
-		toast.success("Jogo desativado.")
+		if (!response.ok)
+			return toast.error(
+				status === "ACTIVE" ? "Não foi possível reativar o jogo." : "Não foi possível desativar o jogo.",
+			)
+		toast.success(status === "ACTIVE" ? "Jogo reativado." : "Jogo desativado.")
 		router.refresh()
 	}
 	return (
@@ -117,7 +125,9 @@ export function NemAPatoCatalogManager({ categories, gameIsActive }: Props) {
 				endpoint="/api/admin/games/nem-a-pato/categories"
 				items={categories}
 			/>
-			<section className="border-danger/30 bg-danger/5 rounded-3xl border p-6">
+			<section
+				className={`${gameIsActive ? "border-danger/30 bg-danger/5" : "border-success/30 bg-success/5"} rounded-3xl border p-6`}
+			>
 				<h2 className="font-display text-foreground text-3xl">Disponibilidade</h2>
 				<p className="text-muted mt-2">
 					{gameIsActive
@@ -126,11 +136,11 @@ export function NemAPatoCatalogManager({ categories, gameIsActive }: Props) {
 				</p>
 				<Button
 					className="mt-4"
-					variant="danger"
-					onPress={deactivate}
-					isDisabled={!gameIsActive || loading}
+					variant={gameIsActive ? "danger" : "primary"}
+					onPress={updateGameStatus}
+					isDisabled={loading}
 				>
-					Desativar jogo
+					{gameIsActive ? "Desativar jogo" : "Reativar jogo"}
 				</Button>
 			</section>
 		</div>

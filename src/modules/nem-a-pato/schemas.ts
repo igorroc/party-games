@@ -13,5 +13,5 @@ export const nemAPatoCatalogItemSchema = z.object({
 export const questionDifficultySchema = z.enum(["EASY", "MEDIUM", "HARD"])
 
 export const nemAPatoGameStatusSchema = z.object({
-	status: z.literal("INACTIVE"),
+	status: z.enum(["ACTIVE", "INACTIVE"]),
 })

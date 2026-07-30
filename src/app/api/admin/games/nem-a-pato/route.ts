@@ -5,8 +5,9 @@ import { NemAPatoAdminService, nemAPatoGameStatusSchema } from "@/modules/nem-a-
 export async function PATCH(request: Request) {
 	const authorization = await requireAdminApi()
 	if ("response" in authorization) return authorization.response
-	if (!nemAPatoGameStatusSchema.safeParse(await request.json().catch(() => null)).success)
+	const parsed = nemAPatoGameStatusSchema.safeParse(await request.json().catch(() => null))
+	if (!parsed.success)
 		return ApiResponse.error("VALIDATION_ERROR", "Status inválido.", 400)
-	await NemAPatoAdminService.deactivateGame()
+	await NemAPatoAdminService.updateGameStatus(parsed.data.status)
 	return ApiResponse.success()
 }
