@@ -3,7 +3,9 @@
 import { useState } from "react"
 import { AppContainer } from "@/components/design-system"
 import type { HiddenFaceAction, PublicHiddenFaceState } from "@/modules/hidden-face/types"
+import { FaceTile } from "./face-tile"
 import { HiddenFaceAvatar } from "./hidden-face-avatar"
+import { useTileSound } from "./use-tile-sound"
 
 type ApiResult<T> = { success: boolean; data?: T; error?: { message: string } }
 type ActionResult =
@@ -25,6 +27,7 @@ export function HiddenFaceGame({
 	)
 	const [needsHandoff, setNeedsHandoff] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const tileSound = useTileSound()
 
 	async function load(revealSecret: boolean, viewer: 0 | 1, showSecret = false) {
 		setLoading(true)
@@ -46,14 +49,14 @@ export function HiddenFaceGame({
 		}
 	}
 
-	async function act(action: HiddenFaceAction) {
-		if (!state) return
+	async function act(action: HiddenFaceAction, expectedState = state) {
+		if (!expectedState) return false
 		setError(null)
 		try {
 			const response = await fetch(`/api/games/hidden-face/matches/${sessionId}/actions`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ expectedVersion: state.version, action }),
+				body: JSON.stringify({ expectedVersion: expectedState.version, action }),
 			})
 			const result = (await response.json()) as ApiResult<ActionResult>
 			if (!response.ok || !result.success || !result.data)
@@ -64,13 +67,32 @@ export function HiddenFaceGame({
 				setIntroSeat(action.type === "REMATCH" ? 0 : null)
 				setNeedsHandoff(action.type !== "REMATCH")
 				await load(false, result.data.currentPlayerIndex)
-				return
+				return true
 			}
 			setState(result.data.state)
 			setSecretVisible(false)
+			return true
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : "Não foi possível atualizar a partida.")
+			return false
 		}
+	}
+
+	async function setFaceLowered(faceId: string, isLowered: boolean) {
+		if (!state) return
+		const previousState = state
+		setState({
+			...state,
+			loweredFaceIds: isLowered
+				? [...state.loweredFaceIds, faceId]
+				: state.loweredFaceIds.filter((id) => id !== faceId),
+		})
+		const updated = await act({ type: "SET_FACE_LOWERED", faceId, isLowered }, previousState)
+		if (!updated) {
+			setState(previousState)
+			return
+		}
+		if (isLowered) tileSound.playLowerSound()
 	}
 
 	if (!state) return <LoadingScreen loading={loading} error={error} />
@@ -133,6 +155,13 @@ export function HiddenFaceGame({
 					<p className={`rounded-full px-3 py-1 text-sm font-bold ${accent.badge}`}>
 						{remaining} avatares levantados
 					</p>
+					<button
+						type="button"
+						onClick={tileSound.toggleMuted}
+						className="border-border bg-surface text-foreground min-h-10 rounded-xl border px-3 text-sm font-bold"
+					>
+						{tileSound.muted ? "Ativar som" : "Silenciar"}
+					</button>
 				</section>
 				{state.status === "active" && state.secretFace && (
 					<section
@@ -204,31 +233,15 @@ export function HiddenFaceGame({
 					{state.faces.map((face) => {
 						const isLowered = lowered.has(face.id)
 						return (
-							<button
+							<FaceTile
 								key={face.id}
-								type="button"
+								face={face}
+								isLowered={isLowered}
 								disabled={state.status !== "active"}
-								onClick={() =>
-									void act({ type: "SET_FACE_LOWERED", faceId: face.id, isLowered: !isLowered })
-								}
-								aria-pressed={isLowered}
-								aria-label={`${isLowered ? "Levantar" : "Abaixar"} avatar ${face.position + 1}`}
-								className={`border-border relative aspect-square overflow-hidden rounded-xl border bg-white transition ${isLowered ? "scale-95 opacity-30 grayscale" : "hover:-translate-y-0.5"}`}
-							>
-								<HiddenFaceAvatar
-									seed={face.seed}
-									style="adventurer"
-									alt=""
-									className="h-full w-full object-cover"
-								/>
-								{isLowered && (
-									<span
-										className={`absolute inset-0 grid place-items-center text-xs font-extrabold text-white ${accent.button}`}
-									>
-										Abaixado
-									</span>
-								)}
-							</button>
+								accentButton={accent.button}
+								onToggle={(faceId, nextIsLowered) => void setFaceLowered(faceId, nextIsLowered)}
+								onInteraction={tileSound.initialize}
+							/>
 						)
 					})}
 				</section>
