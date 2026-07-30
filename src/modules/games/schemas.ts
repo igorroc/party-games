@@ -24,3 +24,7 @@ export const gameDetailsSchema = gameCatalogItemSchema.extend({
 	categories: z.array(gameCategorySchema),
 	difficulties: z.array(gameDifficultySchema),
 })
+
+export const gameStatusSchema = z.object({
+	status: z.enum(["ACTIVE", "INACTIVE"]),
+})

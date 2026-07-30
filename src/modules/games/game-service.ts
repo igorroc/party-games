@@ -2,7 +2,7 @@ import "server-only"
 
 import db from "@/lib/db"
 import { QuestionDifficulty } from "@/generated/prisma/client"
-import type { GameCatalogItem, GameDetails } from "./types"
+import type { GameCatalogItem, GameDetails, GameManagementItem } from "./types"
 
 const gameSelect = {
 	slug: true,
@@ -20,6 +20,18 @@ export class GameService {
 			select: gameSelect,
 			orderBy: { name: "asc" },
 		})
+	}
+
+	static async listManagement(): Promise<GameManagementItem[]> {
+		return db.game.findMany({
+			select: { slug: true, name: true, description: true, status: true },
+			orderBy: { name: "asc" },
+		})
+	}
+
+	static async updateStatus(slug: string, status: "ACTIVE" | "INACTIVE") {
+		const updated = await db.game.updateMany({ where: { slug }, data: { status } })
+		return updated.count > 0
 	}
 
 	static async getActiveNemAPato(): Promise<GameDetails | null> {

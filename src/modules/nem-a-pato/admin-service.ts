@@ -39,8 +39,4 @@ export class NemAPatoAdminService {
 		await db.nemAPatoCategory.delete({ where: { id } })
 		return "DELETED"
 	}
-
-	static async updateGameStatus(status: "ACTIVE" | "INACTIVE") {
-		await db.game.update({ where: { slug: NEM_A_PATO_SLUG }, data: { status } })
-	}
 }

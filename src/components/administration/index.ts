@@ -1,4 +1,5 @@
 export { AttackModeControl } from "./attack-mode-control"
+export { GameAvailabilityControl } from "./game-availability-control"
 export { QuestionActions } from "./question-actions"
 export { QuestionForm } from "./question-form"
 export { NemAPatoCatalogManager } from "./nem-a-pato-catalog-manager"

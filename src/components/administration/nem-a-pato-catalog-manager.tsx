@@ -4,6 +4,7 @@ import { Button } from "@heroui/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "react-toastify"
+import { GameAvailabilityControl } from "./game-availability-control"
 
 type Item = { id: string; name: string; slug: string }
 type Props = { categories: Item[]; gameIsActive: boolean }
@@ -117,31 +118,6 @@ function ItemManager({
 }
 
 export function NemAPatoCatalogManager({ categories, gameIsActive }: Props) {
-	const router = useRouter()
-	const [loading, setLoading] = useState(false)
-	async function updateGameStatus() {
-		const status = gameIsActive ? "INACTIVE" : "ACTIVE"
-		if (
-			status === "INACTIVE" &&
-			!confirm("Desativar Nem a Pato? Novas partidas não poderão ser iniciadas.")
-		)
-			return
-		setLoading(true)
-		const response = await fetch("/api/admin/games/nem-a-pato", {
-			method: "PATCH",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ status }),
-		})
-		setLoading(false)
-		if (!response.ok)
-			return toast.error(
-				status === "ACTIVE"
-					? "Não foi possível reativar o jogo."
-					: "Não foi possível desativar o jogo.",
-			)
-		toast.success(status === "ACTIVE" ? "Jogo reativado." : "Jogo desativado.")
-		router.refresh()
-	}
 	return (
 		<div className="space-y-6">
 			<ItemManager
@@ -149,24 +125,11 @@ export function NemAPatoCatalogManager({ categories, gameIsActive }: Props) {
 				endpoint="/api/admin/games/nem-a-pato/categories"
 				items={categories}
 			/>
-			<section
-				className={`${gameIsActive ? "border-danger/30 bg-danger/5" : "border-success/30 bg-success/5"} rounded-3xl border p-6`}
-			>
-				<h2 className="font-display text-foreground text-3xl">Disponibilidade</h2>
-				<p className="text-muted mt-2">
-					{gameIsActive
-						? "O jogo está disponível para novas partidas."
-						: "O jogo já está desativado."}
-				</p>
-				<Button
-					className="mt-4"
-					variant={gameIsActive ? "danger" : "primary"}
-					onPress={updateGameStatus}
-					isDisabled={loading}
-				>
-					{gameIsActive ? "Desativar jogo" : "Reativar jogo"}
-				</Button>
-			</section>
+			<GameAvailabilityControl
+				gameName="Nem a Pato"
+				gameSlug="nem-a-pato"
+				gameIsActive={gameIsActive}
+			/>
 		</div>
 	)
 }

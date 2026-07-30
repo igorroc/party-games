@@ -19,3 +19,10 @@ export type GameDetails = GameCatalogItem & {
 	categories: GameCategory[]
 	difficulties: GameDifficulty[]
 }
+
+export type GameManagementItem = {
+	slug: string
+	name: string
+	description: string
+	status: "DRAFT" | "ACTIVE" | "INACTIVE"
+}
