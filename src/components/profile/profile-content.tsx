@@ -4,12 +4,14 @@ import { Card, CardBody, CardHeader, Button, Chip, Avatar, Divider } from "@next
 import Link from "next/link"
 
 import type { CurrentUser } from "@/modules/auth"
+import type { ProfileGameSession } from "@/modules/administration"
 
 type ProfileContentProps = {
 	user: CurrentUser
+	sessions: ProfileGameSession[]
 }
 
-export function ProfileContent({ user }: ProfileContentProps) {
+export function ProfileContent({ user, sessions }: ProfileContentProps) {
 	const formatDate = (date?: Date) => {
 		if (!date) return "N/A"
 		return new Date(date).toLocaleDateString("pt-BR", {
@@ -35,7 +37,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
 						</Chip>
 						<h1 className="text-4xl font-black text-white">Seu perfil</h1>
 						<p className="max-w-md text-sm text-slate-300">
-							Esta é sua área privada. Aqui você pode validar os dados da sessão atual.
+							Acompanhe seus dados e as partidas finalizadas nesta conta.
 						</p>
 					</CardHeader>
 					<CardBody className="gap-6 px-6 pb-8">
@@ -58,6 +60,42 @@ export function ProfileContent({ user }: ProfileContentProps) {
 						</div>
 
 						<Divider className="bg-white/10" />
+
+						<section aria-labelledby="history-heading">
+							<div className="flex items-baseline justify-between gap-4">
+								<h2 id="history-heading" className="text-xl font-bold text-white">
+									Histórico de partidas
+								</h2>
+								<span className="text-sm text-slate-300">
+									{sessions.length} finalizada{sessions.length === 1 ? "" : "s"}
+								</span>
+							</div>
+							{sessions.length === 0 ? (
+								<p className="mt-3 rounded-xl border border-white/10 bg-slate-950/20 p-4 text-sm text-slate-300">
+									Quando você finalizar uma partida autenticada, ela aparecerá aqui.
+								</p>
+							) : (
+								<ul className="mt-3 divide-y divide-white/10 rounded-xl border border-white/10 bg-slate-950/20">
+									{sessions.map((session) => (
+										<li
+											key={session.id}
+											className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
+										>
+											<div>
+												<p className="font-bold text-white">{session.gameName}</p>
+												<p className="text-sm text-slate-300">
+													{formatDate(new Date(session.finishedAt))}
+												</p>
+											</div>
+											<p className="text-sm text-slate-200">
+												{session.durationMinutes} min · {session.roundsPlayed} rodada
+												{session.roundsPlayed === 1 ? "" : "s"}
+											</p>
+										</li>
+									))}
+								</ul>
+							)}
+						</section>
 
 						<div className="flex flex-col gap-3 sm:flex-row">
 							<Button

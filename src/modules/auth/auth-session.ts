@@ -14,6 +14,7 @@ const safeUserSelect = {
 	id: true,
 	name: true,
 	email: true,
+	role: true,
 	createdAt: true,
 } as const
 
@@ -102,6 +103,16 @@ export class AuthSession {
 
 		if (!user) {
 			redirect("/auth/logout?reason=expired")
+		}
+
+		return user
+	}
+
+	static async requireAdmin(): Promise<CurrentUser> {
+		const user = await this.requireUser()
+
+		if (user.role !== "ADMIN") {
+			redirect("/")
 		}
 
 		return user

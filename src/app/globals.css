@@ -2,17 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+	--color-background: 244 235 221;
+	--color-foreground: 32 40 34;
+	--color-surface: 255 249 238;
+	--color-surface-strong: 233 221 201;
+	--color-primary: 36 91 73;
+	--color-primary-hover: 28 73 59;
+	--color-secondary: 228 170 58;
+	--color-accent: 217 106 77;
+	--color-danger: 183 66 58;
+	--color-muted: 101 112 104;
+	--color-border: 213 199 178;
+	--color-focus: 50 111 223;
+	--color-success: 52 118 78;
+}
+
+* {
+	border-color: rgb(var(--color-border));
+}
+
+html {
+	background: rgb(var(--color-background));
+}
+
 body {
 	min-height: 100dvh;
-	color: #f8fafc;
-	background:
-		radial-gradient(circle at top left, rgba(56, 189, 248, 0.2), transparent 32rem),
-		radial-gradient(circle at bottom right, rgba(168, 85, 247, 0.2), transparent 30rem),
-		linear-gradient(135deg, #020617 0%, #111827 50%, #172554 100%);
+	color: rgb(var(--color-foreground));
+	background-color: rgb(var(--color-background));
+	background-image: radial-gradient(rgb(var(--color-border) / 0.3) 0.7px, transparent 0.7px);
+	background-size: 12px 12px;
+}
+
+::selection {
+	color: rgb(var(--color-surface));
+	background: rgb(var(--color-primary));
+}
+
+:focus-visible {
+	outline: 3px solid rgb(var(--color-focus));
+	outline-offset: 3px;
+}
+
+@layer components {
+	.paper-card {
+		border: 1px solid rgb(var(--color-border));
+		background: rgb(var(--color-surface));
+		box-shadow: 5px 5px 0 rgb(var(--color-primary) / 0.14);
+	}
 }
 
 @layer utilities {
 	.text-balance {
 		text-wrap: balance;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
 	}
 }

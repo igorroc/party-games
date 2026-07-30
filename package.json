@@ -1,5 +1,5 @@
 {
-	"name": "fullstack-next-template",
+	"name": "party-games",
 	"version": "0.1.0",
 	"private": true,
 	"engines": {
@@ -22,18 +22,20 @@
 	},
 	"scripts": {
 		"dev": "next dev",
-		"build": "next build",
+		"build": "next build --webpack",
 		"start": "next start",
 		"lint": "eslint . --max-warnings=0",
 		"format": "prettier . --write",
 		"format:check": "prettier . --check",
 		"compose:up": "docker compose up -d",
-		"vercel-build": "prisma generate && prisma migrate deploy && next build",
+		"vercel-build": "prisma generate && prisma migrate deploy && next build --webpack",
 		"migrate": "bunx prisma migrate dev && bunx prisma generate",
 		"migrate:reset": "bunx prisma migrate reset --force",
 		"migrate:create-only": "bunx prisma migrate dev --create-only",
+		"prisma:seed": "bunx prisma db seed",
 		"prisma:studio": "bunx prisma studio",
 		"security:audit": "bun audit --audit-level=moderate",
+		"test": "bun test --preload ./test/setup.ts",
 		"ts-check": "tsc --noEmit"
 	},
 	"dependencies": {
@@ -60,5 +62,8 @@
 		"prisma": "^5.22.0",
 		"tailwindcss": "^3.4.19",
 		"typescript": "^5.9.3"
+	},
+	"prisma": {
+		"seed": "bun prisma/seed.ts"
 	}
 }

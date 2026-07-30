@@ -1,14 +1,19 @@
-export type ApiSuccess<TData> = {
+export type ApiSuccess<TData = null> = {
 	success: true
 	data: TData
 }
 
-export type ApiFailure<TError> = {
+export type ApiFailure<TError = ApiError> = {
 	success: false
 	error: TError
 }
 
-export type ApiResultType<TData, TError> = ApiSuccess<TData> | ApiFailure<TError>
+export type ApiError<TCode extends string = string> = {
+	code: TCode
+	message: string
+}
+
+export type ApiResultType<TData = null, TError = ApiError> = ApiSuccess<TData> | ApiFailure<TError>
 
 export class ApiResult {
 	static success<TData>(data: TData): ApiSuccess<TData> {

@@ -1,0 +1,9 @@
+import type { ReactNode } from "react"
+
+type AppContainerProps = { children: ReactNode; className?: string }
+
+export function AppContainer({ children, className = "" }: AppContainerProps) {
+	return (
+		<div className={`mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>
+	)
+}

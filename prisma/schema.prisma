@@ -11,15 +11,143 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(cuid())
+  id       String   @id @default(cuid())
   name     String
-  email    String @unique
+  email    String   @unique
   password String
+  role     UserRole @default(USER)
 
-  sessions Session[]
+  sessions     Session[]
+  gameSessions GameSession[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum GameStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum GameSessionStatus {
+  ACTIVE
+  FINISHED
+  ABANDONED
+}
+
+model Game {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  description String
+  status      GameStatus @default(DRAFT)
+  minPlayers  Int?
+  maxPlayers  Int?
+  durationMin Int?
+
+  questions GameQuestion[]
+  sessions  GameSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model QuestionCategory {
+  id   String @id @default(cuid())
+  slug String @unique
+  name String
+
+  questions GameQuestion[]
+  sessions  GameSession[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GameQuestion {
+  id          String             @id @default(cuid())
+  gameId      String
+  categoryId  String
+  prompt      String
+  answerValue Decimal?
+  answerText  String
+  answerUnit  String?
+  explanation String?
+  sourceName  String?
+  sourceUrl   String?
+  verifiedAt  DateTime?
+  difficulty  QuestionDifficulty
+  locale      String             @default("pt-BR")
+  isActive    Boolean            @default(true)
+  isReviewed  Boolean            @default(false)
+
+  game     Game             @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  category QuestionCategory @relation(fields: [categoryId], references: [id])
+  rounds   GameRound[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([gameId, prompt])
+  @@index([gameId, isActive, isReviewed])
+  @@index([gameId, categoryId, difficulty])
+}
+
+model GameSession {
+  id                      String              @id @default(cuid())
+  gameId                  String
+  userId                  String?
+  categoryId              String?
+  playerCount             Int
+  difficulty              QuestionDifficulty?
+  status                  GameSessionStatus   @default(ACTIVE)
+  anonymousTokenHash      String?             @unique
+  anonymousTokenExpiresAt DateTime?
+  lastActivityAt          DateTime            @default(now())
+  startedAt               DateTime            @default(now())
+  finishedAt              DateTime?
+
+  game     Game              @relation(fields: [gameId], references: [id])
+  user     User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  category QuestionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  rounds   GameRound[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([gameId, status])
+  @@index([anonymousTokenExpiresAt])
+}
+
+model GameRound {
+  id          String    @id @default(cuid())
+  sessionId   String
+  questionId  String
+  roundNumber Int
+  revealedAt  DateTime?
+  completedAt DateTime?
+
+  session  GameSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question GameQuestion @relation(fields: [questionId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, roundNumber])
+  @@unique([sessionId, questionId])
+  @@index([sessionId])
 }
 
 model Session {
