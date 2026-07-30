@@ -1,0 +1,25 @@
+model HiddenFaceSession {
+  sessionId String @id
+  state     Json
+  version   Int    @default(0)
+
+  session GameSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  events  HiddenFaceEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HiddenFaceEvent {
+  id        String @id @default(cuid())
+  sessionId String
+  sequence  Int
+  type      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  session HiddenFaceSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@unique([sessionId, sequence])
+  @@index([sessionId, createdAt])
+}
