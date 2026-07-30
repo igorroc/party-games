@@ -2,6 +2,7 @@ export type RacerDefinition = {
 	id: string
 	publicName: string
 	shortDescription: string
+	lore: string
 	abilitySummary: string
 	timing: string[]
 	isOptional: boolean
@@ -180,11 +181,51 @@ const abilities = [
 	],
 ] as const
 
+const racerLore: Record<string, string> = {
+	alchemist: "Guardião de um laboratório ambulante, transforma pequenos acasos em grandes avanços.",
+	"baba-yaga": "Sua cabana acordou um dia com vontade de competir e nunca mais parou de correr.",
+	banana: "Nasceu numa feira mágica e descobriu que uma boa derrapada também pode ser estratégia.",
+	blimp: "Piloto de correntes de ar, estuda cada curva do céu antes de baixar a altitude.",
+	centaur: "Mensageiro das constelações, prefere resolver ultrapassagens no puro galope.",
+	cheerleader: "Reúne torcidas esquecidas e acredita que ninguém deve ficar para trás sem festa.",
+	coach: "Ex-campeão de pista, ainda carrega um apito e conselhos para qualquer corredor próximo.",
+	copycat: "Aprendeu a sobreviver refletindo os talentos mais impressionantes que encontra.",
+	dicemonger: "Viaja de feira em feira oferecendo dados suspeitosamente generosos.",
+	duelist: "Coleciona desafios ao pôr do sol e nunca recusa uma disputa de espaço.",
+	egg: "Um casulo inquieto que acorda com um talento diferente em cada corrida.",
+	"flip-flop": "Especialista em rotas impossíveis, considera trocar de lugar uma forma de arte.",
+	genius: "Faz previsões em guardanapos e, inexplicavelmente, quase sempre acerta.",
+	gunk: "Uma nuvem pegajosa que transforma toda pista em um caminho um pouco mais lento.",
+	hare: "Corredora de neon que vive para a arrancada e para os aplausos da liderança.",
+	heckler: "Bardo de arquibancada que transforma qualquer turno sem graça em refrão de vitória.",
+	"huge-baby": "Pequeno de idade, colossal de presença e incapaz de dividir espaço com elegância.",
+	hypnotist: "Artista de palco que descobriu que um pêndulo funciona ainda melhor em uma corrida.",
+	inchworm: "Mede o mundo em passos minúsculos e comemora cada erro de cálculo alheio.",
+	lackey: "Assistente de laboratório que nunca perde a chance de ligar os propulsores.",
+	leaptoad: "Atleta dos pântanos estelares, treinou saltos sobre filas inteiras de corredores.",
+	legs: "Criatura discreta cuja coleção de molas foi construída para uma única passada perfeita.",
+	"lovable-loser": "Virou favorito da torcida depois de transformar azar crônico em carisma.",
+	magician: "Ilusionista de rua que trata dados ruins como truques que merecem repetição.",
+	mastermind: "Estratégista que desenha a corrida inteira antes mesmo do sinal de largada.",
+	mouth: "Uma boca faminta com pernas, famosa por encerrar conversas e corridas rapidamente.",
+	"party-animal": "Organiza festas tão magnéticas que até os rivais acabam indo na direção dela.",
+	"rocket-scientist": "Inventor destemido cuja propulsão funciona perfeitamente, quase sempre.",
+	romantic: "Poeta da pista, enxerga encontros acidentais como cenas de uma grande aventura.",
+	scoocher: "Observador incansável que aproveita cada distração causada pelos poderes alheios.",
+	sisyphus: "Carrega sua esfera luminosa como lembrança de que insistir também pode render pontos.",
+	skipper: "Capitão de atalhos improváveis, sempre pronto para assumir o leme da vez seguinte.",
+	stickler: "Fiscal obsessivo que considera a linha de chegada uma questão de precisão absoluta.",
+	suckerfish: "Viajante de ventosas que nunca diz não a uma boa carona rumo à frente.",
+	"third-wheel": "Aparece em qualquer dupla com o timing perfeito para tornar tudo mais caótico.",
+	twin: "Dois prismas em sintonia que guardam memórias brilhantes de vitórias passadas.",
+}
+
 export const racerDefinitions: RacerDefinition[] = abilities.map(
 	([id, publicName, abilitySummary]) => ({
 		id,
 		publicName,
 		shortDescription: "Um corredor original da Corrida Arcana.",
+		lore: racerLore[id],
 		abilitySummary,
 		timing: ["race"],
 		isOptional: true,

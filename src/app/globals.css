@@ -93,6 +93,38 @@ body {
 		border-color: rgb(var(--color-primary));
 	}
 
+	.racer-gallery-card {
+		border: 1px solid rgb(var(--color-border));
+		background: rgb(var(--color-surface));
+		box-shadow: 5px 5px 0 rgb(var(--color-primary) / 0.12);
+	}
+
+	.racer-gallery-art {
+		background:
+			radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.55), transparent 28%),
+			linear-gradient(135deg, #386d77, #173d4b);
+	}
+
+	.racer-search input {
+		width: 100%;
+		min-height: 3rem;
+		margin-top: 0.45rem;
+		border: 2px solid rgb(var(--color-primary) / 0.35);
+		border-radius: 0.8rem;
+		background: rgb(var(--color-surface));
+		padding: 0 0.85rem;
+		font-weight: 700;
+		transition:
+			border-color 0.2s,
+			box-shadow 0.2s;
+	}
+
+	.racer-search input:hover,
+	.racer-search input:focus {
+		border-color: rgb(var(--color-primary));
+		box-shadow: 3px 3px 0 rgb(var(--color-primary) / 0.13);
+	}
+
 	.setup-hero {
 		background: linear-gradient(125deg, #283f66, #4f7290 55%, #dc7350);
 	}

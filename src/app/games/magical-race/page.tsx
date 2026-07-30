@@ -3,6 +3,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { AppContainer, SectionHeading } from "@/components/design-system"
 import { GameMetadata, GameRules, magicalRaceGame } from "@/components/games"
+import { RacerGallery } from "@/components/magical-race/racer-gallery"
+import { racerDefinitions } from "@/modules/magical-race/racers"
 
 export const metadata: Metadata = {
 	title: magicalRaceGame.name,
@@ -59,6 +61,17 @@ export default function MagicalRacePage() {
 					/>
 					<div className="mt-8">
 						<GameRules rules={magicalRaceGame.rules} />
+					</div>
+				</section>
+				<section aria-labelledby="racers">
+					<SectionHeading
+						id="racers"
+						eyebrow="Elenco"
+						title="Conheça quem atravessa a pista."
+						description="Cada corredor carrega uma pequena história e um poder capaz de virar a corrida de cabeça para baixo."
+					/>
+					<div className="mt-8">
+						<RacerGallery racers={racerDefinitions} />
 					</div>
 				</section>
 			</AppContainer>
