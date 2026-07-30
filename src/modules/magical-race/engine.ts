@@ -108,6 +108,8 @@ export function dispatch(
 	else if (action.type === "ROLL_MAIN_DIE") roll(next, actorId, random)
 	else if (action.type === "RESOLVE_ROCKET_SCIENTIST")
 		resolveRocketScientist(next, actorId, action.double)
+	else if (action.type === "RESOLVE_CHEERLEADER")
+		resolveCheerleader(next, actorId, action.useAbility, random)
 	else if (action.type === "CONFIRM_NEXT_RACE") nextRace(next, actorId)
 	else {
 		next.status = "abandoned"
@@ -192,6 +194,19 @@ function roll(state: MagicalRaceState, actorId: string, random: RandomProvider) 
 		advanceTurn(state)
 		return
 	}
+	if (racer.definitionId === "cheerleader") {
+		state.pendingDecision = { type: "cheerleader", racerId: racer.id }
+		event(state, "DECISION_REQUESTED", "A Torcida Lunar pode animar os corredores em último.", {
+			racerId: racer.id,
+		})
+		return
+	}
+	rollDieAndMove(state, racer.id, random)
+}
+
+function rollDieAndMove(state: MagicalRaceState, racerId: string, random: RandomProvider) {
+	const racer = state.racers.find((item) => item.id === racerId)
+	if (!racer || racer.status !== "active") return
 	const die = random.rollDie(6)
 	event(state, "MAIN_DIE_ROLLED", `Dado: ${die}.`, { racerId: racer.id, die })
 	if (racer.definitionId === "rocket-scientist") {
@@ -204,6 +219,38 @@ function roll(state: MagicalRaceState, actorId: string, random: RandomProvider) 
 	}
 	move(state, racer.id, die)
 	if (state.status === "racing") advanceTurn(state)
+}
+
+function resolveCheerleader(
+	state: MagicalRaceState,
+	actorId: string,
+	useAbility: boolean,
+	random: RandomProvider,
+) {
+	const decision = state.pendingDecision
+	if (!decision || decision.type !== "cheerleader" || state.activePlayerId !== actorId)
+		throw new Error("Esta decisão não está disponível.")
+	const cheerleader = state.racers.find((item) => item.id === decision.racerId)
+	if (!cheerleader || cheerleader.status !== "active")
+		throw new Error("Corredor inválido para esta decisão.")
+	state.pendingDecision = null
+	if (useAbility) {
+		const activeRacers = state.racers.filter((racer) => racer.status === "active")
+		const lastPosition = Math.min(...activeRacers.map((racer) => racer.position))
+		const lastRacers = activeRacers.filter((racer) => racer.position === lastPosition)
+		event(state, "ABILITY_RESOLVED", "A Torcida Lunar animou os corredores em último.", {
+			racerId: cheerleader.id,
+			targetRacerIds: lastRacers.map((racer) => racer.id),
+		})
+		for (const racer of lastRacers) move(state, racer.id, 2)
+		if (cheerleader.status === "active") move(state, cheerleader.id, 1)
+	} else {
+		event(state, "ABILITY_SKIPPED", "A Torcida Lunar guardou sua animação.", {
+			racerId: cheerleader.id,
+		})
+	}
+	if (state.status === "racing" && cheerleader.status === "active")
+		rollDieAndMove(state, cheerleader.id, random)
 }
 
 function resolveRocketScientist(state: MagicalRaceState, actorId: string, double: boolean) {

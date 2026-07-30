@@ -558,6 +558,31 @@ function Race({
 							</Button>
 						</div>
 					</div>
+				) : state.pendingDecision?.type === "cheerleader" ? (
+					<div className="rocket-decision rounded-2xl p-4">
+						<p className="text-xs font-black tracking-[0.14em] uppercase">Decisão de poder</p>
+						<p className="font-display mt-1 text-xl">Animar quem está em último?</p>
+						<p className="mt-1 text-sm">
+							Todos os corredores empatados na última posição avançam 2 casas; depois, a Torcida
+							Lunar avança mais 1 casa antes de rolar o dado.
+						</p>
+						<div className="mt-3 flex gap-2">
+							<Button
+								variant="outline"
+								isDisabled={busy}
+								onPress={() => act({ type: "RESOLVE_CHEERLEADER", useAbility: false })}
+							>
+								Não animar
+							</Button>
+							<Button
+								variant="primary"
+								isDisabled={busy}
+								onPress={() => act({ type: "RESOLVE_CHEERLEADER", useAbility: true })}
+							>
+								Animar a torcida
+							</Button>
+						</div>
+					</div>
 				) : isResult ? (
 					<div className="text-right">
 						<p className="font-display text-2xl">Chegada definida!</p>
