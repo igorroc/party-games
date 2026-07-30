@@ -2,18 +2,18 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Avatar, Button, Menu, Popover } from "@heroui/react"
+import { Button, Menu, Popover } from "@heroui/react"
 
 import type { CurrentUser } from "@/modules/auth"
 import { ApiClient } from "@/lib/api/api-client"
 import { TypeGuard } from "@/lib/api/api-result"
+import { HiddenFaceAvatar } from "@/components/hidden-face/hidden-face-avatar"
 
 type UserMenuProps = {
 	user: CurrentUser
 }
 
 export function UserMenu({ user }: UserMenuProps) {
-	const initial = user.name.trim().charAt(0).toUpperCase() || "U"
 	const router = useRouter()
 	const [isLoggingOut, setIsLoggingOut] = useState(false)
 	const [isOpen, setIsOpen] = useState(false)
@@ -50,9 +50,13 @@ export function UserMenu({ user }: UserMenuProps) {
 					variant="outline"
 					className="border-border bg-surface hover:bg-surface-strong h-auto gap-2 px-2 py-1.5"
 				>
-					<Avatar size="sm" className="bg-secondary text-foreground">
-						<Avatar.Fallback>{initial}</Avatar.Fallback>
-					</Avatar>
+					<HiddenFaceAvatar
+						seed={user.id}
+						style="adventurer-neutral"
+						alt={`Avatar de ${user.name || "usuário"}`}
+						className="bg-secondary h-8 w-8 rounded-full"
+						priority
+					/>
 					<span className="text-foreground hidden max-w-32 truncate text-sm font-extrabold sm:block">
 						{user.name}
 					</span>
