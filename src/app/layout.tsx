@@ -5,6 +5,7 @@ import "./globals.css"
 import "react-toastify/dist/ReactToastify.css"
 import { Providers } from "./providers"
 import { AppFooter, AppHeader } from "@/components/layout"
+import { Analytics } from "@vercel/analytics/next"
 
 const displayFont = Bree_Serif({
 	subsets: ["latin"],
@@ -42,6 +43,7 @@ export default function RootLayout({
 		<html lang="pt-BR">
 			<body className={`${displayFont.variable} ${bodyFont.variable} font-body`}>
 				<Providers>
+					<Analytics />
 					<div className="flex min-h-dvh flex-col">
 						<AppHeader appName={appName} />
 						{children}
