@@ -55,6 +55,7 @@ export function MagicalRaceSetup() {
 						<label className="grid gap-2 font-bold">
 							Variante
 							<select
+								className="hover:bg-surface-strong transition-colors"
 								value={mode}
 								onChange={(event) => {
 									const next = event.target.value as typeof mode
@@ -76,7 +77,11 @@ export function MagicalRaceSetup() {
 						{mode === "standard" && (
 							<label className="grid gap-2 font-bold">
 								Jogadores
-								<select value={count} onChange={(event) => setCount(Number(event.target.value))}>
+								<select
+									className="hover:bg-surface-strong transition-colors"
+									value={count}
+									onChange={(event) => setCount(Number(event.target.value))}
+								>
 									{[2, 3, 4, 5, 6].map((value) => (
 										<option key={value} value={value}>
 											{value} jogadores
@@ -89,6 +94,7 @@ export function MagicalRaceSetup() {
 							<label key={index} className="grid gap-2 font-bold">
 								Jogador {index + 1}
 								<input
+									className="hover:bg-surface-strong transition-colors"
 									value={name}
 									maxLength={32}
 									onChange={(event) =>
@@ -110,7 +116,7 @@ export function MagicalRaceSetup() {
 					<Button
 						variant="primary"
 						size="lg"
-						className="mt-8 min-h-12"
+						className="mt-8 min-h-12 transition-transform hover:-translate-y-0.5"
 						isDisabled={busy}
 						onPress={submit}
 					>

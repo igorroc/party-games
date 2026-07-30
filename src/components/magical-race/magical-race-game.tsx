@@ -76,7 +76,13 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 					<section className="paper-card rounded-3xl p-5 sm:p-7">
 						{state.status === "drafting" && <Draft state={state} act={act} busy={busy} />}
 						{state.status === "race-selection" && (
-							<Selection state={state} act={act} busy={busy} submitted={submitted} />
+							<Selection
+								key={state.selectionsSubmittedByPlayerId.join("-")}
+								state={state}
+								act={act}
+								busy={busy}
+								submitted={submitted}
+							/>
 						)}
 						{state.status === "racing" && <Race state={state} act={act} busy={busy} />}
 						{state.status === "race-result" && (
@@ -86,7 +92,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 									Prepare a próxima corrida quando a mesa estiver pronta.
 								</p>
 								<Button
-									className="mt-6"
+									className="mt-6 transition-transform hover:-translate-y-0.5"
 									variant="primary"
 									onPress={() => act({ type: "CONFIRM_NEXT_RACE" })}
 								>
@@ -157,7 +163,7 @@ function Draft({
 								disabled={busy}
 								key={id}
 								onClick={() => act({ type: "DRAFT_RACER", racerDefinitionId: id })}
-								className="border-border bg-surface hover:border-primary rounded-xl border p-4 text-left disabled:opacity-50"
+								className="border-border bg-surface hover:border-primary hover:bg-primary/5 cursor-pointer rounded-xl border p-4 text-left transition-all hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								<strong>{racer.publicName}</strong>
 								<span className="text-muted mt-1 block text-sm">{racer.abilitySummary}</span>
@@ -213,7 +219,7 @@ function Selection({
 												: current,
 									)
 								}
-								className={`rounded-xl border p-4 text-left ${isPicked ? "border-primary bg-primary/10" : "border-border"}`}
+								className={`cursor-pointer rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${isPicked ? "border-primary bg-primary/10" : "border-border hover:border-primary hover:bg-primary/5"}`}
 							>
 								<strong>{racer.publicName}</strong>
 								<span className="text-muted mt-1 block text-sm">{racer.abilitySummary}</span>
@@ -223,7 +229,7 @@ function Selection({
 			</div>
 			<Button
 				variant="primary"
-				className="mt-6"
+				className="mt-6 transition-transform hover:-translate-y-0.5"
 				isDisabled={busy || picked.length !== required}
 				onPress={() => act({ type: "SUBMIT_RACE_SELECTION", racerDefinitionIds: picked })}
 			>
@@ -264,6 +270,7 @@ function Race({
 				<Button
 					variant="primary"
 					size="lg"
+					className="transition-transform hover:-translate-y-0.5"
 					isDisabled={busy}
 					onPress={() => act({ type: "ROLL_MAIN_DIE" })}
 				>
