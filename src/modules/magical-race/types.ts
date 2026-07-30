@@ -18,6 +18,7 @@ export type RacerInstance = {
 	status: RacerStatus
 	tripPending: boolean
 	used: boolean
+	copiedAbilityId: string | null
 }
 export type MagicalRaceEvent = {
 	sequence: number
@@ -29,6 +30,7 @@ export type PendingDecision =
 	| { type: "rocket-scientist"; racerId: string; die: number }
 	| { type: "cheerleader"; racerId: string }
 	| { type: "dicemonger"; racerId: string; die: number; merchantRacerId: string }
+	| { type: "twin"; racerId: string; abilityIds: string[] }
 export type MagicalRaceState = {
 	version: number
 	status: MagicalRaceStatus
@@ -47,6 +49,7 @@ export type MagicalRaceState = {
 	turnQueue: string[]
 	turnStartPosition: number | null
 	finishers: string[]
+	previousWinningDefinitionIds: string[]
 	pendingDecision: PendingDecision | null
 	events: MagicalRaceEvent[]
 }
@@ -58,6 +61,7 @@ export type MagicalRaceAction =
 	| { type: "RESOLVE_ROCKET_SCIENTIST"; double: boolean }
 	| { type: "RESOLVE_CHEERLEADER"; useAbility: boolean }
 	| { type: "RESOLVE_DICEMONGER"; useReroll: boolean }
+	| { type: "RESOLVE_TWIN"; copiedAbilityId: string | null }
 	| { type: "CONFIRM_NEXT_RACE" }
 	| { type: "ABANDON_MATCH" }
 

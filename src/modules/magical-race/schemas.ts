@@ -27,6 +27,7 @@ export const magicalRaceActionSchema = z.object({
 		z.object({ type: z.literal("RESOLVE_ROCKET_SCIENTIST"), double: z.boolean() }),
 		z.object({ type: z.literal("RESOLVE_CHEERLEADER"), useAbility: z.boolean() }),
 		z.object({ type: z.literal("RESOLVE_DICEMONGER"), useReroll: z.boolean() }),
+		z.object({ type: z.literal("RESOLVE_TWIN"), copiedAbilityId: z.string().nullable() }),
 		z.object({ type: z.literal("CONFIRM_NEXT_RACE") }),
 		z.object({ type: z.literal("ABANDON_MATCH") }),
 	]),

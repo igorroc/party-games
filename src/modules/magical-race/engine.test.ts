@@ -165,4 +165,33 @@ describe("magical race engine", () => {
 		)
 		expect(state.racers[0]!.position).toBe(2)
 	})
+
+	test("adds the Coach bonus to a racer sharing its space", () => {
+		let state = createMatch(["Ana", "Bia"], "standard", new FakeRandomProvider([]))
+		while (state.status === "drafting")
+			state = dispatch(
+				state,
+				state.activePlayerId!,
+				{ type: "DRAFT_RACER", racerDefinitionId: state.draftPool[0]! },
+				new FakeRandomProvider([]),
+			)
+		for (const player of state.players)
+			state = dispatch(
+				state,
+				player.id,
+				{ type: "SUBMIT_RACE_SELECTION", racerDefinitionIds: [player.draftedRacerIds[0]!] },
+				new FakeRandomProvider([1]),
+			)
+		state.racers[0]!.definitionId = "coach"
+		state.activeRacerId = state.racers[1]!.id
+		state.activePlayerId = state.racers[1]!.ownerId
+		state.turnQueue = [state.racers[1]!.id, state.racers[0]!.id]
+		state = dispatch(
+			state,
+			state.activePlayerId!,
+			{ type: "ROLL_MAIN_DIE" },
+			new FakeRandomProvider([3]),
+		)
+		expect(state.racers[1]!.position).toBe(4)
+	})
 })

@@ -44,7 +44,8 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 		if (
 			action.type === "RESOLVE_ROCKET_SCIENTIST" ||
 			action.type === "RESOLVE_CHEERLEADER" ||
-			action.type === "RESOLVE_DICEMONGER"
+			action.type === "RESOLVE_DICEMONGER" ||
+			action.type === "RESOLVE_TWIN"
 		)
 			setDecisionClosing(true)
 		setError(null)
@@ -666,6 +667,57 @@ function PendingDecisionModal({
 }) {
 	const decision = state.pendingDecision
 	if (!decision) return null
+	if (decision.type === "twin") {
+		return (
+			<div
+				className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-4"
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="twin-decision-title"
+			>
+				<section className="decision-modal w-full max-w-2xl rounded-3xl p-6 shadow-2xl sm:p-8">
+					<p className="text-xs font-black tracking-[.16em] uppercase">Poder antes da corrida</p>
+					<h2 id="twin-decision-title" className="font-display mt-2 text-3xl">
+						Qual vitória o Gêmeo Prismático vai refletir?
+					</h2>
+					<p className="mt-3 leading-relaxed">
+						Escolha um corredor que venceu uma corrida anterior. O Gêmeo mantém sua aparência, mas
+						usa o poder escolhido nesta corrida.
+					</p>
+					<div className="mt-5 grid gap-3 sm:grid-cols-2">
+						{decision.abilityIds.map((abilityId) => {
+							const racer = racerDefinitions.find((item) => item.id === abilityId)
+							return (
+								racer && (
+									<Button
+										key={abilityId}
+										variant="outline"
+										className="h-auto justify-start p-4 text-left whitespace-normal"
+										isDisabled={busy}
+										onPress={() => act({ type: "RESOLVE_TWIN", copiedAbilityId: abilityId })}
+									>
+										<span>
+											<strong className="block">{racer.publicName}</strong>
+											<span className="text-muted mt-1 block text-sm">{racer.abilitySummary}</span>
+										</span>
+									</Button>
+								)
+							)
+						})}
+					</div>
+					<div className="mt-5 flex justify-end">
+						<Button
+							variant="ghost"
+							isDisabled={busy}
+							onPress={() => act({ type: "RESOLVE_TWIN", copiedAbilityId: null })}
+						>
+							Não copiar nesta corrida
+						</Button>
+					</div>
+				</section>
+			</div>
+		)
+	}
 	const rocket = decision.type === "rocket-scientist"
 	const merchant = decision.type === "dicemonger"
 	return (
@@ -826,8 +878,16 @@ function RacerToken({
 				</span>
 				<span className="block text-sm font-black text-white">{definition?.publicName}</span>
 				<span className="mt-1 block text-xs leading-snug text-white/80">
-					{definition?.abilitySummary}
+					{racer.copiedAbilityId
+						? racerDefinitions.find((item) => item.id === racer.copiedAbilityId)?.abilitySummary
+						: definition?.abilitySummary}
 				</span>
+				{racer.copiedAbilityId && (
+					<span className="mt-2 block text-[10px] font-black tracking-wide text-[#ffd55c]">
+						PODER COPIADO:{" "}
+						{racerDefinitions.find((item) => item.id === racer.copiedAbilityId)?.publicName}
+					</span>
+				)}
 				<span className="mt-3 flex justify-between border-t border-white/25 pt-2 text-[10px] font-bold tracking-wide text-white/80">
 					<span>{player?.name}</span>
 					<span>CASA {position}</span>

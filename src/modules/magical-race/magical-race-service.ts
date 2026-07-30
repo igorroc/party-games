@@ -119,7 +119,8 @@ export class MagicalRaceService {
 			action.type === "ROLL_MAIN_DIE" ||
 			action.type === "RESOLVE_ROCKET_SCIENTIST" ||
 			action.type === "RESOLVE_CHEERLEADER" ||
-			action.type === "RESOLVE_DICEMONGER"
+			action.type === "RESOLVE_DICEMONGER" ||
+			action.type === "RESOLVE_TWIN"
 		)
 			return state.activePlayerId ?? ""
 		if (action.type === "SUBMIT_RACE_SELECTION")

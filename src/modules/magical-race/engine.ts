@@ -80,6 +80,7 @@ export function createMatch(
 		turnQueue: [],
 		turnStartPosition: null,
 		finishers: [],
+		previousWinningDefinitionIds: [],
 		pendingDecision: null,
 		events: [{ sequence: 1, type: "MATCH_CREATED", message: "Partida criada.", payload: {} }],
 	}
@@ -113,6 +114,8 @@ export function dispatch(
 		resolveCheerleader(next, actorId, action.useAbility, random)
 	else if (action.type === "RESOLVE_DICEMONGER")
 		resolveDicemonger(next, actorId, action.useReroll, random)
+	else if (action.type === "RESOLVE_TWIN")
+		resolveTwin(next, actorId, action.copiedAbilityId, random)
 	else if (action.type === "CONFIRM_NEXT_RACE") nextRace(next, actorId)
 	else {
 		next.status = "abandoned"
@@ -174,9 +177,52 @@ function selectRacers(
 			status: "active" as const,
 			tripPending: false,
 			used: true,
+			copiedAbilityId: null,
 		})),
 	)
 	state.usedRacerDefinitionIds.push(...state.racers.map((racer) => racer.definitionId))
+	const twin = state.racers.find((racer) => racer.definitionId === "twin")
+	const options = (state.previousWinningDefinitionIds ?? []).filter((id) => id !== "twin")
+	if (twin && options.length) {
+		state.pendingDecision = { type: "twin", racerId: twin.id, abilityIds: options }
+		state.activeRacerId = twin.id
+		state.activePlayerId = twin.ownerId
+		event(state, "DECISION_REQUESTED", "O Gêmeo Prismático pode copiar um vencedor anterior.", {
+			racerId: twin.id,
+			abilityIds: options,
+		})
+		return
+	}
+	startRace(state, random)
+}
+
+function resolveTwin(
+	state: MagicalRaceState,
+	actorId: string,
+	copiedAbilityId: string | null,
+	random: RandomProvider,
+) {
+	const decision = state.pendingDecision
+	if (!decision || decision.type !== "twin" || state.activePlayerId !== actorId)
+		throw new Error("Esta decisão não está disponível.")
+	if (copiedAbilityId !== null && !decision.abilityIds.includes(copiedAbilityId))
+		throw new Error("Poder copiado inválido.")
+	const twin = state.racers.find((racer) => racer.id === decision.racerId)
+	if (!twin) throw new Error("Gêmeo Prismático inválido.")
+	twin.copiedAbilityId = copiedAbilityId
+	state.pendingDecision = null
+	event(
+		state,
+		copiedAbilityId ? "ABILITY_RESOLVED" : "ABILITY_SKIPPED",
+		copiedAbilityId
+			? `O Gêmeo Prismático copiou ${racerById.get(copiedAbilityId)?.publicName ?? "um poder"}.`
+			: "O Gêmeo Prismático decidiu não copiar um poder.",
+		{ racerId: twin.id, copiedAbilityId },
+	)
+	startRace(state, random)
+}
+
+function startRace(state: MagicalRaceState, random: RandomProvider) {
 	state.turnQueue = random.shuffle(state.racers.map((racer) => racer.id))
 	state.activeRacerId = state.turnQueue[0] ?? null
 	state.activePlayerId = activeRacer(state, null)?.ownerId ?? null
@@ -198,7 +244,7 @@ function roll(state: MagicalRaceState, actorId: string, random: RandomProvider) 
 		completeTurn(state, racer.id)
 		return
 	}
-	if (racer.definitionId === "cheerleader") {
+	if (abilityId(racer) === "cheerleader") {
 		state.pendingDecision = { type: "cheerleader", racerId: racer.id }
 		event(state, "DECISION_REQUESTED", "A Torcida Lunar pode animar os corredores em último.", {
 			racerId: racer.id,
@@ -214,7 +260,7 @@ function rollDieAndMove(state: MagicalRaceState, racerId: string, random: Random
 	const die = random.rollDie(6)
 	event(state, "MAIN_DIE_ROLLED", `Dado: ${die}.`, { racerId: racer.id, die })
 	const merchant = state.racers.find(
-		(item) => item.definitionId === "dicemonger" && item.status === "active",
+		(item) => abilityId(item) === "dicemonger" && item.status === "active",
 	)
 	if (merchant) {
 		state.pendingDecision = {
@@ -268,7 +314,7 @@ function resolveDicemonger(
 function resolveFinalDie(state: MagicalRaceState, racerId: string, die: number) {
 	const racer = state.racers.find((item) => item.id === racerId)
 	if (!racer || racer.status !== "active") return
-	if (racer.definitionId === "rocket-scientist") {
+	if (abilityId(racer) === "rocket-scientist") {
 		state.pendingDecision = { type: "rocket-scientist", racerId: racer.id, die }
 		event(state, "DECISION_REQUESTED", "O Cientista Foguete pode dobrar o movimento.", {
 			racerId: racer.id,
@@ -276,7 +322,7 @@ function resolveFinalDie(state: MagicalRaceState, racerId: string, die: number) 
 		})
 		return
 	}
-	move(state, racer.id, die)
+	move(state, racer.id, movementWithCoach(state, racer, die))
 	if (state.status === "racing") completeTurn(state, racer.id)
 }
 
@@ -319,7 +365,7 @@ function resolveRocketScientist(state: MagicalRaceState, actorId: string, double
 	const racer = state.racers.find((item) => item.id === decision.racerId)
 	if (!racer || racer.status !== "active") throw new Error("Corredor inválido para esta decisão.")
 	state.pendingDecision = null
-	const amount = double ? decision.die * 2 : decision.die
+	const amount = movementWithCoach(state, racer, double ? decision.die * 2 : decision.die)
 	event(
 		state,
 		"ABILITY_RESOLVED",
@@ -383,6 +429,7 @@ function finishRace(state: MagicalRaceState) {
 	const first = state.racers.find((racer) => racer.id === state.finishers[0])
 	const second = state.racers.find((racer) => racer.id === state.finishers[1])
 	if (first) changeScore(state, first.ownerId, points.first, "Primeiro lugar")
+	if (first) (state.previousWinningDefinitionIds ??= []).push(first.definitionId)
 	if (second) changeScore(state, second.ownerId, points.second, "Segundo lugar")
 	state.status = state.raceNumber === 4 ? "finished" : "race-result"
 	event(
@@ -416,13 +463,31 @@ function activeRacer(state: MagicalRaceState, playerId: string | null) {
 		state.racers.find((racer) => racer.ownerId === playerId && racer.status === "active")
 	)
 }
+function abilityId(racer: MagicalRaceState["racers"][number]) {
+	return racer.copiedAbilityId ?? racer.definitionId
+}
+function movementWithCoach(
+	state: MagicalRaceState,
+	racer: MagicalRaceState["racers"][number],
+	baseAmount: number,
+) {
+	const coachPresent = state.racers.some(
+		(item) =>
+			item.status === "active" && item.position === racer.position && abilityId(item) === "coach",
+	)
+	if (!coachPresent) return baseAmount
+	event(state, "ABILITY_RESOLVED", "O Mestre de Pista concedeu +1 ao movimento principal.", {
+		racerId: racer.id,
+	})
+	return baseAmount + 1
+}
 function completeTurn(state: MagicalRaceState, racerId: string) {
 	const racer = state.racers.find((item) => item.id === racerId)
 	const startPosition = state.turnStartPosition
 	state.turnStartPosition = null
 	if (racer && startPosition !== null && Math.abs(racer.position - startPosition) <= 1) {
 		for (const heckler of state.racers.filter(
-			(item) => item.definitionId === "heckler" && item.status === "active",
+			(item) => abilityId(item) === "heckler" && item.status === "active",
 		)) {
 			event(
 				state,
