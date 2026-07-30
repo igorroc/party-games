@@ -1,11 +1,12 @@
 "use client"
 
-import { Avatar, Card, Chip } from "@heroui/react"
+import { Card, Chip } from "@heroui/react"
 import Link from "next/link"
 
 import type { CurrentUser } from "@/modules/auth"
 import type { ProfileGameSession } from "@/modules/administration"
 import type { ActiveGameSession } from "@/modules/game-sessions"
+import { HiddenFaceAvatar } from "@/components/hidden-face/hidden-face-avatar"
 
 type ProfileContentProps = {
 	user: CurrentUser
@@ -44,9 +45,13 @@ export function ProfileContent({ user, activeSessions, sessions }: ProfileConten
 					</Card.Header>
 					<Card.Content className="gap-6 px-6 pb-8">
 						<div className="flex flex-col items-center gap-4">
-							<Avatar size="lg" className="text-large bg-secondary text-foreground h-24 w-24">
-								<Avatar.Fallback>{user.name?.charAt(0).toUpperCase() || "U"}</Avatar.Fallback>
-							</Avatar>
+							<HiddenFaceAvatar
+								seed={user.id}
+								style="adventurer-neutral"
+								alt={`Avatar de ${user.name || "usuário"}`}
+								className="bg-secondary h-24 w-24 rounded-full"
+								priority
+							/>
 							<div className="text-center">
 								<h2 className="text-foreground text-2xl font-bold">{user.name || "Usuário"}</h2>
 								<p className="text-muted text-sm">{user.email}</p>

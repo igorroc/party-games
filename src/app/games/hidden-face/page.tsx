@@ -101,6 +101,7 @@ export default function HiddenFacePage() {
 							>
 								<HiddenFaceAvatar
 									seed={seed}
+									style="adventurer"
 									alt={`Avatar ilustrado ${index + 1}`}
 									className="h-full w-full object-cover"
 								/>

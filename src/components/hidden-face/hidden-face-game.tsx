@@ -154,6 +154,7 @@ export function HiddenFaceGame({
 						{secretVisible && (
 							<HiddenFaceAvatar
 								seed={state.secretFace.seed}
+								style="adventurer"
 								alt="Seu avatar secreto"
 								className="h-20 w-20 rounded-xl"
 								priority
@@ -180,6 +181,7 @@ export function HiddenFaceGame({
 										<HiddenFaceAvatar
 											key={face.id}
 											seed={face.seed}
+											style="adventurer"
 											alt={`Avatar secreto do jogador ${index + 1}`}
 											className="h-20 w-20 rounded-xl bg-white/20"
 										/>
@@ -213,7 +215,12 @@ export function HiddenFaceGame({
 								aria-label={`${isLowered ? "Levantar" : "Abaixar"} avatar ${face.position + 1}`}
 								className={`border-border relative aspect-square overflow-hidden rounded-xl border bg-white transition ${isLowered ? "scale-95 opacity-30 grayscale" : "hover:-translate-y-0.5"}`}
 							>
-								<HiddenFaceAvatar seed={face.seed} alt="" className="h-full w-full object-cover" />
+								<HiddenFaceAvatar
+									seed={face.seed}
+									style="adventurer"
+									alt=""
+									className="h-full w-full object-cover"
+								/>
 								{isLowered && (
 									<span
 										className={`absolute inset-0 grid place-items-center text-xs font-extrabold text-white ${accent.button}`}
@@ -316,6 +323,7 @@ function IntroSecret({
 					<h1 className="font-display text-4xl">{playerName}, memorize este avatar.</h1>
 					<HiddenFaceAvatar
 						seed={secret.seed}
+						style="adventurer"
 						alt="Seu avatar secreto"
 						className="mx-auto h-48 w-48 rounded-3xl"
 						priority
