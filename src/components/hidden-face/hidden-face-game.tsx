@@ -238,7 +238,6 @@ export function HiddenFaceGame({
 								face={face}
 								isLowered={isLowered}
 								disabled={state.status !== "active"}
-								accentButton={accent.button}
 								onToggle={(faceId, nextIsLowered) => void setFaceLowered(faceId, nextIsLowered)}
 								onInteraction={tileSound.initialize}
 							/>

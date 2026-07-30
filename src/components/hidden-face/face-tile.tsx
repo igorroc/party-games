@@ -8,24 +8,17 @@ import { HiddenFaceAvatar } from "./hidden-face-avatar"
 
 const MINIMUM_DRAG_DISTANCE = 48
 const FAST_SWIPE_VELOCITY = 0.65
+const CARD_BACK_IMAGE = "url('/assets/games/rosto-oculto/fundo.png')"
 
 type FaceTileProps = {
 	face: HiddenFaceFace
 	isLowered: boolean
 	disabled: boolean
-	accentButton: string
 	onToggle: (faceId: string, isLowered: boolean) => void
 	onInteraction: () => void
 }
 
-export function FaceTile({
-	face,
-	isLowered,
-	disabled,
-	accentButton,
-	onToggle,
-	onInteraction,
-}: FaceTileProps) {
+export function FaceTile({ face, isLowered, disabled, onToggle, onInteraction }: FaceTileProps) {
 	const [dragProgress, setDragProgress] = useState(0)
 	const gesture = useRef<{ pointerId: number; startY: number; startedAt: number } | null>(null)
 	const ignoreClick = useRef(false)
@@ -78,8 +71,7 @@ export function FaceTile({
 		}
 	}
 
-	const angle = (isLowered ? -78 : 0) + (isLowered ? 78 : -78) * dragProgress
-	const verticalOffset = (isLowered ? 14 : 0) + (isLowered ? -14 : 14) * dragProgress
+	const angle = (isLowered ? -180 : 0) + (isLowered ? 180 : -180) * dragProgress
 
 	return (
 		<button
@@ -99,24 +91,23 @@ export function FaceTile({
 			className={`focus-visible:outline-primary relative aspect-square touch-pan-x rounded-xl p-0 [perspective:600px] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed ${isLowered || dragProgress > 0 ? "z-10" : ""}`}
 		>
 			<span
-				className="border-border bg-surface relative block h-full w-full overflow-hidden rounded-[0.7rem] border shadow-sm transition-transform duration-200 motion-reduce:transition-none"
+				className="border-border bg-surface relative block h-full w-full rounded-[0.7rem] border shadow-sm transition-transform duration-200 [transform-style:preserve-3d] motion-reduce:transition-none"
 				style={{
-					transform: `translateY(${verticalOffset}%) rotateX(${angle}deg) scale(${1 - dragProgress * 0.03})`,
-					transformOrigin: "bottom center",
+					transform: `rotateX(${angle}deg) scale(${1 - dragProgress * 0.03})`,
+					transformOrigin: "center",
 				}}
 			>
 				<HiddenFaceAvatar
 					seed={face.seed}
 					style="adventurer"
 					alt=""
-					className="h-full w-full object-cover"
+					className="absolute inset-0 h-full w-full rounded-[0.7rem] object-cover [backface-visibility:hidden]"
 				/>
 				<span
 					aria-hidden="true"
-					className={`absolute inset-0 flex items-center justify-center bg-linear-to-br from-amber-200 via-amber-300 to-orange-400 opacity-0 transition-opacity duration-150 ${isLowered ? "opacity-100" : ""}`}
-				>
-					<span className={`h-8 w-8 rounded-full border-4 border-white/70 ${accentButton}`} />
-				</span>
+					className="absolute inset-0 [transform:rotateX(180deg)] rounded-[0.7rem] bg-cover bg-center [backface-visibility:hidden]"
+					style={{ backgroundImage: CARD_BACK_IMAGE }}
+				/>
 			</span>
 			{isLowered && <span className="sr-only">Abaixado</span>}
 		</button>
