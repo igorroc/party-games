@@ -1,9 +1,4 @@
-import { PrismaPg } from "@prisma/adapter-pg"
-import { PrismaClient, QuestionDifficulty } from "../src/generated/prisma/client"
-
-const prisma = new PrismaClient({
-	adapter: new PrismaPg({ connectionString: process.env.POSTGRES_PRISMA_URL }),
-})
+import type { PrismaClient, QuestionDifficulty } from "../src/generated/prisma/client"
 const verifiedAt = new Date("2026-07-30T00:00:00.000Z")
 
 const categories = [
@@ -373,7 +368,7 @@ const questions: SeedQuestion[] = [
 	},
 ]
 
-async function main() {
+export async function seedDatabase(prisma: PrismaClient) {
 	await prisma.game.upsert({
 		where: { slug: "nem-a-pato" },
 		update: {
@@ -436,7 +431,3 @@ async function main() {
 		await prisma.user.updateMany({ where: { email: firstAdminEmail }, data: { role: "ADMIN" } })
 	}
 }
-
-main().finally(async () => {
-	await prisma.$disconnect()
-})

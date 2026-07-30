@@ -3,6 +3,7 @@ import "server-only"
 import { Prisma } from "@/generated/prisma/client"
 import db from "@/lib/db"
 import { PasswordService } from "@/lib/auth/password"
+import { seedDatabase } from "../../../prisma/seed"
 import type { AdminQuestion, AdminQuestionList, AdminUser, ProfileGameSession } from "./types"
 import type { z } from "zod"
 import type { questionInputSchema, questionListQuerySchema } from "./schemas"
@@ -17,6 +18,10 @@ const questionInclude = {
 } as const
 
 export class AdministrationService {
+	static async seedDatabase(): Promise<void> {
+		await seedDatabase(db)
+	}
+
 	static async listQuestions(query: QuestionListQuery): Promise<AdminQuestionList> {
 		const where: Prisma.NemAPatoQuestionWhereInput = {
 			...(query.search ? { prompt: { contains: query.search, mode: "insensitive" } } : {}),
