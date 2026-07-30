@@ -21,6 +21,7 @@ Use a stack, as convenções, o gerenciador de pacotes e os padrões já adotado
 Todo código deve usar nomes em inglês. Comentários no código devem ser escritos em português.
 
 ======================================================================
+
 1. RESTRIÇÃO DE PROPRIEDADE INTELECTUAL
    ======================================================================
 
@@ -29,17 +30,17 @@ Magical Athlete é um produto comercial existente. Nome público, logotipo, ilus
 A implementação deve suportar dois cenários:
 
 1. Modo licenciado:
-    - Só poderá ser ativado quando o responsável pelo projeto fornecer formalmente os assets e textos autorizados.
-    - O sistema poderá exibir o nome comercial e os materiais licenciados fornecidos.
-    - Não baixe, raspe ou incorpore assets encontrados na internet.
+   - Só poderá ser ativado quando o responsável pelo projeto fornecer formalmente os assets e textos autorizados.
+   - O sistema poderá exibir o nome comercial e os materiais licenciados fornecidos.
+   - Não baixe, raspe ou incorpore assets encontrados na internet.
 
 2. Modo original, padrão obrigatório:
-    - Utilize um nome provisório original, como "Corrida Arcana".
-    - Utilize ilustrações, nomes de corredores, textos e identidade visual próprios.
-    - Preserve as mecânicas de corrida, draft, poderes assimétricos e resolução de eventos.
-    - Os nomes conhecidos dos corredores podem existir apenas como códigos internos temporários durante o desenvolvimento, nunca como conteúdo público sem licença.
-    - Não reproduza literalmente os textos das cartas.
-    - Todas as descrições públicas devem ser reescritas.
+   - Utilize um nome provisório original, como "Corrida Arcana".
+   - Utilize ilustrações, nomes de corredores, textos e identidade visual próprios.
+   - Preserve as mecânicas de corrida, draft, poderes assimétricos e resolução de eventos.
+   - Os nomes conhecidos dos corredores podem existir apenas como códigos internos temporários durante o desenvolvimento, nunca como conteúdo público sem licença.
+   - Não reproduza literalmente os textos das cartas.
+   - Todas as descrições públicas devem ser reescritas.
 
 Crie uma configuração centralizada, sem espalhar nomes pelo código:
 
@@ -55,9 +56,8 @@ Se o modo for "licensed", exija assets fornecidos localmente pelo projeto. Nunca
 
 O slug técnico pode permanecer configurável. Evite acoplar toda a aplicação ao nome comercial.
 
+====================================================================== 2. OBJETIVO DO PRODUTO
 ======================================================================
-2. OBJETIVO DO PRODUTO
-   ======================================================================
 
 Adicionar um jogo de corrida por turnos para 2 a 6 jogadores.
 
@@ -100,9 +100,8 @@ A aplicação deve controlar integralmente:
 
 O servidor deve ser a autoridade do estado da partida.
 
+====================================================================== 3. ESCOPO DESTA VERSÃO
 ======================================================================
-3. ESCOPO DESTA VERSÃO
-   ======================================================================
 
 Implementar:
 
@@ -143,9 +142,8 @@ Não implementar agora:
 
 A arquitetura deve permitir um modo com vários dispositivos no futuro, mas isso não deve aumentar desnecessariamente o escopo atual.
 
+====================================================================== 4. INFORMAÇÕES GERAIS DA PARTIDA
 ======================================================================
-4. INFORMAÇÕES GERAIS DA PARTIDA
-   ======================================================================
 
 Configuração principal:
 
@@ -174,9 +172,8 @@ Existem pontos extras concedidos por pista e poderes.
 
 No sistema digital, pontuação deve ser um número inteiro. Não é necessário simular fisicamente fichas de 1 e 3 pontos, mas o histórico deve registrar a origem de cada alteração.
 
+====================================================================== 5. TERMOS DO DOMÍNIO
 ======================================================================
-5. TERMOS DO DOMÍNIO
-   ======================================================================
 
 Use os seguintes conceitos no motor:
 
@@ -228,9 +225,8 @@ Corredor que cruzou a linha de chegada e teve sua colocação registrada.
 Active racer:
 Corredor que ainda não foi eliminado nem finalizou.
 
+====================================================================== 6. ORDEM DE RESOLUÇÃO
 ======================================================================
-6. ORDEM DE RESOLUÇÃO
-   ======================================================================
 
 Quando vários efeitos forem disparados simultaneamente, resolva nesta ordem:
 
@@ -258,9 +254,8 @@ Regras adicionais:
 - Interações repetidas que modificam o estado e não repetem exatamente a mesma assinatura não devem ser encerradas prematuramente.
 - Toda resolução precisa ser determinística e reproduzível a partir do log de eventos.
 
+====================================================================== 7. PISTAS
 ======================================================================
-7. PISTAS
-   ======================================================================
 
 Pista simples:
 
@@ -291,6 +286,7 @@ Quem parar nesse espaço recebe 1 ponto.
 ARROW:
 Quem parar nesse espaço realiza imediatamente um novo movimento na direção e quantidade configuradas.
 Esse movimento:
+
 - é separado do movimento que levou ao espaço;
 - não é movimento principal;
 - pode disparar poderes de movimento;
@@ -312,27 +308,26 @@ Se o projeto possuir assets licenciados, use a distribuição oficial fornecida 
 
 No modo original, crie uma distribuição própria equilibrada, mantendo as quantidades acima. A distribuição deve existir em um arquivo de configuração e ser testada.
 
+====================================================================== 8. PREPARAÇÃO PADRÃO PARA 3 A 6 JOGADORES
 ======================================================================
-8. PREPARAÇÃO PADRÃO PARA 3 A 6 JOGADORES
-   ======================================================================
 
 Cada jogador precisa terminar o draft com quatro corredores.
 
 Primeiro draft:
 
 1. Revele duas vezes o número de jogadores:
-    - 3 jogadores: 6 corredores;
-    - 4 jogadores: 8 corredores;
-    - 5 jogadores: 10 corredores;
-    - 6 jogadores: 12 corredores.
+   - 3 jogadores: 6 corredores;
+   - 4 jogadores: 8 corredores;
+   - 5 jogadores: 10 corredores;
+   - 6 jogadores: 12 corredores.
 2. Todos lançam um dado.
 3. O maior valor define o primeiro jogador.
 4. Empatados pelo maior valor rerrolam apenas entre si até resolver.
 5. Execute snake draft:
-    - ordem horária até o último jogador;
-    - o último escolhe novamente;
-    - retorne em ordem anti-horária;
-    - todos terminam com dois corredores.
+   - ordem horária até o último jogador;
+   - o último escolhe novamente;
+   - retorne em ordem anti-horária;
+   - todos terminam com dois corredores.
 
 Segundo draft:
 
@@ -355,9 +350,8 @@ Requisitos de interface:
 - permitir confirmação explícita;
 - salvar cada escolha como evento atômico.
 
+====================================================================== 9. ESCOLHA DOS CORREDORES PARA CADA CORRIDA
 ======================================================================
-9. ESCOLHA DOS CORREDORES PARA CADA CORRIDA
-   ======================================================================
 
 Antes de cada corrida:
 
@@ -381,9 +375,8 @@ Modo pass-and-play:
 
 Não envie as escolhas privadas de outros jogadores ao cliente antes da revelação.
 
-======================================================================
-10. FLUXO DE UM TURNO
-    ======================================================================
+====================================================================== 10. FLUXO DE UM TURNO
+\======================================================================
 
 Fluxo base:
 
@@ -391,21 +384,21 @@ Fluxo base:
 2. Resolve poderes de início do turno.
 3. Resolve decisões "before main move".
 4. Se o corredor estiver tropeçado:
-    - não lançar dado;
-    - consumir o tropeço;
-    - registrar MAIN_MOVE_SKIPPED;
-    - continuar para efeitos de fim do turno.
+   - não lançar dado;
+   - consumir o tropeço;
+   - registrar MAIN_MOVE_SKIPPED;
+   - continuar para efeitos de fim do turno.
 5. Caso contrário:
-    - permitir rolagem;
-    - gerar resultado no servidor;
-    - abrir janela de rerrolagem e decisões;
-    - calcular modificadores;
-    - executar movimento principal;
-    - resolver passagem;
-    - resolver parada;
-    - resolver espaço;
-    - resolver poderes do corredor atual;
-    - resolver poderes dos demais corredores.
+   - permitir rolagem;
+   - gerar resultado no servidor;
+   - abrir janela de rerrolagem e decisões;
+   - calcular modificadores;
+   - executar movimento principal;
+   - resolver passagem;
+   - resolver parada;
+   - resolver espaço;
+   - resolver poderes do corredor atual;
+   - resolver poderes dos demais corredores.
 6. Resolver efeitos pendentes até esvaziar a fila.
 7. Verificar eliminação e chegada.
 8. Verificar encerramento da corrida.
@@ -426,9 +419,8 @@ O motor deve suportar interrupções controladas para:
 
 Nunca dependa apenas do componente React para determinar transições válidas.
 
-======================================================================
-11. ENCERRAMENTO DE CORRIDA E PARTIDA
-    ======================================================================
+====================================================================== 11. ENCERRAMENTO DE CORRIDA E PARTIDA
+\======================================================================
 
 Regra padrão:
 
@@ -458,9 +450,8 @@ Após a quarta corrida:
 - oferecer "Jogar novamente";
 - oferecer "Voltar ao catálogo".
 
-======================================================================
-12. VARIANTE PARA 2 JOGADORES
-    ======================================================================
+====================================================================== 12. VARIANTE PARA 2 JOGADORES
+\======================================================================
 
 Cada jogador deve possuir oito corredores.
 
@@ -493,9 +484,8 @@ Próxima corrida:
 
 O motor não deve assumir que cada jogador possui apenas um corredor ativo.
 
-======================================================================
-13. VARIANTE OPCIONAL PARA 3 JOGADORES COM DOIS CORREDORES
-    ======================================================================
+====================================================================== 13. VARIANTE OPCIONAL PARA 3 JOGADORES COM DOIS CORREDORES
+\======================================================================
 
 Draft:
 
@@ -515,9 +505,8 @@ Cada corrida:
 
 Deixe essa variante desativada por padrão, mas disponível na configuração.
 
-======================================================================
-14. ELENCO E PODERES
-    ======================================================================
+====================================================================== 14. ELENCO E PODERES
+\======================================================================
 
 Implemente os 36 poderes abaixo como módulos de domínio independentes.
 
@@ -545,6 +534,7 @@ Identificador: alchemist
 Quando o resultado válido do dado do movimento principal for 1 ou 2, o jogador pode substituir o deslocamento por 4.
 
 Detalhes:
+
 - é opcional;
 - usa o resultado final após rerrolagens;
 - o valor 4 ainda pode receber modificadores de movimento;
@@ -555,10 +545,12 @@ Detalhes:
 Identificador: baba-yaga
 
 Causa tropeço quando:
+
 - outro corredor para no mesmo espaço que ela;
 - ela para em um espaço ocupado por outro corredor.
 
 Detalhes:
+
 - todos os corredores aplicáveis tropeçam;
 - pode interagir com duelo ou teletransporte;
 - o movimento que causou a parada termina normalmente antes do tropeço.
@@ -570,6 +562,7 @@ Identificador: banana
 Todo corredor que ultrapassar Banana em um movimento fica tropeçado ao concluir esse movimento.
 
 Detalhes:
+
 - sair do mesmo espaço não conta como ultrapassar;
 - warp não conta;
 - o tropeço não interrompe o movimento atual.
@@ -579,6 +572,7 @@ Detalhes:
 Identificador: blimp
 
 Ao iniciar o turno:
+
 - antes do segundo canto da pista, recebe +2 no movimento principal;
 - no segundo canto ou depois dele, recebe -1.
 
@@ -591,6 +585,7 @@ Identificador: centaur
 Quando Centaur ultrapassa outro corredor em um movimento, esse corredor é deslocado 2 espaços para trás.
 
 Detalhes:
+
 - nunca pode ficar antes do Start;
 - aplique a cada corredor ultrapassado;
 - cada deslocamento é um novo movimento;
@@ -603,6 +598,7 @@ Identificador: cheerleader
 Antes do movimento principal, pode fazer todos os corredores empatados na última posição avançarem 2.
 
 Se usar:
+
 - Cheerleader avança 1 depois;
 - se ela própria estiver em última, primeiro avança 2 e depois avança 1;
 - se houver vários últimos colocados, todos avançam 2, mas Cheerleader avança apenas 1 adicional.
@@ -614,6 +610,7 @@ Identificador: coach
 Todo corredor parado no mesmo espaço que Coach recebe +1 no movimento principal, incluindo Coach.
 
 Detalhes:
+
 - avalie no momento do cálculo do movimento;
 - deixa de valer quando não compartilham mais o espaço.
 
@@ -624,6 +621,7 @@ Identificador: copycat
 Possui continuamente o poder do corredor ativo que estiver na liderança.
 
 Detalhes:
+
 - se houver empate na liderança, o controlador escolhe qual copiar;
 - a escolha pode mudar quando a liderança muda;
 - não copia poderes "before race";
@@ -640,6 +638,7 @@ Uma vez por turno, qualquer corredor pode rerrolar o dado do próprio movimento 
 Quando outro corredor usa essa rerrolagem, Dicemonger avança 1.
 
 Detalhes:
+
 - a rerrolagem de Dicemonger em si não ativa seu movimento extra;
 - o resultado anterior é descartado e não dispara efeitos;
 - cada corredor pode usar no máximo uma rerrolagem concedida por Dicemonger por turno;
@@ -652,11 +651,13 @@ Identificador: duelist
 Quando outro corredor passa a compartilhar o espaço de Duelist, o controlador pode declarar duelo.
 
 No duelo:
+
 - ambos lançam um d6;
 - o maior resultado avança 2;
 - Duelist vence empates.
 
 Detalhes:
+
 - é opcional;
 - pode ocorrer várias vezes no mesmo turno;
 - pode ocorrer fora do turno de Duelist;
@@ -669,11 +670,13 @@ Detalhes:
 Identificador: egg
 
 Antes da corrida:
+
 - compra 3 definições de corredores ainda disponíveis no baralho;
 - escolhe uma;
 - usa os poderes da escolhida durante a corrida.
 
 Detalhes:
+
 - continua usando o token e identidade visual de Egg;
 - recebe inclusive poderes "before race" da escolha;
 - as opções não entram na equipe do jogador;
@@ -688,6 +691,7 @@ Identificador: flip-flop
 Pode ignorar a rolagem do movimento principal e trocar de posição com qualquer outro corredor.
 
 Detalhes:
+
 - a troca é um warp simultâneo;
 - não conta como movimento;
 - não conta como ultrapassagem;
@@ -701,9 +705,11 @@ Identificador: genius
 Antes de lançar o dado do movimento principal, pode prever um resultado de 1 a 6.
 
 Se o resultado final válido for igual à previsão:
+
 - recebe um turno adicional imediatamente após o turno atual.
 
 Detalhes:
+
 - resultados descartados por rerrolagem não contam;
 - turnos adicionais precisam entrar na fila de turnos;
 - previna recursão ou duplicação acidental.
@@ -715,6 +721,7 @@ Identificador: gunk
 Todos os outros corredores recebem -1 no valor do movimento principal.
 
 Detalhes:
+
 - modifica o deslocamento, não o número do dado;
 - não impede poderes que dependem de ter rolado 6;
 - aplique depois de multiplicadores definidos pelo poder do corredor, conforme a interação específica;
@@ -727,10 +734,12 @@ Identificador: hare
 Recebe +2 no movimento principal.
 
 Ao iniciar o turno sozinho na liderança:
+
 - não realiza o movimento principal;
 - recebe 1 ponto extra.
 
 Detalhes:
+
 - estar empatado na liderança não conta como sozinho;
 - ainda pode ter outros movimentos e poderes no turno.
 
@@ -741,6 +750,7 @@ Identificador: heckler
 Quando um corredor termina o turno a no máximo 1 espaço da posição em que começou, Heckler avança 2.
 
 Detalhes:
+
 - inclui terminar no mesmo espaço;
 - inclui terminar um espaço à frente ou atrás;
 - funciona quando o corredor apenas se recupera de tropeço;
@@ -754,9 +764,11 @@ Identificador: huge-baby
 Nenhum outro corredor pode terminar parado no mesmo espaço que Huge Baby, exceto no Start.
 
 Quando isso aconteceria:
+
 - coloque o outro corredor um espaço atrás de Huge Baby.
 
 Detalhes:
+
 - esse reposicionamento especial não conta como movimento;
 - não dispara passagem;
 - não pode levar para antes do Start;
@@ -770,6 +782,7 @@ Identificador: hypnotist
 Antes do movimento principal, pode escolher um corredor e teleportá-lo para o espaço de Hypnotist.
 
 Detalhes:
+
 - é opcional;
 - é warp;
 - depois do warp, resolva efeitos de parada e compartilhamento;
@@ -781,10 +794,12 @@ Detalhes:
 Identificador: inchworm
 
 Quando qualquer outro corredor obtém um 1 válido no dado do movimento principal:
+
 - esse corredor não realiza o movimento;
 - Inchworm avança 1.
 
 Detalhes:
+
 - resultado descartado por rerrolagem não conta;
 - se Skipper estiver ativo, primeiro resolva Inchworm e depois a alteração da ordem de turno;
 - o corredor afetado ainda conclui seu turno normalmente.
@@ -794,9 +809,11 @@ Detalhes:
 Identificador: lackey
 
 Quando outro corredor obtém um 6 válido no dado do movimento principal:
+
 - Lackey avança 2 antes do corredor realizar seu movimento.
 
 Detalhes:
+
 - o valor precisa ser o resultado do dado, não o deslocamento depois de modificadores;
 - resultado descartado por rerrolagem não conta;
 - conclua todos os efeitos do movimento de Lackey antes de retomar o movimento original.
@@ -808,9 +825,11 @@ Identificador: leaptoad
 Durante qualquer movimento, espaços ocupados por outros corredores não consomem distância.
 
 Exemplo:
+
 - se precisa mover 3 e o próximo espaço está ocupado, salta esse espaço e continua contando apenas espaços livres.
 
 Detalhes:
+
 - pode saltar vários espaços ocupados consecutivos;
 - Start e Finish devem seguir as regras gerais;
 - os espaços pulados não são ocupados temporariamente;
@@ -825,6 +844,7 @@ Identificador: legs
 Pode ignorar a rolagem e realizar um movimento principal de 5.
 
 Detalhes:
+
 - ainda é movimento principal;
 - recebe modificadores como Gunk e Coach;
 - pode ser opcional a cada turno;
@@ -837,6 +857,7 @@ Identificador: lovable-loser
 Antes do movimento principal, se estiver sozinho na última posição, recebe 1 ponto.
 
 Detalhes:
+
 - empate na última posição não conta como sozinho;
 - pode pontuar repetidamente em turnos diferentes;
 - disparo no máximo uma vez por turno.
@@ -848,6 +869,7 @@ Identificador: magician
 Pode rerrolar o dado do movimento principal até duas vezes.
 
 Detalhes:
+
 - deve aceitar o último resultado obtido;
 - cada resultado descartado é tratado como inexistente;
 - a decisão é tomada após cada rolagem, respeitando o limite;
@@ -861,13 +883,16 @@ Identificador: mastermind
 No início do primeiro turno da corrida, prevê qual corredor vencerá.
 
 Se a previsão se concretizar:
+
 - a corrida termina imediatamente;
 - Mastermind recebe segundo lugar.
 
 Se prever a si mesmo e vencer:
+
 - pode receber primeiro e segundo lugares.
 
 Detalhes:
+
 - a previsão deve permanecer oculta até ser relevante;
 - precisa suportar o caso de Mastermind já ter sido eliminado;
 - a resolução ocorre assim que o corredor previsto obtiver a vitória;
@@ -880,6 +905,7 @@ Identificador: mouth
 Quando Mouth para em um espaço com exatamente um outro corredor, elimina esse corredor.
 
 Detalhes:
+
 - precisa haver exatamente um outro corredor no momento da resolução;
 - o eliminado sai imediatamente;
 - se restar apenas um corredor ativo, encerre a corrida e atribua a colocação aplicável;
@@ -892,10 +918,12 @@ Detalhes:
 Identificador: party-animal
 
 Antes do movimento principal:
+
 - todos os outros corredores movem 1 espaço em direção a Party Animal;
 - depois, cada outro corredor compartilhando seu espaço concede +1 ao movimento principal de Party Animal.
 
 Detalhes:
+
 - "em direção" pode significar avançar ou recuar;
 - os movimentos são reais e disparam efeitos;
 - resolva cada movimento na ordem de prioridade;
@@ -909,10 +937,12 @@ Identificador: rocket-scientist
 Depois de ver o resultado válido do dado, pode escolher mover o dobro.
 
 Se fizer isso:
+
 - move o dobro do resultado;
 - fica tropeçado depois de concluir o movimento.
 
 Detalhes:
+
 - o dobro ocorre antes de modificadores de movimento;
 - Gunk e Coach são aplicados ao valor já dobrado;
 - o tropeço afeta o próximo movimento principal.
@@ -924,6 +954,7 @@ Identificador: romantic
 Quando um corredor para em um espaço com exatamente um outro corredor, Romantic avança 2.
 
 Detalhes:
+
 - dispare para cada corredor que tenha parado;
 - quando dois corredores se movem juntos, pode disparar uma vez para cada um;
 - o movimento de Romantic pode criar novas reações;
@@ -936,6 +967,7 @@ Identificador: scoocher
 Sempre que o poder de outro corredor é executado, Scoocher avança 1.
 
 Detalhes:
+
 - não dispara pelo próprio poder;
 - com Gunk, considere um disparo para cada aplicação de -1 relevante;
 - com Dicemonger, dispare em cada rerrolagem;
@@ -949,14 +981,17 @@ Detalhes:
 Identificador: sisyphus
 
 Antes da corrida:
+
 - recebe 4 pontos extras.
 
 Quando obtém um 6 válido no dado do movimento principal:
+
 - em vez de se mover, teleporta para o Start;
 - perde 1 ponto, se possuir pontos;
 - não realiza o movimento principal daquele resultado.
 
 Detalhes:
+
 - o 6 continua sendo um resultado válido para poderes como Lackey;
 - o warp não conta como movimento;
 - pode perder mais de quatro pontos se já tiver conquistado outros pontos;
@@ -967,15 +1002,19 @@ Detalhes:
 Identificador: skipper
 
 Quando qualquer corredor obtém um 1 válido no movimento principal:
+
 - Skipper será o próximo a jogar.
 
 Depois do turno de Skipper:
+
 - a ordem continua a partir do jogador à esquerda de Skipper.
 
 Se Skipper obtiver 1:
+
 - pode ser o próximo novamente.
 
 Detalhes:
+
 - use uma fila de turnos, não apenas incremento de índice;
 - resultado descartado por rerrolagem não conta;
 - interage com Inchworm na ordem definida.
@@ -987,9 +1026,11 @@ Identificador: stickler
 Os outros corredores só podem cruzar a chegada com o valor exato necessário.
 
 Se ultrapassarem a chegada:
+
 - não se movem.
 
 Detalhes:
+
 - Stickler não é afetado pelo próprio poder;
 - qualquer tipo de movimento é afetado, não apenas movimento principal;
 - se um duelo mover 2 quando faltava 1, o corredor não se move;
@@ -1003,6 +1044,7 @@ Identificador: suckerfish
 Quando um corredor que compartilha seu espaço começa a se mover, Suckerfish pode acompanhá-lo até o espaço final.
 
 Detalhes:
+
 - é opcional;
 - se escolher acompanhar, não pode abandonar o movimento no meio;
 - chega ao mesmo espaço final;
@@ -1018,6 +1060,7 @@ Identificador: third-wheel
 Antes do movimento principal, pode teleportar para qualquer espaço ocupado por exatamente dois corredores.
 
 Detalhes:
+
 - é opcional;
 - o destino precisa conter exatamente dois no momento da escolha;
 - é warp;
@@ -1031,6 +1074,7 @@ Identificador: twin
 Antes da corrida, pode escolher um corredor que venceu uma corrida anterior e utilizar o poder dele nesta corrida.
 
 Detalhes:
+
 - usa o token e identidade de Twin;
 - recebe poderes "before race" do corredor copiado;
 - não há opção válida na primeira corrida;
@@ -1038,9 +1082,8 @@ Detalhes:
 - evite copiar recursivamente Twin;
 - armazene a habilidade escolhida no estado da corrida.
 
-======================================================================
-15. MOTOR DE JOGO
-    ======================================================================
+====================================================================== 15. MOTOR DE JOGO
+\======================================================================
 
 Crie um módulo específico, seguindo a arquitetura existente.
 
@@ -1048,40 +1091,40 @@ Estrutura sugerida, adaptável ao projeto:
 
 src/modules/games/magical-race/
 ├── domain/
-│   ├── game-state.ts
-│   ├── game-action.ts
-│   ├── game-event.ts
-│   ├── effect.ts
-│   ├── pending-decision.ts
-│   ├── track.ts
-│   ├── scoring.ts
-│   ├── turn-order.ts
-│   └── rules.ts
+│ ├── game-state.ts
+│ ├── game-action.ts
+│ ├── game-event.ts
+│ ├── effect.ts
+│ ├── pending-decision.ts
+│ ├── track.ts
+│ ├── scoring.ts
+│ ├── turn-order.ts
+│ └── rules.ts
 ├── engine/
-│   ├── magical-race-engine.ts
-│   ├── action-validator.ts
-│   ├── event-reducer.ts
-│   ├── effect-queue.ts
-│   ├── trigger-resolver.ts
-│   ├── loop-detector.ts
-│   ├── finish-resolver.ts
-│   └── random-provider.ts
+│ ├── magical-race-engine.ts
+│ ├── action-validator.ts
+│ ├── event-reducer.ts
+│ ├── effect-queue.ts
+│ ├── trigger-resolver.ts
+│ ├── loop-detector.ts
+│ ├── finish-resolver.ts
+│ └── random-provider.ts
 ├── racers/
-│   ├── racer-registry.ts
-│   ├── racer-definition.ts
-│   ├── alchemist.ts
-│   ├── baba-yaga.ts
-│   └── ...
+│ ├── racer-registry.ts
+│ ├── racer-definition.ts
+│ ├── alchemist.ts
+│ ├── baba-yaga.ts
+│ └── ...
 ├── application/
-│   ├── create-match.ts
-│   ├── dispatch-action.ts
-│   ├── get-match.ts
-│   ├── resume-match.ts
-│   └── abandon-match.ts
+│ ├── create-match.ts
+│ ├── dispatch-action.ts
+│ ├── get-match.ts
+│ ├── resume-match.ts
+│ └── abandon-match.ts
 ├── infrastructure/
-│   ├── match-repository.ts
-│   ├── prisma-match-repository.ts
-│   └── crypto-random-provider.ts
+│ ├── match-repository.ts
+│ ├── prisma-match-repository.ts
+│ └── crypto-random-provider.ts
 ├── schemas/
 ├── types/
 └── index.ts
@@ -1101,9 +1144,8 @@ Evite uma DSL complexa e evite código arbitrário vindo do banco.
 
 As habilidades podem ser módulos TypeScript registrados num catálogo.
 
-======================================================================
-16. ESTADO DA PARTIDA
-    ======================================================================
+====================================================================== 16. ESTADO DA PARTIDA
+\======================================================================
 
 O estado precisa conter, no mínimo:
 
@@ -1148,9 +1190,8 @@ Cada RacerInstanceState deve separar:
 
 Não coloque objetos de classe não serializáveis no estado persistido.
 
-======================================================================
-17. AÇÕES E DECISÕES
-    ======================================================================
+====================================================================== 17. AÇÕES E DECISÕES
+\======================================================================
 
 Modele ações com discriminated unions.
 
@@ -1183,9 +1224,8 @@ Toda ação deve ser validada no servidor considerando:
 - opções válidas;
 - estado da corrida.
 
-======================================================================
-18. EVENTOS
-    ======================================================================
+====================================================================== 18. EVENTOS
+\======================================================================
 
 Registre eventos imutáveis.
 
@@ -1236,9 +1276,8 @@ Cada evento deve conter:
 
 O frontend deve produzir a linha do tempo a partir de DTOs seguros, não do estado interno bruto.
 
-======================================================================
-19. FILA DE EFEITOS E DECISÕES
-    ======================================================================
+====================================================================== 19. FILA DE EFEITOS E DECISÕES
+\======================================================================
 
 O motor precisa funcionar assim:
 
@@ -1249,9 +1288,9 @@ O motor precisa funcionar assim:
 5. Ordenar efeitos pela prioridade oficial.
 6. Resolver efeitos automáticos.
 7. Ao encontrar decisão:
-    - persistir estado;
-    - criar pendingDecision;
-    - retornar ao frontend.
+   - persistir estado;
+   - criar pendingDecision;
+   - retornar ao frontend.
 8. Receber resposta.
 9. Validar decisionId.
 10. Retomar a fila.
@@ -1272,9 +1311,8 @@ createdAt: string
 
 Não derive opções somente no cliente.
 
-======================================================================
-20. DETECÇÃO DE CICLOS
-    ======================================================================
+====================================================================== 20. DETECÇÃO DE CICLOS
+\======================================================================
 
 Crie um detector de ciclos baseado em assinatura.
 
@@ -1307,9 +1345,8 @@ Também mantenha um limite de segurança alto para evitar travamento causado por
 - apresente mensagem recuperável;
 - não corrompa a partida.
 
-======================================================================
-21. ALEATORIEDADE E CONCORRÊNCIA
-    ======================================================================
+====================================================================== 21. ALEATORIEDADE E CONCORRÊNCIA
+\======================================================================
 
 Rolagens devem ser geradas no servidor.
 
@@ -1321,28 +1358,31 @@ shuffle<T>(items: readonly T[]): T[]
 }
 
 Produção:
+
 - usar fonte criptograficamente segura disponível no runtime;
 - nunca aceitar resultado enviado pelo cliente.
 
 Testes:
+
 - usar FakeRandomProvider com fila de valores previsíveis.
 
 Persistência:
+
 - cada ação recebe expectedVersion;
 - use optimistic concurrency;
 - rejeite ações duplicadas ou antigas;
 - processe mutação em transação;
 - ações idempotentes devem retornar resultado já aplicado quando possível.
 
-======================================================================
-22. PERSISTÊNCIA
-    ======================================================================
+====================================================================== 22. PERSISTÊNCIA
+\======================================================================
 
 Reutilize a entidade genérica de sessão já existente quando adequado.
 
 Caso o projeto não tenha suporte suficiente, adicione conceitos equivalentes a:
 
 GameMatch:
+
 - id;
 - gameSlug;
 - ownerUserId opcional;
@@ -1356,6 +1396,7 @@ GameMatch:
 - updatedAt.
 
 GameMatchPlayer:
+
 - id;
 - matchId;
 - userId opcional;
@@ -1365,6 +1406,7 @@ GameMatchPlayer:
 - createdAt.
 
 GameMatchEvent:
+
 - id;
 - matchId;
 - sequence;
@@ -1384,20 +1426,19 @@ Restrições:
 
 Considere snapshots e eventos, mas não implemente event sourcing completo se isso conflitar com o padrão atual. O requisito real é possuir estado persistido e log imutável.
 
-======================================================================
-23. API
-    ======================================================================
+====================================================================== 23. API
+\======================================================================
 
 Adapte ao padrão atual.
 
 Rotas sugeridas:
 
-POST   /api/games/magical-race/matches
-GET    /api/games/magical-race/matches/[match-id]
-POST   /api/games/magical-race/matches/[match-id]/actions
-GET    /api/games/magical-race/matches/[match-id]/events
-POST   /api/games/magical-race/matches/[match-id]/resume
-POST   /api/games/magical-race/matches/[match-id]/abandon
+POST /api/games/magical-race/matches
+GET /api/games/magical-race/matches/[match-id]
+POST /api/games/magical-race/matches/[match-id]/actions
+GET /api/games/magical-race/matches/[match-id]/events
+POST /api/games/magical-race/matches/[match-id]/resume
+POST /api/games/magical-race/matches/[match-id]/abandon
 
 A API de ações deve aceitar:
 
@@ -1432,9 +1473,8 @@ Não envie:
 - stack trace;
 - dados de outros usuários.
 
-======================================================================
-24. FRONTEND
-    ======================================================================
+====================================================================== 24. FRONTEND
+\======================================================================
 
 Use Server Components por padrão e Client Components apenas para interação.
 
@@ -1477,9 +1517,8 @@ Fluxo de páginas:
 10. Próxima seleção.
 11. Resultado final.
 
-======================================================================
-25. EXPERIÊNCIA DA CORRIDA
-    ======================================================================
+====================================================================== 25. EXPERIÊNCIA DA CORRIDA
+\======================================================================
 
 A tela precisa mostrar:
 
@@ -1517,9 +1556,8 @@ Não permita que o usuário mova tokens manualmente por drag-and-drop no fluxo n
 
 A posição deve vir do servidor.
 
-======================================================================
-26. DESIGN VISUAL
-    ======================================================================
+====================================================================== 26. DESIGN VISUAL
+\======================================================================
 
 Preserve o design system da plataforma.
 
@@ -1569,9 +1607,8 @@ A animação nunca deve controlar o estado. Ela apenas representa eventos confir
 
 Respeite prefers-reduced-motion.
 
-======================================================================
-27. RESPONSIVIDADE
-    ======================================================================
+====================================================================== 27. RESPONSIVIDADE
+\======================================================================
 
 Mobile:
 
@@ -1592,9 +1629,8 @@ Desktop e televisão:
 
 Se a pista linear ficar pequena no celular, utilize representação segmentada ou serpenteada. Não exija zoom manual.
 
-======================================================================
-28. ACESSIBILIDADE
-    ======================================================================
+====================================================================== 28. ACESSIBILIDADE
+\======================================================================
 
 Implementar:
 
@@ -1620,9 +1656,8 @@ Atalhos sugeridos:
 
 Não acione atalhos enquanto o foco estiver em input, select ou textarea.
 
-======================================================================
-29. SEGURANÇA
-    ======================================================================
+====================================================================== 29. SEGURANÇA
+\======================================================================
 
 - Estado autoritativo no servidor.
 - RNG no servidor.
@@ -1640,9 +1675,8 @@ Não acione atalhos enquanto o foco estiver em input, select ou textarea.
 - Manter APIs administrativas protegidas.
 - Desativar painel de debug em produção.
 
-======================================================================
-30. OBSERVABILIDADE
-    ======================================================================
+====================================================================== 30. OBSERVABILIDADE
+\======================================================================
 
 Registre de forma estruturada:
 
@@ -1680,9 +1714,8 @@ Erros de domínio sugeridos:
 - EFFECT_LOOP_TERMINATED
 - ENGINE_SAFETY_LIMIT_REACHED
 
-======================================================================
-31. TESTES
-    ======================================================================
+====================================================================== 31. TESTES
+\======================================================================
 
 Crie testes unitários para:
 
@@ -1732,9 +1765,8 @@ Use FakeRandomProvider.
 
 Não dependa de timers reais para testar animações.
 
-======================================================================
-32. DADOS E ASSETS
-    ======================================================================
+====================================================================== 32. DADOS E ASSETS
+\======================================================================
 
 O registro dos 36 corredores deve existir em código e pode ter metadados persistidos por seed.
 
@@ -1760,9 +1792,8 @@ Exemplo de separação:
 
 Se o modo licenciado for ativado, leia os nomes e assets de um pacote local autorizado.
 
-======================================================================
-33. MIGRAÇÕES E COMPATIBILIDADE
-    ======================================================================
+====================================================================== 33. MIGRAÇÕES E COMPATIBILIDADE
+\======================================================================
 
 - Preserve dados do Nem a Pato.
 - Não altere slugs existentes.
@@ -1783,17 +1814,18 @@ getPublicState(sessionId: string, viewer: GameViewer): Promise<unknown>
 dispatchAction(sessionId: string, action: unknown, viewer: GameViewer): Promise<unknown>
 }
 
-======================================================================
-34. ORDEM DE IMPLEMENTAÇÃO
-    ======================================================================
+====================================================================== 34. ORDEM DE IMPLEMENTAÇÃO
+\======================================================================
 
 Etapa 1:
+
 - analisar o repositório;
 - apresentar diagnóstico;
 - mapear o que será reutilizado;
 - identificar mudanças no catálogo e nas sessões.
 
 Etapa 2:
+
 - criar contratos do domínio;
 - criar estado;
 - criar eventos;
@@ -1802,6 +1834,7 @@ Etapa 2:
 - criar testes do motor base.
 
 Etapa 3:
+
 - implementar pista;
 - movimento;
 - draft;
@@ -1812,11 +1845,13 @@ Etapa 3:
 - variantes.
 
 Etapa 4:
+
 - implementar os 36 corredores em blocos;
 - adicionar testes de cada bloco;
 - não avançar deixando poderes parcialmente simulados.
 
 Etapa 5:
+
 - criar persistência;
 - migrations;
 - repositório;
@@ -1825,6 +1860,7 @@ Etapa 5:
 - concorrência.
 
 Etapa 6:
+
 - criar página do jogo;
 - setup;
 - draft;
@@ -1834,6 +1870,7 @@ Etapa 6:
 - resultados.
 
 Etapa 7:
+
 - animações;
 - acessibilidade;
 - responsividade;
@@ -1841,15 +1878,15 @@ Etapa 7:
 - event log.
 
 Etapa 8:
+
 - testes de integração;
 - lint;
 - type check;
 - build;
 - atualização da documentação.
 
-======================================================================
-35. CRITÉRIOS DE ACEITAÇÃO
-    ======================================================================
+====================================================================== 35. CRITÉRIOS DE ACEITAÇÃO
+\======================================================================
 
 A implementação será considerada concluída quando:
 
@@ -1883,9 +1920,8 @@ A implementação será considerada concluída quando:
 - não quebrar Nem a Pato;
 - manter a arquitetura existente reconhecível.
 
-======================================================================
-36. ENTREGÁVEIS
-    ======================================================================
+====================================================================== 36. ENTREGÁVEIS
+\======================================================================
 
 Ao concluir, apresente:
 
@@ -1910,9 +1946,8 @@ Ao concluir, apresente:
 19. Próximos passos para modo multi-dispositivo.
 20. Confirmação de que nenhum asset protegido foi incorporado sem autorização.
 
-======================================================================
-37. DIRETRIZ FINAL
-    ======================================================================
+====================================================================== 37. DIRETRIZ FINAL
+\======================================================================
 
 Não trate este jogo como uma sequência de componentes React com condicionais.
 

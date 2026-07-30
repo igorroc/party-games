@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg"
 import { PrismaClient, QuestionDifficulty } from "../src/generated/prisma/client"
+import { MAGICAL_RACE_SLUG } from "../src/modules/games/game-registry"
 
 const prisma = new PrismaClient({
 	adapter: new PrismaPg({ connectionString: process.env.POSTGRES_PRISMA_URL }),
@@ -374,6 +375,27 @@ const questions: SeedQuestion[] = [
 ]
 
 async function main() {
+	await prisma.game.upsert({
+		where: { slug: MAGICAL_RACE_SLUG },
+		update: {
+			name: process.env.NEXT_PUBLIC_MAGICAL_RACE_NAME?.trim() || "Corrida Arcana",
+			description: "Uma corrida fantástica de poderes imprevisíveis para jogar na mesma mesa.",
+			status: "ACTIVE",
+			minPlayers: 2,
+			maxPlayers: 6,
+			durationMin: 30,
+		},
+		create: {
+			slug: MAGICAL_RACE_SLUG,
+			name: process.env.NEXT_PUBLIC_MAGICAL_RACE_NAME?.trim() || "Corrida Arcana",
+			description: "Uma corrida fantástica de poderes imprevisíveis para jogar na mesma mesa.",
+			status: "ACTIVE",
+			minPlayers: 2,
+			maxPlayers: 6,
+			durationMin: 30,
+		},
+	})
+
 	await prisma.game.upsert({
 		where: { slug: "nem-a-pato" },
 		update: {
