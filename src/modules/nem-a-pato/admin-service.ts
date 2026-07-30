@@ -29,6 +29,17 @@ export class NemAPatoAdminService {
 		return result.count > 0
 	}
 
+	static async deleteCategory(id: string): Promise<"DELETED" | "IN_USE" | "NOT_FOUND"> {
+		const category = await db.nemAPatoCategory.findUnique({
+			where: { id },
+			select: { _count: { select: { questions: true, sessions: true } } },
+		})
+		if (!category) return "NOT_FOUND"
+		if (category._count.questions > 0 || category._count.sessions > 0) return "IN_USE"
+		await db.nemAPatoCategory.delete({ where: { id } })
+		return "DELETED"
+	}
+
 	static async updateGameStatus(status: "ACTIVE" | "INACTIVE") {
 		await db.game.update({ where: { slug: NEM_A_PATO_SLUG }, data: { status } })
 	}

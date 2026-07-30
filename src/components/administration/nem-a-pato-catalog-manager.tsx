@@ -39,6 +39,20 @@ function ItemManager({
 		event.currentTarget.reset()
 		router.refresh()
 	}
+
+	async function remove(item: Item) {
+		if (!confirm(`Excluir a categoria ${item.name}?`)) return
+		setLoading(true)
+		try {
+			const response = await fetch(`${endpoint}/${item.id}`, { method: "DELETE" })
+			const result = (await response.json()) as { error?: { message?: string } }
+			if (!response.ok) return toast.error(result.error?.message ?? "Não foi possível excluir.")
+			toast.success("Categoria excluída.")
+			router.refresh()
+		} finally {
+			setLoading(false)
+		}
+	}
 	return (
 		<section className="paper-card rounded-3xl p-6">
 			<h2 className="font-display text-foreground text-3xl">{title}</h2>
@@ -47,7 +61,7 @@ function ItemManager({
 					<form
 						key={item.id}
 						onSubmit={submit}
-						className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-[1fr_1fr_auto]"
+						className="border-border grid gap-3 rounded-xl border p-3 md:grid-cols-[1fr_1fr_auto_auto]"
 					>
 						<input type="hidden" name="id" value={item.id} />
 						<input
@@ -64,6 +78,14 @@ function ItemManager({
 						/>
 						<Button type="submit" variant="outline" isDisabled={loading}>
 							Salvar
+						</Button>
+						<Button
+							type="button"
+							variant="danger-soft"
+							isDisabled={loading}
+							onPress={() => void remove(item)}
+						>
+							Excluir
 						</Button>
 					</form>
 				))}
@@ -113,7 +135,9 @@ export function NemAPatoCatalogManager({ categories, gameIsActive }: Props) {
 		setLoading(false)
 		if (!response.ok)
 			return toast.error(
-				status === "ACTIVE" ? "Não foi possível reativar o jogo." : "Não foi possível desativar o jogo.",
+				status === "ACTIVE"
+					? "Não foi possível reativar o jogo."
+					: "Não foi possível desativar o jogo.",
 			)
 		toast.success(status === "ACTIVE" ? "Jogo reativado." : "Jogo desativado.")
 		router.refresh()
