@@ -310,7 +310,13 @@ function move(state: MagicalRaceState, racerId: string, amount: number) {
 		event(state, "RACER_TRIPPED", "O corredor tropeçou.", { racerId })
 	}
 	if (space.type === "bonus-point") changeScore(state, racer.ownerId, 1, "Espaço de bônus")
-	if (space.type === "arrow" && space.movementDelta) move(state, racer.id, space.movementDelta)
+	if (space.type === "arrow" && space.movementDelta) {
+		event(state, "TRACK_EFFECT", "A seta arcana empurrou um corredor para outra casa.", {
+			racerId,
+			movementDelta: space.movementDelta,
+		})
+		move(state, racer.id, space.movementDelta)
+	}
 }
 
 function finishRace(state: MagicalRaceState) {

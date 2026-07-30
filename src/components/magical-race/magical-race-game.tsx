@@ -3,6 +3,7 @@
 import { Button } from "@heroui/react"
 import Image from "next/image"
 import { useEffect, useState } from "react"
+import { toast } from "react-toastify"
 import { AppContainer } from "@/components/design-system"
 import { racerDefinitions } from "@/modules/magical-race/racers"
 import { getTrack } from "@/modules/magical-race/track"
@@ -18,6 +19,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 	const [rollingValue, setRollingValue] = useState<number | null>(null)
 	const [boardPositions, setBoardPositions] = useState<Record<string, number> | null>(null)
 	const [infoOpen, setInfoOpen] = useState(false)
+	const [decisionClosing, setDecisionClosing] = useState(false)
 	useEffect(() => {
 		let active = true
 		void fetch(`/api/games/magical-race/matches/${sessionId}`)
@@ -39,6 +41,8 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 	async function act(action: Record<string, unknown>) {
 		if (!state || busy) return
 		setBusy(true)
+		if (action.type === "RESOLVE_ROCKET_SCIENTIST" || action.type === "RESOLVE_CHEERLEADER")
+			setDecisionClosing(true)
 		setError(null)
 		try {
 			const response = await fetch(`/api/games/magical-race/matches/${sessionId}/actions`, {
@@ -49,6 +53,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 			const result = (await response.json()) as ApiResult
 			if (!response.ok || !result.success)
 				throw new Error(result.success ? "Ação inválida." : result.error.message)
+			announceAutomaticEvents(state.events.length, result.data.events)
 			if (action.type === "ROLL_MAIN_DIE") await animateTurn(state, result.data, true)
 			else if (action.type === "RESOLVE_ROCKET_SCIENTIST" || action.type === "RESOLVE_CHEERLEADER")
 				await animateTurn(state, result.data, false)
@@ -57,6 +62,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 			setError(reason instanceof Error ? reason.message : "Erro ao jogar.")
 		} finally {
 			setBusy(false)
+			setDecisionClosing(false)
 		}
 	}
 	async function animateTurn(
@@ -165,6 +171,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 								rollingValue={rollingValue}
 								boardPositions={boardPositions}
 								isResult={state.status === "race-result"}
+								decisionClosing={decisionClosing}
 							/>
 						)}
 						{state.status === "finished" && (
@@ -181,7 +188,9 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 					</p>
 				)}
 				{infoOpen && <MatchInfoModal state={state} onClose={() => setInfoOpen(false)} />}
-				{state.pendingDecision && <PendingDecisionModal state={state} act={act} busy={busy} />}
+				{state.pendingDecision && !decisionClosing && (
+					<PendingDecisionModal state={state} act={act} busy={busy} />
+				)}
 			</AppContainer>
 		</main>
 	)
@@ -453,6 +462,7 @@ function Race({
 	rollingValue,
 	boardPositions,
 	isResult,
+	decisionClosing,
 }: {
 	state: PublicMagicalRaceState
 	act: (action: Record<string, unknown>) => Promise<void>
@@ -461,6 +471,7 @@ function Race({
 	rollingValue: number | null
 	boardPositions: Record<string, number> | null
 	isResult: boolean
+	decisionClosing: boolean
 }) {
 	const lastEvent = state.events.at(-1)
 	const dieEvent = [...state.events].reverse().find((event) => event.type === "MAIN_DIE_ROLLED")
@@ -544,7 +555,7 @@ function Race({
 						O servidor calcula dado, movimento e os efeitos da pista.
 					</p>
 				</div>
-				{state.pendingDecision?.type === "rocket-scientist" ? (
+				{state.pendingDecision?.type === "rocket-scientist" && !decisionClosing ? (
 					<div className="rocket-decision rounded-2xl p-4">
 						<p className="text-xs font-black tracking-[0.14em] uppercase">Decisão de poder</p>
 						<p className="font-display mt-1 text-xl">
@@ -570,7 +581,7 @@ function Race({
 							</Button>
 						</div>
 					</div>
-				) : state.pendingDecision?.type === "cheerleader" ? (
+				) : state.pendingDecision?.type === "cheerleader" && !decisionClosing ? (
 					<div className="rocket-decision rounded-2xl p-4">
 						<p className="text-xs font-black tracking-[0.14em] uppercase">Decisão de poder</p>
 						<p className="font-display mt-1 text-xl">Animar quem está em último?</p>
@@ -858,4 +869,42 @@ function playerColor(seatOrder: number | undefined) {
 }
 function delay(milliseconds: number) {
 	return new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds))
+}
+
+function announceAutomaticEvents(
+	previousEventCount: number,
+	events: PublicMagicalRaceState["events"],
+) {
+	for (const event of events.slice(previousEventCount)) {
+		const message = automaticEventMessage(event)
+		if (!message) continue
+		toast.info(message, {
+			position: "bottom-right",
+			toastId: `magical-race-event-${event.sequence}`,
+			autoClose: 9000,
+		})
+	}
+}
+
+function automaticEventMessage(event: PublicMagicalRaceState["events"][number]) {
+	if (event.type === "RACER_TRIPPED")
+		return pickMessage(event.sequence, [
+			"Ops! As pernas se embolaram. No próximo turno, esse corredor vai ficar de molho.",
+			"Tropeço anotado: na próxima vez, o dado vai descansar.",
+			"A pista cobrou seu preço. Já já vem um turno perdido.",
+		])
+	if (event.type === "TRACK_EFFECT")
+		return pickMessage(event.sequence, [
+			"A seta arcana disparou. Segura esse corredor!",
+			"A pista resolveu ajudar... ou atrapalhar. Movimento extra ativado!",
+			"Quem desenhou essa seta claramente gosta de confusão.",
+		])
+	if (event.type === "ABILITY_RESOLVED") return `Poder ativado: ${event.message}`
+	if (event.type === "ABILITY_SKIPPED") return `Poder guardado: ${event.message}`
+	if (event.type === "SCORE_CHANGED") return `Plim! ${event.message}`
+	return null
+}
+
+function pickMessage(sequence: number, messages: readonly string[]) {
+	return messages[sequence % messages.length]!
 }
