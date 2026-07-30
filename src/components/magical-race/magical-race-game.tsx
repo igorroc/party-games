@@ -16,6 +16,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 	const [rolling, setRolling] = useState(false)
 	const [rollingValue, setRollingValue] = useState<number | null>(null)
 	const [boardPositions, setBoardPositions] = useState<Record<string, number> | null>(null)
+	const [infoOpen, setInfoOpen] = useState(false)
 	useEffect(() => {
 		let active = true
 		void fetch(`/api/games/magical-race/matches/${sessionId}`)
@@ -115,7 +116,16 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 						{active ? `Vez: ${active.name}` : "Resultado"}
 					</div>
 				</header>
-				<div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+				<div className="flex justify-end">
+					<Button
+						variant="outline"
+						className="transition-transform hover:-translate-y-0.5"
+						onPress={() => setInfoOpen(true)}
+					>
+						Placar, equipes e eventos
+					</Button>
+				</div>
+				<div className="mt-4">
 					<section className="paper-card rounded-3xl p-5 sm:p-7">
 						{state.status === "drafting" && <Draft state={state} act={act} busy={busy} />}
 						{state.status === "race-selection" && (
@@ -159,36 +169,13 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 							</div>
 						)}
 					</section>
-					<aside className="space-y-4">
-						<section className="paper-card rounded-2xl p-4">
-							<h2 className="font-display text-2xl">Placar</h2>
-							{[...state.players]
-								.sort((a, b) => b.score - a.score)
-								.map((player) => (
-									<p key={player.id} className="mt-2 flex justify-between font-bold">
-										<span>{player.name}</span>
-										<span>{player.score}</span>
-									</p>
-								))}
-						</section>
-						<section className="paper-card max-h-64 overflow-auto rounded-2xl p-4">
-							<h2 className="font-display text-2xl">Eventos</h2>
-							{state.events
-								.slice(-8)
-								.reverse()
-								.map((event) => (
-									<p key={event.sequence} className="text-muted mt-2 text-sm">
-										{event.message}
-									</p>
-								))}
-						</section>
-					</aside>
 				</div>
 				{error && (
 					<p role="alert" className="bg-danger/10 text-danger mt-5 rounded-xl p-3 font-bold">
 						{error}
 					</p>
 				)}
+				{infoOpen && <MatchInfoModal state={state} onClose={() => setInfoOpen(false)} />}
 			</AppContainer>
 		</main>
 	)
@@ -234,85 +221,133 @@ function Draft({
 					/>
 				</div>
 			</div>
-			<div className="mt-5 grid gap-5 xl:grid-cols-[1fr_16rem]">
-				<div className="grid gap-4 sm:grid-cols-2">
-					{state.draftPool.map((id) => {
-						const racer = racerDefinitions.find((item) => item.id === id)
-						if (!racer) return null
-						const visual = racerVisual(racer.id)
-						return (
-							<button
-								disabled={busy}
-								key={id}
-								onClick={() => act({ type: "DRAFT_RACER", racerDefinitionId: id })}
-								className="draft-racer-card group cursor-pointer rounded-2xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-							>
-								<div className="flex items-start gap-3">
-									<span
-										className="grid h-16 w-16 shrink-0 place-items-center rounded-xl border-2 border-white/70 text-4xl shadow-sm"
-										style={{ background: visual.color }}
-									>
-										{visual.icon}
-									</span>
-									<span>
-										<span className="text-primary text-[10px] font-black tracking-[0.16em] uppercase">
-											Corredor disponível
-										</span>
-										<strong className="font-display mt-1 block text-2xl leading-none">
-											{racer.publicName}
-										</strong>
-										<span className="text-muted mt-2 block text-sm">{racer.shortDescription}</span>
-									</span>
-								</div>
-								<span className="border-primary/15 bg-primary/5 mt-4 block rounded-xl border p-3">
-									<span className="text-primary text-[10px] font-black tracking-[0.14em] uppercase">
-										Poder de corrida
-									</span>
-									<span className="mt-1 block text-sm leading-snug">{racer.abilitySummary}</span>
-								</span>
-								<span className="text-primary mt-4 flex items-center justify-between text-sm font-black">
-									<span>{racer.isOptional ? "Decisão tática" : "Efeito automático"}</span>
-									<span className="transition-transform group-hover:translate-x-1">Recrutar →</span>
-								</span>
-							</button>
-						)
-					})}
-				</div>
-				<aside className="space-y-3">
-					<p className="text-muted text-xs font-black tracking-[0.16em] uppercase">
-						Equipes na mesa
-					</p>
-					{state.players.map((player) => (
-						<div
-							key={player.id}
-							className={`rounded-xl border p-3 ${player.id === active?.id ? "border-primary bg-primary/10" : "border-border bg-surface"}`}
+			<div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+				{state.draftPool.map((id) => {
+					const racer = racerDefinitions.find((item) => item.id === id)
+					if (!racer) return null
+					const visual = racerVisual(racer.id)
+					return (
+						<button
+							disabled={busy}
+							key={id}
+							onClick={() => act({ type: "DRAFT_RACER", racerDefinitionId: id })}
+							className="draft-racer-card group cursor-pointer rounded-2xl p-4 text-left transition-all hover:-translate-y-1 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
 						>
-							<p className="flex items-center justify-between font-black">
-								<span>{player.name}</span>
-								<span className="text-primary text-sm">
-									{player.draftedRacerIds.length}/{state.mode === "standard" ? 4 : 8}
+							<div className="flex items-start gap-3">
+								<span
+									className="grid h-16 w-16 shrink-0 place-items-center rounded-xl border-2 border-white/70 text-4xl shadow-sm"
+									style={{ background: visual.color }}
+								>
+									{visual.icon}
 								</span>
-							</p>
-							<div className="mt-2 flex flex-wrap gap-1">
-								{player.draftedRacerIds.length === 0 ? (
-									<span className="text-muted text-xs">Ainda sem corredores</span>
-								) : (
-									player.draftedRacerIds.map((racerId) => (
+								<span>
+									<strong className="font-display block text-2xl leading-none">
+										{racer.publicName}
+									</strong>
+									<span className="text-muted mt-2 block text-sm">
+										Um talento único para virar a corrida.
+									</span>
+								</span>
+							</div>
+							<span className="border-primary/15 bg-primary/5 mt-4 block rounded-xl border p-3">
+								<span className="text-primary text-[10px] font-black tracking-[0.14em] uppercase">
+									Poder de corrida
+								</span>
+								<span className="mt-1 block text-sm leading-snug">{racer.abilitySummary}</span>
+							</span>
+							<span className="text-primary mt-4 flex items-center justify-between text-sm font-black">
+								<span>{racer.isOptional ? "Poder opcional" : "Efeito automático"}</span>
+								<span className="transition-transform group-hover:translate-x-1">Recrutar →</span>
+							</span>
+						</button>
+					)
+				})}
+			</div>
+		</>
+	)
+}
+
+function MatchInfoModal({
+	state,
+	onClose,
+}: {
+	state: PublicMagicalRaceState
+	onClose: () => void
+}) {
+	return (
+		<div
+			className="fixed inset-0 z-50 grid place-items-center bg-black/55 p-4"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="match-info-title"
+		>
+			<div className="bg-surface max-h-[85dvh] w-full max-w-2xl overflow-auto rounded-3xl p-6 shadow-2xl sm:p-8">
+				<div className="flex items-start justify-between gap-4">
+					<div>
+						<p className="text-accent text-xs font-black tracking-[.16em] uppercase">
+							Mesa da partida
+						</p>
+						<h2 id="match-info-title" className="font-display mt-1 text-3xl">
+							Placar e equipes
+						</h2>
+					</div>
+					<Button variant="ghost" aria-label="Fechar painel" onPress={onClose}>
+						Fechar
+					</Button>
+				</div>
+				<div className="mt-6 grid gap-5 sm:grid-cols-2">
+					<section>
+						<h3 className="font-display text-2xl">Placar</h3>
+						{[...state.players]
+							.sort((a, b) => b.score - a.score)
+							.map((player) => (
+								<p
+									key={player.id}
+									className="border-border mt-2 flex justify-between border-b py-2 font-bold"
+								>
+									<span>{player.name}</span>
+									<span>{player.score} pts</span>
+								</p>
+							))}
+					</section>
+					<section>
+						<h3 className="font-display text-2xl">Equipes</h3>
+						{state.players.map((player) => (
+							<div key={player.id} className="border-border mt-2 rounded-xl border p-3">
+								<p className="flex justify-between font-bold">
+									<span>{player.name}</span>
+									<span>
+										{player.draftedRacerIds.length}/{state.mode === "standard" ? 4 : 8}
+									</span>
+								</p>
+								<div className="mt-2 flex flex-wrap gap-1">
+									{player.draftedRacerIds.map((racerId) => (
 										<span
 											key={racerId}
 											title={racerDefinitions.find((racer) => racer.id === racerId)?.publicName}
-											className="bg-surface grid h-7 w-7 place-items-center rounded-full border border-white text-sm shadow-sm"
+											className="bg-surface grid h-7 w-7 place-items-center rounded-full border text-sm"
 										>
 											{racerVisual(racerId).icon}
 										</span>
-									))
-								)}
+									))}
+								</div>
 							</div>
-						</div>
-					))}
-				</aside>
+						))}
+					</section>
+				</div>
+				<section className="border-border mt-6 border-t pt-5">
+					<h3 className="font-display text-2xl">Eventos recentes</h3>
+					{state.events
+						.slice(-10)
+						.reverse()
+						.map((event) => (
+							<p key={event.sequence} className="text-muted mt-2 text-sm">
+								{event.message}
+							</p>
+						))}
+				</section>
 			</div>
-		</>
+		</div>
 	)
 }
 function Selection({
