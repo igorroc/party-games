@@ -1,4 +1,5 @@
 import type { PrismaClient } from "../src/generated/prisma/client"
+import { MAGICAL_RACE_SLUG, NEM_A_PATO_SLUG } from "@/modules/games"
 const verifiedAt = new Date("2026-07-30T00:00:00.000Z")
 
 const categories = [
@@ -396,7 +397,7 @@ export async function seedDatabase(prisma: PrismaClient) {
 		},
 	})
 	await prisma.game.upsert({
-		where: { slug: "nem-a-pato" },
+		where: { slug: NEM_A_PATO_SLUG },
 		update: {
 			name: "Nem a Pato",
 			description: "Um jogo presencial de estimativas numéricas para grupos.",
@@ -406,7 +407,7 @@ export async function seedDatabase(prisma: PrismaClient) {
 			durationMin: 30,
 		},
 		create: {
-			slug: "nem-a-pato",
+			slug: NEM_A_PATO_SLUG,
 			name: "Nem a Pato",
 			description: "Um jogo presencial de estimativas numéricas para grupos.",
 			status: "ACTIVE",
