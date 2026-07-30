@@ -372,10 +372,33 @@ function Selection({
 		)
 	return (
 		<>
-			<h2 className="font-display text-3xl">Passe o dispositivo para {player.name}</h2>
-			<p className="text-muted mt-2">
-				Escolha {required === 1 ? "um corredor" : "dois corredores"} em segredo.
-			</p>
+			<div className="secret-selection-banner rounded-2xl p-5 sm:p-6">
+				<div className="flex items-start gap-4">
+					<span
+						className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-white/30 bg-black/15 text-2xl"
+						aria-hidden="true"
+					>
+						⌁
+					</span>
+					<div>
+						<p className="text-xs font-black tracking-[.16em] text-white/75 uppercase">
+							Escolha secreta
+						</p>
+						<h2 className="font-display mt-1 text-3xl text-white">
+							Passe o dispositivo para {player.name}
+						</h2>
+						<p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/85">
+							Sua escolha fica escondida até todo mundo confirmar. Assim, ninguém pode mudar de
+							corredor depois de ver a estratégia dos outros e a largada é revelada ao mesmo tempo.
+						</p>
+					</div>
+				</div>
+				<div className="mt-4 rounded-xl border border-white/25 bg-black/10 px-4 py-3 text-sm text-white/90">
+					Só {player.name} deve olhar a tela agora. Escolha{" "}
+					{required === 1 ? "um corredor" : "dois corredores"} e confirme antes de passar o
+					dispositivo.
+				</div>
+			</div>
 			<div className="mt-5 grid gap-3 sm:grid-cols-2">
 				{player.draftedRacerIds
 					.filter((id) => !state.usedRacerDefinitionIds.includes(id))

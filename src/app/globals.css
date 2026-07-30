@@ -78,6 +78,11 @@ body {
 		box-shadow: 5px 5px 0 rgb(var(--color-primary) / 0.25);
 	}
 
+	.secret-selection-banner {
+		background: linear-gradient(125deg, #243d63, #5f578d 58%, #9a5f86);
+		box-shadow: 5px 5px 0 rgb(var(--color-primary) / 0.2);
+	}
+
 	.draft-racer-card {
 		border: 2px solid rgb(var(--color-border));
 		background: linear-gradient(145deg, #fffdf7, #f4ead7);
