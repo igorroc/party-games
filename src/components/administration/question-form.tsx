@@ -6,13 +6,18 @@ import { useState } from "react"
 import { toast } from "react-toastify"
 import type { AdminQuestion } from "@/modules/administration"
 import type { QuestionCategoryOption } from "@/modules/administration/types"
+import type { QuestionDifficultyOption } from "@/modules/administration/types"
 
 type QuestionFormProps = {
 	question?: AdminQuestion
-	categories: QuestionCategoryOption[]
+	categories: readonly QuestionCategoryOption[]
+	difficulties: readonly QuestionDifficultyOption[]
 }
 
-export function QuestionForm({ question, categories }: QuestionFormProps) {
+const fieldClassName =
+	"border-border bg-surface text-foreground min-h-12 rounded-xl border px-3 font-normal"
+
+export function QuestionForm({ question, categories, difficulties }: QuestionFormProps) {
 	const router = useRouter()
 	const [isLoading, setIsLoading] = useState(false)
 
@@ -77,74 +82,105 @@ export function QuestionForm({ question, categories }: QuestionFormProps) {
 					</select>
 				</label>
 			</div>
-			<textarea
-				name="prompt"
-				defaultValue={question?.prompt}
-				rows={3}
-				required
-				aria-label="Pergunta"
-			/>
-			<div className="grid gap-5 md:grid-cols-2">
-				<input
-					name="answerText"
-					defaultValue={question?.answerText}
+			<label className="text-foreground grid gap-2 font-bold">
+				Pergunta
+				<textarea
+					name="prompt"
+					defaultValue={question?.prompt}
+					rows={3}
 					required
-					aria-label="Resposta"
+					className={fieldClassName}
 				/>
-				<input
-					name="answerValue"
-					defaultValue={question?.answerValue ?? ""}
-					inputMode="decimal"
-					aria-label="Valor numérico (opcional)"
-				/>
-				<input
-					name="answerUnit"
-					defaultValue={question?.answerUnit ?? ""}
-					aria-label="Unidade (opcional)"
-				/>
+			</label>
+			<div className="grid gap-5 md:grid-cols-2">
+				<label className="text-foreground grid gap-2 font-bold">
+					Resposta
+					<input
+						name="answerText"
+						defaultValue={question?.answerText}
+						required
+						className={fieldClassName}
+					/>
+				</label>
+				<label className="text-foreground grid gap-2 font-bold">
+					Valor numérico (opcional)
+					<input
+						name="answerValue"
+						defaultValue={question?.answerValue ?? ""}
+						inputMode="decimal"
+						className={fieldClassName}
+					/>
+				</label>
+				<label className="text-foreground grid gap-2 font-bold">
+					Unidade (opcional)
+					<input
+						name="answerUnit"
+						defaultValue={question?.answerUnit ?? ""}
+						className={fieldClassName}
+					/>
+				</label>
 				<label className="text-foreground grid gap-2 font-bold">
 					Dificuldade
 					<select
 						name="difficulty"
-						defaultValue={question?.difficulty ?? "MEDIUM"}
-						className="border-border bg-surface min-h-12 rounded-xl border px-3 font-normal"
+						defaultValue={question?.difficulty}
+						required
+						className={fieldClassName}
 					>
-						<option value="EASY">Fácil</option>
-						<option value="MEDIUM">Média</option>
-						<option value="HARD">Difícil</option>
+						<option value="">Selecione uma dificuldade</option>
+						{difficulties.map((difficulty) => (
+							<option key={difficulty.value} value={difficulty.value}>
+								{difficulty.name}
+							</option>
+						))}
 					</select>
 				</label>
 			</div>
-			<textarea
-				name="explanation"
-				defaultValue={question?.explanation ?? ""}
-				rows={3}
-				aria-label="Explicação (opcional)"
-			/>
+			<label className="text-foreground grid gap-2 font-bold">
+				Explicação (opcional)
+				<textarea
+					name="explanation"
+					defaultValue={question?.explanation ?? ""}
+					rows={3}
+					className={fieldClassName}
+				/>
+			</label>
 			<div className="grid gap-5 md:grid-cols-2">
-				<input
-					name="sourceName"
-					defaultValue={question?.sourceName ?? ""}
-					aria-label="Nome da fonte (opcional)"
-				/>
-				<input
-					name="sourceUrl"
-					type="url"
-					defaultValue={question?.sourceUrl ?? ""}
-					aria-label="URL da fonte (opcional)"
-				/>
-				<input
-					name="verifiedAt"
-					type="date"
-					defaultValue={question?.verifiedAt?.slice(0, 10) ?? ""}
-					aria-label="Data da verificação (opcional)"
-				/>
-				<input
-					name="locale"
-					defaultValue={question?.locale ?? "pt-BR"}
-					required
-					aria-label="Idioma"
-				/>
+				<label className="text-foreground grid gap-2 font-bold">
+					Nome da fonte (opcional)
+					<input
+						name="sourceName"
+						defaultValue={question?.sourceName ?? ""}
+						className={fieldClassName}
+					/>
+				</label>
+				<label className="text-foreground grid gap-2 font-bold">
+					URL da fonte (opcional)
+					<input
+						name="sourceUrl"
+						type="url"
+						defaultValue={question?.sourceUrl ?? ""}
+						className={fieldClassName}
+					/>
+				</label>
+				<label className="text-foreground grid gap-2 font-bold">
+					Data da verificação (opcional)
+					<input
+						name="verifiedAt"
+						type="date"
+						defaultValue={question?.verifiedAt?.slice(0, 10) ?? ""}
+						className={fieldClassName}
+					/>
+				</label>
+				<label className="text-foreground grid gap-2 font-bold">
+					Idioma
+					<input
+						name="locale"
+						defaultValue={question?.locale ?? "pt-BR"}
+						required
+						className={fieldClassName}
+					/>
+				</label>
 			</div>
 			<div className="border-border bg-surface-strong flex flex-wrap gap-6 rounded-xl border p-4">
 				<label>

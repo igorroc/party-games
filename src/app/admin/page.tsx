@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { SeedButton } from "@/components/administration"
 import { AppContainer } from "@/components/design-system"
 import { AuthSession } from "@/modules/auth"
 
@@ -54,6 +55,18 @@ export default async function AdminPage() {
 						</span>
 					</Link>
 				</div>
+				<section className="paper-card mt-6 rounded-3xl p-7">
+					<p className="text-primary text-sm font-extrabold tracking-[0.16em] uppercase">
+						Dados iniciais
+					</p>
+					<h2 className="font-display text-foreground mt-3 text-3xl">Atualizar conteúdo padrão</h2>
+					<p className="text-muted mt-3 max-w-2xl leading-7">
+						Execute o seed para criar ou atualizar o catálogo e as perguntas padrão.
+					</p>
+					<div className="mt-6">
+						<SeedButton />
+					</div>
+				</section>
 			</AppContainer>
 		</main>
 	)

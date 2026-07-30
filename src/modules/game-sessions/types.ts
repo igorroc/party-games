@@ -1,4 +1,4 @@
-import type { GameSessionStatus, QuestionDifficulty } from "@/generated/prisma/client"
+import type { GameSessionStatus } from "@/generated/prisma/client"
 import type { PublicRoundQuestion } from "@/modules/questions"
 
 export type SessionOwner = { userId: string | null; anonymousToken: string | null }
@@ -8,7 +8,7 @@ export type GameSessionView = {
 	game: { slug: string; name: string }
 	playerCount: number
 	category: { slug: string; name: string } | null
-	difficulty: QuestionDifficulty | null
+	difficulty: "EASY" | "MEDIUM" | "HARD" | null
 	status: GameSessionStatus
 	startedAt: string
 	finishedAt: string | null

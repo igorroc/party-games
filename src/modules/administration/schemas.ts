@@ -1,8 +1,7 @@
 import { z } from "zod"
+import { questionDifficultySchema } from "@/modules/nem-a-pato"
 
 const optionalText = z.string().trim().max(2_000).optional().nullable()
-
-export const questionDifficultySchema = z.enum(["EASY", "MEDIUM", "HARD"])
 
 export const questionStatusSchema = z.enum(["ALL", "ACTIVE", "INACTIVE", "REVIEWED", "PENDING"])
 
@@ -41,9 +40,6 @@ export const updateQuestionSchema = questionInputSchema
 export const questionListQuerySchema = z.object({
 	search: z.string().trim().max(200).optional().default(""),
 	categoryId: z.string().trim().optional().default(""),
-	difficulty: z
-		.union([questionDifficultySchema, z.literal("")])
-		.optional()
-		.default(""),
+	difficulty: questionDifficultySchema.or(z.literal("")).optional().default(""),
 	status: questionStatusSchema.optional().default("ALL"),
 })

@@ -1,10 +1,4 @@
-import { PrismaPg } from "@prisma/adapter-pg"
-import { PrismaClient, QuestionDifficulty } from "../src/generated/prisma/client"
-import { MAGICAL_RACE_SLUG } from "../src/modules/games/game-registry"
-
-const prisma = new PrismaClient({
-	adapter: new PrismaPg({ connectionString: process.env.POSTGRES_PRISMA_URL }),
-})
+import type { PrismaClient } from "../src/generated/prisma/client"
 const verifiedAt = new Date("2026-07-30T00:00:00.000Z")
 
 const categories = [
@@ -18,6 +12,12 @@ const categories = [
 	{ slug: "cotidiano", name: "Cotidiano" },
 ] as const
 
+const difficulties = [
+	{ slug: "facil", name: "Fácil", legacyValue: "EASY" },
+	{ slug: "media", name: "Média", legacyValue: "MEDIUM" },
+	{ slug: "dificil", name: "Difícil", legacyValue: "HARD" },
+] as const
+
 type SeedQuestion = {
 	categorySlug: (typeof categories)[number]["slug"]
 	prompt: string
@@ -27,7 +27,7 @@ type SeedQuestion = {
 	explanation: string
 	sourceName: string
 	sourceUrl: string
-	difficulty: QuestionDifficulty
+	difficulty: (typeof difficulties)[number]["legacyValue"]
 }
 
 const questions: SeedQuestion[] = [
@@ -374,7 +374,7 @@ const questions: SeedQuestion[] = [
 	},
 ]
 
-async function main() {
+export async function seedDatabase(prisma: PrismaClient) {
 	await prisma.game.upsert({
 		where: { slug: MAGICAL_RACE_SLUG },
 		update: {
@@ -395,7 +395,6 @@ async function main() {
 			durationMin: 30,
 		},
 	})
-
 	await prisma.game.upsert({
 		where: { slug: "nem-a-pato" },
 		update: {
@@ -426,7 +425,6 @@ async function main() {
 		})
 		categoryIds.set(category.slug, savedCategory.id)
 	}
-
 	for (const question of questions) {
 		const categoryId = categoryIds.get(question.categorySlug)
 		if (!categoryId) throw new Error(`Category not found: ${question.categorySlug}`)
@@ -458,7 +456,3 @@ async function main() {
 		await prisma.user.updateMany({ where: { email: firstAdminEmail }, data: { role: "ADMIN" } })
 	}
 }
-
-main().finally(async () => {
-	await prisma.$disconnect()
-})

@@ -38,11 +38,11 @@ model NemAPatoQuestion {
 }
 
 model NemAPatoSession {
-  sessionId   String @id
-  categoryId  String?
-  difficulty  QuestionDifficulty?
+  sessionId  String              @id
+  categoryId String?
+  difficulty QuestionDifficulty?
 
-  session  GameSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session  GameSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   category NemAPatoCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   rounds   NemAPatoRound[]
 
@@ -53,7 +53,7 @@ model NemAPatoSession {
 }
 
 model NemAPatoRound {
-  id          String @id @default(cuid())
+  id          String    @id @default(cuid())
   sessionId   String
   questionId  String
   roundNumber Int

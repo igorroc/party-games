@@ -1,6 +1,7 @@
 import "server-only"
 
 import db from "@/lib/db"
+import { QuestionDifficulty } from "@/generated/prisma/client"
 import type { GameCatalogItem, GameDetails } from "./types"
 
 const gameSelect = {
@@ -30,7 +31,10 @@ export class GameService {
 			.then(async (game) => {
 				if (!game) return null
 				const questions = await db.nemAPatoQuestion.findMany({
-					where: { isActive: true, isReviewed: true },
+					where: {
+						isActive: true,
+						isReviewed: true,
+					},
 					select: {
 						category: { select: { id: true, slug: true, name: true } },
 						difficulty: true,
@@ -38,7 +42,11 @@ export class GameService {
 				})
 
 				const categories = new Map(questions.map(({ category }) => [category.id, category]))
-				const difficulties = [...new Set(questions.map(({ difficulty }) => difficulty))]
+				const difficulties = [
+					{ value: QuestionDifficulty.EASY, name: "Fácil" },
+					{ value: QuestionDifficulty.MEDIUM, name: "Média" },
+					{ value: QuestionDifficulty.HARD, name: "Difícil" },
+				].filter(({ value }) => questions.some((question) => question.difficulty === value))
 				return { ...game, categories: [...categories.values()], difficulties }
 			})
 	}

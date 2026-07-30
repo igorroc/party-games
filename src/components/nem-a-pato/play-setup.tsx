@@ -6,16 +6,10 @@ import { useState } from "react"
 import { AppContainer } from "@/components/design-system"
 
 type Category = { id: string; slug: string; name: string }
-type Difficulty = "EASY" | "MEDIUM" | "HARD"
+type Difficulty = { value: "EASY" | "MEDIUM" | "HARD"; name: string }
 type ApiResult<T> = { success: true; data: T } | { success: false; error: { message: string } }
 
 type PlaySetupProps = { categories: Category[]; difficulties: readonly Difficulty[] }
-
-const difficultyLabels: Record<Difficulty, string> = {
-	EASY: "Fácil",
-	MEDIUM: "Média",
-	HARD: "Difícil",
-}
 
 const allOption = { id: "all", name: "Todas as categorias" }
 
@@ -29,7 +23,7 @@ export function PlaySetup({ categories, difficulties }: PlaySetupProps) {
 	const categoryOptions = [allOption, ...categories]
 	const difficultyOptions = [
 		{ id: "all", name: "Qualquer dificuldade" },
-		...difficulties.map((item) => ({ id: item, name: difficultyLabels[item] })),
+		...difficulties.map((item) => ({ id: item.value, name: item.name })),
 	]
 
 	async function startGame() {

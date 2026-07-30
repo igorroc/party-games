@@ -23,7 +23,7 @@ describe("QuestionSelectionService", () => {
 		expect(query?.strings.join("?")).toContain('q."isReviewed" = true')
 		expect(query?.strings.join("?")).toContain('r."sessionId" = ? AND r."questionId" = q.id')
 		expect(query?.strings.join("?")).toContain('q."categoryId" = ?')
-		expect(query?.strings.join("?")).toContain('q.difficulty = ?::"QuestionDifficulty"')
+		expect(query?.strings.join("?")).toContain('q."difficulty" = CAST(? AS "QuestionDifficulty")')
 		expect(query?.values).toEqual(expect.arrayContaining(["session-1", "category-1", "HARD"]))
 	})
 

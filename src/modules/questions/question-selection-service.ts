@@ -1,6 +1,6 @@
 import "server-only"
 
-import { Prisma, type PrismaClient, type QuestionDifficulty } from "@/generated/prisma/client"
+import { Prisma, type PrismaClient } from "@/generated/prisma/client"
 
 type DatabaseClient = PrismaClient | Prisma.TransactionClient
 
@@ -10,14 +10,14 @@ export class QuestionSelectionService {
 		input: {
 			sessionId: string
 			categoryId: string | null
-			difficulty: QuestionDifficulty | null
+			difficulty: "EASY" | "MEDIUM" | "HARD" | null
 		},
 	): Promise<string | null> {
 		const categoryFilter = input.categoryId
 			? Prisma.sql`AND q."categoryId" = ${input.categoryId}`
 			: Prisma.empty
 		const difficultyFilter = input.difficulty
-			? Prisma.sql`AND q.difficulty = ${input.difficulty}::"QuestionDifficulty"`
+			? Prisma.sql`AND q."difficulty" = CAST(${input.difficulty} AS "QuestionDifficulty")`
 			: Prisma.empty
 		const rows = await db.$queryRaw<{ id: string }[]>(Prisma.sql`
 			SELECT q.id

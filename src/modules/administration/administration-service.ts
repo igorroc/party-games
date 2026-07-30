@@ -1,8 +1,9 @@
 import "server-only"
 
-import { Prisma } from "@/generated/prisma/client"
+import { Prisma, QuestionDifficulty } from "@/generated/prisma/client"
 import db from "@/lib/db"
 import { PasswordService } from "@/lib/auth/password"
+import { seedDatabase } from "../../../prisma/seed"
 import type { AdminQuestion, AdminQuestionList, AdminUser, ProfileGameSession } from "./types"
 import type { z } from "zod"
 import type { questionInputSchema, questionListQuerySchema } from "./schemas"
@@ -16,7 +17,17 @@ const questionInclude = {
 	category: { select: { name: true } },
 } as const
 
+const difficulties = [
+	{ value: QuestionDifficulty.EASY, name: "Fácil" },
+	{ value: QuestionDifficulty.MEDIUM, name: "Média" },
+	{ value: QuestionDifficulty.HARD, name: "Difícil" },
+] as const
+
 export class AdministrationService {
+	static async seedDatabase(): Promise<void> {
+		await seedDatabase(db)
+	}
+
 	static async listQuestions(query: QuestionListQuery): Promise<AdminQuestionList> {
 		const where: Prisma.NemAPatoQuestionWhereInput = {
 			...(query.search ? { prompt: { contains: query.search, mode: "insensitive" } } : {}),
@@ -33,9 +44,12 @@ export class AdministrationService {
 				include: questionInclude,
 				orderBy: { updatedAt: "desc" },
 			}),
-			db.nemAPatoCategory.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+			db.nemAPatoCategory.findMany({
+				select: { id: true, name: true },
+				orderBy: { name: "asc" },
+			}),
 		])
-		return { questions: questions.map(this.toQuestion), categories }
+		return { questions: questions.map(this.toQuestion), categories, difficulties }
 	}
 
 	static async getQuestion(id: string): Promise<AdminQuestion | null> {
@@ -47,6 +61,7 @@ export class AdministrationService {
 	}
 
 	static async createQuestion(input: QuestionInput): Promise<AdminQuestion> {
+		await this.assertActiveQuestionOptions(input)
 		const question = await db.nemAPatoQuestion.create({
 			data: this.toQuestionData(input),
 			include: questionInclude,
@@ -57,6 +72,7 @@ export class AdministrationService {
 	static async updateQuestion(id: string, input: QuestionInput): Promise<AdminQuestion | null> {
 		const existing = await db.nemAPatoQuestion.findUnique({ where: { id }, select: { id: true } })
 		if (!existing) return null
+		await this.assertActiveQuestionOptions(input)
 		const question = await db.nemAPatoQuestion.update({
 			where: { id },
 			data: this.toQuestionData(input),
@@ -135,6 +151,11 @@ export class AdministrationService {
 			sourceName: input.sourceName || null,
 			sourceUrl: input.sourceUrl || null,
 		}
+	}
+
+	private static async assertActiveQuestionOptions(input: QuestionInput): Promise<void> {
+		const category = await db.nemAPatoCategory.findUnique({ where: { id: input.categoryId } })
+		if (!category) throw new Error("Categoria indisponível.")
 	}
 
 	private static toQuestion(

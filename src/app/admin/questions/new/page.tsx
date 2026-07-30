@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function NewQuestionPage() {
 	await AuthSession.requireAdmin()
-	const { categories } = await AdministrationService.listQuestions({
+	const { categories, difficulties } = await AdministrationService.listQuestions({
 		search: "",
 		categoryId: "",
 		difficulty: "",
@@ -34,7 +34,7 @@ export default async function NewQuestionPage() {
 						Apenas perguntas revisadas e ativas podem ser sorteadas.
 					</p>
 					<div className="mt-8">
-						<QuestionForm categories={categories} />
+						<QuestionForm categories={categories} difficulties={difficulties} />
 					</div>
 				</div>
 			</AppContainer>
