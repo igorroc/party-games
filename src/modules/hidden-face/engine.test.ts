@@ -58,6 +58,23 @@ describe("Rosto Oculto", () => {
 		expect(state.winnerPlayerIndex).toBe(0)
 	})
 
+	test("marca o jogador atual como perdedor quando ele escolhe o próprio alvo", () => {
+		const random = new FakeRandomProvider([0, 0])
+		let state = createHiddenFaceMatch(["Ana", "Bia"], random)
+		const ownTarget = state.secretFaceIds[0]
+		for (const face of state.faces) {
+			if (face.id !== ownTarget)
+				state = dispatchHiddenFaceAction(
+					state,
+					{ type: "SET_FACE_LOWERED", faceId: face.id, isLowered: true },
+					random,
+				)
+		}
+		state = dispatchHiddenFaceAction(state, { type: "CONFIRM_TURN" }, random)
+		expect(state.status).toBe("finished")
+		expect(state.winnerPlayerIndex).toBe(1)
+	})
+
 	test("não permite abaixar o último avatar", () => {
 		const random = new FakeRandomProvider()
 		let state = createHiddenFaceMatch(["Ana", "Bia"], random)

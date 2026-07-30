@@ -10,7 +10,10 @@ export async function GET(request: Request, { params }: Context) {
 	try {
 		const user = await AuthSession.getCurrentUser()
 		const token = readSessionToken(request, sessionId)
-		const revealSecret = new URL(request.url).searchParams.get("revealSecret") === "1"
+		const url = new URL(request.url)
+		const revealSecret = url.searchParams.get("revealSecret") === "1"
+		const viewer = url.searchParams.get("viewer")
+		const viewerPlayerIndex = viewer === "0" ? 0 : viewer === "1" ? 1 : null
 		return ApiResponse.success(
 			await HiddenFaceService.get(
 				sessionId,
@@ -19,6 +22,7 @@ export async function GET(request: Request, { params }: Context) {
 					anonymousToken: token,
 				},
 				revealSecret,
+				viewerPlayerIndex,
 			),
 		)
 	} catch (error) {

@@ -47,11 +47,20 @@ export class HiddenFaceService {
 		return { id: session.id, anonymousToken }
 	}
 
-	static async get(sessionId: string, owner: SessionOwner, revealSecret: boolean) {
+	static async get(
+		sessionId: string,
+		owner: SessionOwner,
+		revealSecret: boolean,
+		viewerPlayerIndex: 0 | 1 | null = null,
+	) {
 		await GameSessionService.get(sessionId, owner)
 		const match = await db.hiddenFaceSession.findUnique({ where: { sessionId } })
 		if (!match) throw new Error("Partida não encontrada.")
-		return this.publicState(match.state as unknown as HiddenFaceState, revealSecret)
+		return this.publicState(
+			match.state as unknown as HiddenFaceState,
+			revealSecret,
+			viewerPlayerIndex,
+		)
 	}
 
 	static async act(
@@ -112,10 +121,14 @@ export class HiddenFaceService {
 		return { type: "state", state: this.publicState(next, true) }
 	}
 
-	static publicState(state: HiddenFaceState, revealSecret: boolean): PublicHiddenFaceState {
+	static publicState(
+		state: HiddenFaceState,
+		revealSecret: boolean,
+		viewerPlayerIndex: 0 | 1 | null = null,
+	): PublicHiddenFaceState {
+		const secretPlayerIndex = viewerPlayerIndex ?? state.currentPlayerIndex
 		const secretFace = revealSecret
-			? (state.faces.find((face) => face.id === state.secretFaceIds[state.currentPlayerIndex]) ??
-				null)
+			? (state.faces.find((face) => face.id === state.secretFaceIds[secretPlayerIndex]) ?? null)
 			: null
 		return {
 			version: state.version,
