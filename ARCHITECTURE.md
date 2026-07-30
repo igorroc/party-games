@@ -1,139 +1,101 @@
 # Project Architecture
 
-This project follows clean architecture principles with a well-organized folder structure for scalability and maintainability.
+Mesa de Jogos is a Next.js App Router application for in-person party games conducted from one shared screen. It is not online multiplayer: participants interact verbally while the application manages the game flow, persistent content, and session lifecycle.
 
-## Folder Structure
+The first implementation is **Nem a Pato**. Its code is the reference for a game implementation, not a shared rules engine that future games should extend with conditionals.
 
-```
+## Layers and Folders
+
+```text
+prisma/
+├── schema.prisma                 # Generator and datasource
+├── models/                       # Domain model fragments loaded by Prisma
+│   ├── games.prisma              # Generic game catalog
+│   ├── game-sessions.prisma      # Generic session ownership and lifecycle
+│   └── nem-a-pato.prisma         # Nem a Pato content and play state
+└── seed.ts                       # Idempotent catalog and game-content seed data
+
 src/
-├── app/                    # Next.js App Router (Presentation Layer)
-│   ├── api/               # Typed Route Handlers
-│   ├── auth/              # Authentication pages
-│   │   ├── login/         # Login page
-│   │   ├── logout/        # Logout page
-│   │   └── register/      # Register page
-│   ├── profile/           # Profile page (protected)
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   ├── page.tsx           # Home page
-│   └── providers.tsx      # Client-side providers
-│
-├── components/            # Reusable UI Components (Client Components)
-│   ├── auth/             # Authentication components
-│   │   ├── login-content.tsx
-│   │   ├── login-form.tsx
-│   │   ├── register-content.tsx
-│   │   ├── register-form.tsx
-│   │   └── index.ts      # Barrel export
-│   ├── home/             # Home page components
-│   │   ├── home-content.tsx
-│   │   └── index.ts
-│   └── profile/          # Profile page components
-│       ├── profile-content.tsx
-│       └── index.ts
-│
-├── modules/              # Business Logic by Domain
-│   └── auth/            # Authentication module
-│       ├── auth-service.ts
-│       ├── auth-session.ts
-│       ├── schemas.ts   # Shared API contracts
-│       ├── types.ts
-│       └── index.ts     # Barrel export
-│
-├── lib/                 # Shared Utilities and Infrastructure
-│   ├── utils/          # Utility functions
-│   │   ├── validators.ts
-│   │   └── index.ts
-│   ├── api-client.ts   # Typed frontend API client
-│   ├── api-result.ts   # Result and type guard classes
-│   ├── api-response.ts # API response helpers
-│   ├── db.ts           # Database connection (Prisma)
-│   └── password.ts     # Password hashing utilities
-│
-└── proxy.ts            # Route protection proxy
+├── app/                          # Thin App Router pages and route handlers
+│   ├── api/                      # HTTP boundary; validates and delegates
+│   └── games/<game-slug>/        # Game presentation, setup, and play routes
+├── components/
+│   ├── games/                    # Reusable catalog/presentation UI and metadata
+│   └── <game-slug>/              # Game-specific interactive UI and client state
+├── modules/
+│   ├── games/                    # Generic catalog queries and game registry
+│   ├── game-sessions/            # Ownership, anonymous cookie, lifecycle, inactivity
+│   └── <game-slug>/              # Game-specific server rules, contracts, and types
+├── lib/                          # Database, API helpers, auth, and shared infrastructure
+└── generated/prisma/             # Generated client; never edit directly
 ```
 
-## Architecture Principles
+Files and folders use kebab-case. Modules expose their public surface through `index.ts`. Server-only services import `server-only`; client interactivity is contained in components marked with `"use client"`.
 
-### 1. Separation of Concerns
+## Data Model
 
-- **app/**: Route definitions and page components (thin layer)
-- **components/**: Reusable UI components
-- **modules/**: Business logic organized by domain
-- **lib/**: Shared utilities and infrastructure
+`Game` is the catalog entry. It owns the stable, cross-game metadata: `slug`, name, description, availability status, player limits, and estimated duration. Only `ACTIVE` games are listed and playable.
 
-### 2. Feature-Based Organization
+`GameSession` is the platform session. It references `Game`, optionally references a signed-in `User`, and stores player count, lifecycle (`ACTIVE`, `FINISHED`, `ABANDONED`), anonymous ownership token hash, activity timestamps, and start/end timestamps. Anonymous players receive an HttpOnly session cookie; signed-in owners can also access their own sessions.
 
-Each module (auth, users, etc.) contains:
+Every game with persistent state has a one-to-one game-specific session model whose primary key is `sessionId` referencing `GameSession.id`. It owns all game-specific configuration and relates to game-specific rounds, cards, questions, scores, or other content. This prevents a generic session from accumulating nullable fields or rules for unrelated games.
 
-- Shared request/response schemas for API boundaries
-- Server-only classes for business logic
-- Barrel exports for clean imports
+Nem a Pato demonstrates this relationship:
 
-### 3. Clean Code Practices
+```text
+Game (slug: nem-a-pato)
+  └── GameSession
+        └── NemAPatoSession (sessionId)
+              ├── NemAPatoRound
+              └── optional NemAPatoCategory
 
-- **kebab-case**: All file and folder names use kebab-case
-- **Named Exports**: Components use named exports for better refactoring
-- **Barrel Exports**: Index files provide clean import paths
-- **Type Safety**: Full TypeScript coverage
-
-### 4. Component Structure
-
-- **Server Components**: Default for pages in app/
-- **Client Components**: In components/ with "use client" directive
-- **Separation**: UI logic separated from business logic
-
-## Import Examples
-
-```typescript
-// Clean imports using barrel exports
-import { LoginContent, LoginForm } from "@/components/auth"
-import { ApiClient } from "@/lib/api-client"
-import { AuthSession } from "@/modules/auth"
+NemAPatoCategory
+  └── NemAPatoQuestion
+        └── NemAPatoRound
 ```
 
-## File Naming Conventions
+`NemAPatoRound` has unique `(sessionId, roundNumber)` and `(sessionId, questionId)` constraints, which preserve order and prevent a question from repeating in one session. New games must define equivalent database constraints and indexes for their own invariants. The game-specific session relation to `GameSession` must use `onDelete: Cascade`.
 
-- **Components**: `component-name.tsx` (e.g., `login-form.tsx`)
-- **Route Handlers**: `route.ts` inside `app/api/**`
-- **Services**: `domain-service.ts` inside each module when business logic is needed
-- **Utilities**: `utility-name.ts` (e.g., `validators.ts`)
-- **Exports**: `index.ts` in each folder for barrel exports
+The Prisma schema is split across `prisma/models/*.prisma` and configured with `schema: "prisma"` in `prisma.config.ts`. Change model fragments only; do not create migrations in code changes. Prisma client output is generated in `src/generated/prisma/`.
 
-## Benefits
+## Request Flow
 
-1. **Scalability**: Easy to add new features without cluttering
-2. **Maintainability**: Clear separation makes code easy to find and modify
-3. **Testability**: Isolated business logic is easier to test
-4. **Readability**: Consistent naming and organization
-5. **Reusability**: Shared components and utilities are easily accessible
+1. A server page loads generic catalog data from `GameService` or game-specific setup data from its game module.
+2. A client setup component posts its validated configuration to a route handler.
+3. The route handler parses the request with Zod, obtains the current authenticated user if any, and delegates to a server module.
+4. The shared session layer establishes ownership and lifecycle; the game module creates or updates only its own persistent state.
+5. The route handler returns the standard `ApiResponse` envelope. The browser retains the anonymous ownership cookie and navigates to the session route.
+6. Interactive play components call only the endpoints needed for that game's actions. Sensitive data stays server-side until the corresponding game action reveals it.
 
-## Adding New Features
+Database state transitions that can race must run in a Prisma transaction. `GameSessionService` and `GameRoundService` currently lock the generic `GameSession` row with `SELECT ... FOR UPDATE`, verify session status/inactivity, and update `lastActivityAt` atomically.
 
-1. Create a new folder in `modules/` with your domain name
-2. Add shared schemas and server-only classes
-3. Expose Route Handlers in `app/api/**`
-4. Create an `index.ts` for exports
-5. Add related UI components in `components/` if needed
-6. Add pages in `app/` that use the feature
+## Adding a New Game
 
-Example:
+Use a unique kebab-case slug, for example `word-chain`. Do not copy Nem a Pato code and add `if (gameSlug === ...)` branches to it.
 
-```
-modules/
-└── products/
-    ├── schemas.ts
-    ├── product-service.ts
-    └── index.ts
-```
+1. Add the slug constant to `src/modules/games/game-registry.ts` and export it from the module barrel.
+2. Create `prisma/models/word-chain.prisma` with its content, `WordChainSession` keyed by `sessionId`, and state models such as rounds. Add `wordChainSession WordChainSession?` to `GameSession`. Use foreign keys, unique constraints, and indexes to enforce the game rules.
+3. Add an idempotent `prisma.game.upsert` to `prisma/seed.ts` for the catalog entry. Seed game content there when the game needs it.
+4. Create `src/modules/word-chain/` for server-only game logic, Zod schemas, TypeScript types, tests, and `index.ts`. The module owns game setup validation, state transitions, and response projections.
+5. Keep generic ownership, cookie handling, expiration, and session lifecycle in `src/modules/game-sessions/`. Before the second game is wired into session creation/actions, extract the existing Nem a Pato-specific dispatch from that module into a small, explicit per-game handler/adapter boundary. Each handler must live with its game module.
+6. Create `src/components/games/word-chain-metadata.ts` for presentation-only metadata and export it from `src/components/games/index.ts`. Put setup, play, reducer/state machine, and game-specific UI in `src/components/word-chain/`.
+7. Add `src/app/games/word-chain/page.tsx`, `play/page.tsx`, and `play/[session-id]/page.tsx` as applicable. Pages fetch and compose; client components handle interaction.
+8. Add only required API endpoints. Each handler validates with Zod, resolves session ownership through the shared layer, then delegates to the game module. Do not expose internal answers or unrevealed state in public projections.
+9. Update generic catalog UI only for information common to every game. Keep rules, difficulty semantics, setup fields, labels, and gameplay states in the game-specific UI.
+10. Add focused tests for schemas, state transitions, concurrency-sensitive behavior, and client reducers. Run `bun run format:check`, `bun run lint`, `bun run ts-check`, and `bun test --preload ./test/setup.ts`.
 
-## Best Practices
+## Current Nem a Pato Boundary
 
-- Keep business logic in server-only module classes
-- Group helper behavior in responsibility-based classes such as `AuthService`, `AuthSession`, `ApiResult` and `TypeGuard`
-- Use typed Route Handlers for frontend mutations and client-side reads
-- Keep UI components in `components/`
-- Use server components by default, client components when needed
-- Always export through index files for clean imports
-- Follow kebab-case for all files and folders
-- Use TypeScript for type safety
+The current MVP predates the per-game handler boundary. `GameSessionService`, `GameRoundService`, `createGameSessionSchema`, `GameSessionView`, and the `/api/game-sessions/**` routes currently encode Nem a Pato categories, difficulty, rounds, and reveal behavior. They must not receive further game-specific branches. Refactor them into generic lifecycle/ownership infrastructure plus a Nem a Pato implementation at the time the next game is introduced.
+
+`GameService.getActiveNemAPato()` and `/api/games/nem-a-pato` are likewise game-specific setup queries. New games should own equivalent queries and routes in their own modules/routes until a genuinely uniform setup contract exists.
+
+## Quality Rules
+
+- Pages and route handlers are thin boundaries; business rules and database access live in modules.
+- Zod schemas are the runtime contracts at HTTP boundaries; TypeScript types model internal data.
+- Keep metadata, game content, and gameplay state separate. Catalog metadata is not a replacement for persisted game content.
+- Prefer server components. Use client components only for browser APIs, local interaction state, and mutations.
+- Use the shared `ApiResponse` envelope and domain errors for expected failures.
+- Keep seed operations idempotent with `upsert`.
+- Never manually edit `src/generated/prisma/` or create Prisma migration files as part of an implementation change.
