@@ -1,6 +1,6 @@
 import "server-only"
 
-import { Prisma, type PrismaClient, type QuestionDifficulty } from "@prisma/client"
+import { Prisma, type PrismaClient, type QuestionDifficulty } from "@/generated/prisma/client"
 
 type DatabaseClient = PrismaClient | Prisma.TransactionClient
 

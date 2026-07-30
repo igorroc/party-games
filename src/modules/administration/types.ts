@@ -1,4 +1,4 @@
-import type { QuestionDifficulty } from "@prisma/client"
+import type { QuestionDifficulty } from "@/generated/prisma/client"
 
 export type QuestionCategoryOption = { id: string; name: string }
 export type GameOption = { id: string; name: string; slug: string }

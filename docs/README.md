@@ -7,7 +7,7 @@ Sua tarefa é transformar o projeto base existente em uma aplicação funcional 
 Antes de modificar qualquer arquivo:
 
 1. Analise integralmente a estrutura atual do repositório.
-2. Leia o `README.md`, `AGENTS.md`, `package.json`, `prisma/schema.prisma` e os módulos existentes.
+2. Leia o `README.md`, `AGENTS.md`, `package.json`, `prisma/schema.prisma`, `prisma/models/` e os módulos existentes.
 3. Identifique os padrões já utilizados para autenticação, sessão, banco de dados, respostas de API, validação e componentes.
 4. Reutilize o máximo possível da implementação existente.
 5. Não substitua a autenticação atual por outra biblioteca.

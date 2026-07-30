@@ -137,7 +137,8 @@ Este projeto segue princípios de clean architecture com uma estrutura bem organ
 │   │   └── password.ts  # Utilitários de hash de senha
 │   └── proxy.ts         # Proxy de proteção de rotas
 ├── prisma/
-│   └── schema.prisma    # Schema do banco de dados
+│   ├── models/          # Models separados por domínio
+│   └── schema.prisma    # Configuração base do schema
 └── public/              # Arquivos estáticos
 ```
 
@@ -164,7 +165,7 @@ O template inclui um sistema completo de autenticação:
 
 O template usa Prisma com PostgreSQL:
 
-- Edite `prisma/schema.prisma` para modificar seu schema de banco de dados
+- Edite os arquivos em `prisma/models/` para modificar o schema do banco de dados
 - Execute `bun run migrate` para aplicar as mudanças
 - Use `bun run prisma:studio` para visualizar seus dados
 
@@ -256,7 +257,7 @@ export default async function PaginaProdutos() {
 
 ### Schema do Banco de Dados
 
-Modifique `prisma/schema.prisma` para adicionar ou alterar models, depois execute:
+Modifique ou adicione arquivos em `prisma/models/` para alterar models, depois execute:
 
 ```bash
 bun run migrate:create-only  # Cria migração sem aplicar

@@ -24,6 +24,7 @@
 		"dev": "next dev",
 		"build": "next build",
 		"check:production": "bun run format:check && bun run lint && bun run ts-check && bun run build",
+		"check:tests": "bun test --preload ./test/setup.ts",
 		"start": "next start",
 		"lint": "eslint . --max-warnings=0",
 		"format": "prettier . --write",
@@ -31,8 +32,8 @@
 		"compose:up": "docker compose up -d",
 		"vercel-build": "prisma generate && prisma migrate deploy && next build",
 		"migrate": "bunx prisma migrate dev && bunx prisma generate",
-		"migrate:reset": "bunx prisma migrate reset --force",
-		"migrate:create-only": "bunx prisma migrate dev --create-only",
+		"migrate:reset": "bunx prisma migrate reset --force && bunx prisma generate && bunx prisma db seed",
+		"migrate:create-only": "bunx prisma migrate dev --create-only && bunx prisma generate",
 		"prisma:seed": "bunx prisma db seed",
 		"prisma:studio": "bunx prisma studio",
 		"security:audit": "bun audit --audit-level=moderate",
@@ -42,9 +43,12 @@
 	"dependencies": {
 		"@heroui/react": "^3.2.2",
 		"@node-rs/argon2": "^2.0.2",
-		"@prisma/client": "^5.22.0",
+		"@prisma/adapter-pg": "7.9.1",
+		"@prisma/client": "7.9.1",
+		"dotenv": "^17.4.2",
 		"framer-motion": "^12.43.0",
 		"next": "16.2.12",
+		"pg": "^8.22.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-toastify": "^10.0.6",
@@ -53,6 +57,7 @@
 	"devDependencies": {
 		"@tailwindcss/postcss": "^4.1.16",
 		"@types/node": "^20.19.43",
+		"@types/pg": "^8.20.0",
 		"@types/react": "^18.3.31",
 		"@types/react-dom": "^18.3.7",
 		"autoprefixer": "^10.5.4",
@@ -61,11 +66,8 @@
 		"postcss": "^8.5.25",
 		"prettier": "^3.9.6",
 		"prettier-plugin-tailwindcss": "^0.8.1",
-		"prisma": "^5.22.0",
+		"prisma": "7.9.1",
 		"tailwindcss": "^4.1.16",
 		"typescript": "^5.9.3"
-	},
-	"prisma": {
-		"seed": "bun prisma/seed.ts"
 	}
 }

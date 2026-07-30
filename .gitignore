@@ -36,6 +36,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Prisma Client generated from the schema
+/src/generated/prisma/
+
 # claude
 .claude
 null

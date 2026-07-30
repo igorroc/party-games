@@ -1,6 +1,6 @@
 import "server-only"
 
-import { Prisma, type GameSession, type PrismaClient } from "@prisma/client"
+import { Prisma, type GameSession, type PrismaClient } from "@/generated/prisma/client"
 import db from "@/lib/db"
 import { QuestionService } from "@/modules/questions"
 import { GameSessionCookie } from "./game-session-cookie"

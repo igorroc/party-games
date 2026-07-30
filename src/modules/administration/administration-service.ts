@@ -1,6 +1,6 @@
 import "server-only"
 
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@/generated/prisma/client"
 import db from "@/lib/db"
 import type { AdminQuestion, AdminQuestionList, ProfileGameSession } from "./types"
 import type { z } from "zod"

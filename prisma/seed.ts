@@ -1,6 +1,9 @@
-import { PrismaClient, QuestionDifficulty } from "@prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { PrismaClient, QuestionDifficulty } from "../src/generated/prisma/client"
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+	adapter: new PrismaPg({ connectionString: process.env.POSTGRES_PRISMA_URL }),
+})
 const verifiedAt = new Date("2026-07-30T00:00:00.000Z")
 
 const categories = [
