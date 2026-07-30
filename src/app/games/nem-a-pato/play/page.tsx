@@ -14,7 +14,7 @@ export default async function NemAPatoPlayPage() {
 	const game = await GameService.getActiveBySlug(NEM_A_PATO_SLUG)
 
 	if (!game) {
-		return <main className="flex-1 p-6 text-center text-muted">Este jogo não está disponível.</main>
+		return <main className="text-muted flex-1 p-6 text-center">Este jogo não está disponível.</main>
 	}
 
 	return <PlaySetup categories={game.categories} difficulties={game.difficulties} />

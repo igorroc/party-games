@@ -7,25 +7,25 @@ export function HomeContent() {
 			<AppContainer className="space-y-16 sm:space-y-24">
 				<section className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
 					<div className="max-w-2xl">
-						<p className="mb-4 text-sm font-extrabold uppercase tracking-[0.18em] text-primary">
+						<p className="text-primary mb-4 text-sm font-extrabold tracking-[0.18em] uppercase">
 							Mesa compartilhada
 						</p>
-						<h1 className="text-balance font-display text-5xl leading-[0.98] text-foreground sm:text-6xl lg:text-7xl">
+						<h1 className="font-display text-foreground text-5xl leading-[0.98] text-balance sm:text-6xl lg:text-7xl">
 							Transforme qualquer tela em uma mesa de jogo.
 						</h1>
-						<p className="mt-6 max-w-xl text-lg leading-8 text-muted sm:text-xl">
+						<p className="text-muted mt-6 max-w-xl text-lg leading-8 sm:text-xl">
 							Reúna os amigos, escolha um jogo e deixe a plataforma conduzir a partida. O papo, os
 							palpites e as risadas continuam ao redor da mesa.
 						</p>
 					</div>
 					<div className="paper-card relative overflow-hidden rounded-3xl p-8 sm:p-10">
 						<div
-							className="absolute right-6 top-6 h-12 w-12 rounded-full border-4 border-secondary bg-surface-strong"
+							className="border-secondary bg-surface-strong absolute top-6 right-6 h-12 w-12 rounded-full border-4"
 							aria-hidden="true"
 						/>
-						<div className="relative rounded-2xl border border-border bg-surface-strong p-6">
-							<p className="font-display text-3xl text-primary">Uma tela, todo mundo joga.</p>
-							<p className="mt-3 leading-7 text-muted">
+						<div className="border-border bg-surface-strong relative rounded-2xl border p-6">
+							<p className="font-display text-primary text-3xl">Uma tela, todo mundo joga.</p>
+							<p className="text-muted mt-3 leading-7">
 								Funciona no celular, tablet, notebook ou na TV da sala. Sem criar conta para
 								começar.
 							</p>
@@ -41,11 +41,11 @@ export function HomeContent() {
 					/>
 					<GameCard game={nemAPatoGame} />
 				</section>
-				<section className="border-t border-border pt-8" aria-labelledby="coming-soon">
-					<h2 id="coming-soon" className="font-display text-2xl text-foreground">
+				<section className="border-border border-t pt-8" aria-labelledby="coming-soon">
+					<h2 id="coming-soon" className="font-display text-foreground text-2xl">
 						Novos jogos em breve
 					</h2>
-					<p className="mt-2 text-muted">
+					<p className="text-muted mt-2">
 						Esta mesa está sendo preparada para receber mais jogos presenciais.
 					</p>
 				</section>

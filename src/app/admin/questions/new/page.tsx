@@ -23,14 +23,14 @@ export default async function NewQuestionPage() {
 			<AppContainer className="max-w-4xl">
 				<Link
 					href="/admin/questions"
-					className="text-sm font-extrabold text-primary hover:text-primary-hover"
+					className="text-primary hover:text-primary-hover text-sm font-extrabold"
 				>
 					Voltar às perguntas
 				</Link>
 				<div className="paper-card mt-6 rounded-3xl p-6 sm:p-10">
-					<p className="text-sm font-extrabold uppercase tracking-[0.18em] text-accent">Catálogo</p>
-					<h1 className="mt-2 font-display text-4xl text-foreground">Nova pergunta</h1>
-					<p className="mt-3 text-muted">
+					<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">Catálogo</p>
+					<h1 className="font-display text-foreground mt-2 text-4xl">Nova pergunta</h1>
+					<p className="text-muted mt-3">
 						Apenas perguntas revisadas e ativas podem ser sorteadas.
 					</p>
 					<div className="mt-8">

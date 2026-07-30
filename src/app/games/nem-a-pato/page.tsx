@@ -18,17 +18,17 @@ export default function NemAPatoPage() {
 						<div className="p-6 sm:p-10 lg:p-14">
 							<Link
 								href="/"
-								className="rounded-lg text-sm font-extrabold text-primary hover:text-primary-hover"
+								className="text-primary hover:text-primary-hover rounded-lg text-sm font-extrabold"
 							>
 								Voltar aos jogos
 							</Link>
-							<p className="mt-8 text-sm font-extrabold uppercase tracking-[0.18em] text-accent">
+							<p className="text-accent mt-8 text-sm font-extrabold tracking-[0.18em] uppercase">
 								Jogo de estimativas
 							</p>
-							<h1 className="mt-2 font-display text-5xl leading-none text-foreground sm:text-6xl">
+							<h1 className="font-display text-foreground mt-2 text-5xl leading-none sm:text-6xl">
 								{nemAPatoGame.name}
 							</h1>
-							<p className="mt-6 max-w-xl text-xl leading-8 text-muted">
+							<p className="text-muted mt-6 max-w-xl text-xl leading-8">
 								{nemAPatoGame.description} Uma pergunta, uma sequência de números e muita coragem
 								para parar na hora certa.
 							</p>
@@ -41,21 +41,21 @@ export default function NemAPatoPage() {
 							</div>
 							<Link
 								href={nemAPatoGame.playHref}
-								className="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 py-3 font-extrabold text-surface hover:bg-primary-hover sm:w-auto"
+								className="bg-primary text-surface hover:bg-primary-hover mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 py-3 font-extrabold sm:w-auto"
 							>
 								Iniciar partida
 							</Link>
 						</div>
-						<div className="relative flex min-h-64 items-end overflow-hidden bg-primary p-8 sm:p-12">
+						<div className="bg-primary relative flex min-h-64 items-end overflow-hidden p-8 sm:p-12">
 							<div
-								className="absolute -right-16 -top-12 h-64 w-64 rounded-full border-[24px] border-secondary"
+								className="border-secondary absolute -top-12 -right-16 h-64 w-64 rounded-full border-[24px]"
 								aria-hidden="true"
 							/>
-							<div className="relative w-full rotate-[-3deg] rounded-2xl border-2 border-border bg-surface p-6 shadow-[7px_7px_0_rgb(var(--color-accent))]">
-								<p className="text-sm font-extrabold uppercase tracking-[0.15em] text-accent">
+							<div className="border-border bg-surface relative w-full rotate-[-3deg] rounded-2xl border-2 p-6 shadow-[7px_7px_0_rgb(var(--color-accent))]">
+								<p className="text-accent text-sm font-extrabold tracking-[0.15em] uppercase">
 									Pergunta da rodada
 								</p>
-								<p className="mt-3 font-display text-3xl leading-tight text-foreground">
+								<p className="font-display text-foreground mt-3 text-3xl leading-tight">
 									Quanto é longe demais?
 								</p>
 							</div>
@@ -84,33 +84,33 @@ export default function NemAPatoPage() {
 						description="A turma não precisa anotar pontos ou usar outro dispositivo."
 					/>
 					<div className="paper-card rounded-3xl p-6 sm:p-8">
-						<p className="font-display text-2xl leading-snug text-foreground">
+						<p className="font-display text-foreground text-2xl leading-snug">
 							{nemAPatoGame.example.prompt}
 						</p>
 						<div className="mt-6 flex flex-wrap gap-3">
 							{nemAPatoGame.example.guesses.map((guess) => (
 								<span
 									key={guess}
-									className="rounded-xl border border-border bg-surface-strong px-4 py-3 font-display text-xl text-primary"
+									className="border-border bg-surface-strong font-display text-primary rounded-xl border px-4 py-3 text-xl"
 								>
 									{guess}
 								</span>
 							))}
 						</div>
-						<p className="mt-6 leading-7 text-muted">
+						<p className="text-muted mt-6 leading-7">
 							A cada número maior, a tensão aumenta. Quando alguém disser “{nemAPatoGame.name}”, é
 							hora de revelar a resposta.
 						</p>
 					</div>
 				</section>
-				<section className="rounded-3xl bg-primary px-6 py-10 text-center text-surface sm:px-10">
+				<section className="bg-primary text-surface rounded-3xl px-6 py-10 text-center sm:px-10">
 					<h2 className="font-display text-4xl">A mesa está pronta?</h2>
-					<p className="mx-auto mt-3 max-w-xl text-lg text-surface/85">
+					<p className="text-surface/85 mx-auto mt-3 max-w-xl text-lg">
 						Configure a partida e comece sem cadastro.
 					</p>
 					<Link
 						href={nemAPatoGame.playHref}
-						className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-secondary px-5 py-3 font-extrabold text-foreground hover:bg-secondary/85"
+						className="bg-secondary text-foreground hover:bg-secondary/85 mt-7 inline-flex min-h-12 items-center justify-center rounded-xl px-5 py-3 font-extrabold"
 					>
 						Iniciar partida
 					</Link>

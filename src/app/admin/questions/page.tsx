@@ -27,17 +27,17 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 			<AppContainer className="space-y-8">
 				<header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
 					<div>
-						<p className="text-sm font-extrabold uppercase tracking-[0.18em] text-accent">
+						<p className="text-accent text-sm font-extrabold tracking-[0.18em] uppercase">
 							Administração
 						</p>
-						<h1 className="mt-2 font-display text-5xl text-foreground">Perguntas</h1>
-						<p className="mt-3 text-muted">
+						<h1 className="font-display text-foreground mt-2 text-5xl">Perguntas</h1>
+						<p className="text-muted mt-3">
 							Revise o conteúdo antes de disponibilizá-lo nas partidas.
 						</p>
 					</div>
 					<Link
 						href="/admin/questions/new"
-						className="shadow-print inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 font-extrabold text-white transition-colors hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+						className="shadow-print bg-primary hover:bg-primary-hover focus-visible:outline-focus inline-flex min-h-11 items-center justify-center rounded-xl px-4 font-extrabold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
 					>
 						Nova pergunta
 					</Link>
@@ -48,7 +48,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 						<input
 							name="search"
 							defaultValue={query.search}
-							className="min-h-11 rounded-lg border border-border bg-surface px-3 font-normal"
+							className="border-border bg-surface min-h-11 rounded-lg border px-3 font-normal"
 							placeholder="Texto da pergunta"
 						/>
 					</label>
@@ -57,7 +57,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 						<select
 							name="categoryId"
 							defaultValue={query.categoryId}
-							className="min-h-11 rounded-lg border border-border bg-surface px-3 font-normal"
+							className="border-border bg-surface min-h-11 rounded-lg border px-3 font-normal"
 						>
 							<option value="">Todas</option>
 							{categories.map((category) => (
@@ -72,7 +72,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 						<select
 							name="difficulty"
 							defaultValue={query.difficulty}
-							className="min-h-11 rounded-lg border border-border bg-surface px-3 font-normal"
+							className="border-border bg-surface min-h-11 rounded-lg border px-3 font-normal"
 						>
 							<option value="">Todas</option>
 							<option value="EASY">Fácil</option>
@@ -85,7 +85,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 						<select
 							name="status"
 							defaultValue={query.status}
-							className="min-h-11 rounded-lg border border-border bg-surface px-3 font-normal"
+							className="border-border bg-surface min-h-11 rounded-lg border px-3 font-normal"
 						>
 							<option value="ALL">Todos</option>
 							<option value="ACTIVE">Ativas</option>
@@ -97,14 +97,14 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 					<div className="md:col-span-4">
 						<button
 							type="submit"
-							className="shadow-print min-h-11 rounded-xl bg-primary px-4 font-extrabold text-white transition-colors hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+							className="shadow-print bg-primary hover:bg-primary-hover focus-visible:outline-focus min-h-11 rounded-xl px-4 font-extrabold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
 						>
 							Aplicar filtros
 						</button>
 					</div>
 				</form>
 				<section aria-label="Resultados" className="space-y-3">
-					<p className="text-sm font-bold text-muted">
+					<p className="text-muted text-sm font-bold">
 						{questions.length} pergunta{questions.length === 1 ? "" : "s"} encontrada
 						{questions.length === 1 ? "" : "s"}
 					</p>
@@ -113,10 +113,10 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 							<div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 								<div>
 									<div className="flex flex-wrap gap-2">
-										<span className="rounded-full bg-surface-strong px-3 py-1 text-xs font-bold text-foreground">
+										<span className="bg-surface-strong text-foreground rounded-full px-3 py-1 text-xs font-bold">
 											{question.category.name}
 										</span>
-										<span className="rounded-full bg-surface-strong px-3 py-1 text-xs font-bold text-foreground">
+										<span className="bg-surface-strong text-foreground rounded-full px-3 py-1 text-xs font-bold">
 											{difficultyLabels[question.difficulty]}
 										</span>
 										<span
@@ -138,8 +138,8 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 											{question.isActive ? "Ativa" : "Inativa"}
 										</span>
 									</div>
-									<h2 className="mt-3 text-lg font-extrabold text-foreground">{question.prompt}</h2>
-									<p className="mt-2 text-sm text-muted">
+									<h2 className="text-foreground mt-3 text-lg font-extrabold">{question.prompt}</h2>
+									<p className="text-muted mt-2 text-sm">
 										{question.game.name} · Atualizada em{" "}
 										{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(
 											new Date(question.updatedAt),
@@ -149,7 +149,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 								<div className="flex shrink-0 gap-2">
 									<Link
 										href={`/admin/questions/${question.id}/edit`}
-										className="inline-flex min-h-10 items-center justify-center rounded-lg border border-border px-3 text-sm font-bold text-foreground transition-colors hover:bg-surface-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+										className="border-border text-foreground hover:bg-surface-strong focus-visible:outline-focus inline-flex min-h-10 items-center justify-center rounded-lg border px-3 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
 									>
 										Editar
 									</Link>
@@ -159,7 +159,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 						</article>
 					))}
 					{questions.length === 0 && (
-						<div className="paper-card rounded-2xl p-8 text-center text-muted">
+						<div className="paper-card text-muted rounded-2xl p-8 text-center">
 							Nenhuma pergunta corresponde aos filtros.
 						</div>
 					)}

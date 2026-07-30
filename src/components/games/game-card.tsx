@@ -7,17 +7,17 @@ type GameCardProps = { game: typeof nemAPatoGame }
 export function GameCard({ game }: GameCardProps) {
 	return (
 		<article className="paper-card grid overflow-hidden rounded-3xl md:grid-cols-[0.78fr_1.22fr]">
-			<div className="relative min-h-56 overflow-hidden bg-primary p-7 text-surface sm:p-10">
+			<div className="bg-primary text-surface relative min-h-56 overflow-hidden p-7 sm:p-10">
 				<div
-					className="absolute -right-10 -top-12 h-44 w-44 rounded-full border-[18px] border-secondary"
+					className="border-secondary absolute -top-12 -right-10 h-44 w-44 rounded-full border-[18px]"
 					aria-hidden="true"
 				/>
 				<div
-					className="absolute bottom-7 right-7 h-24 w-20 rotate-6 rounded-xl border-2 border-surface/70 bg-accent shadow-[5px_5px_0_rgb(var(--color-surface-strong))]"
+					className="border-surface/70 bg-accent absolute right-7 bottom-7 h-24 w-20 rotate-6 rounded-xl border-2 shadow-[5px_5px_0_rgb(var(--color-surface-strong))]"
 					aria-hidden="true"
 				/>
-				<p className="relative font-display text-5xl leading-none sm:text-6xl">{game.name}</p>
-				<p className="relative mt-5 max-w-48 text-sm font-bold leading-6 text-surface/85">
+				<p className="font-display relative text-5xl leading-none sm:text-6xl">{game.name}</p>
+				<p className="text-surface/85 relative mt-5 max-w-48 text-sm leading-6 font-bold">
 					Quem foi longe demais no palpite?
 				</p>
 			</div>
@@ -27,13 +27,13 @@ export function GameCard({ game }: GameCardProps) {
 					duration={game.duration}
 					difficulty={game.difficulty}
 				/>
-				<h3 className="mt-5 font-display text-4xl text-foreground">{game.name}</h3>
-				<p className="mt-3 max-w-xl text-lg leading-7 text-muted">
+				<h3 className="font-display text-foreground mt-5 text-4xl">{game.name}</h3>
+				<p className="text-muted mt-3 max-w-xl text-lg leading-7">
 					{game.description} Faça apostas em voz alta, aumente os números e descubra quem exagerou.
 				</p>
 				<Link
 					href={game.playHref}
-					className="mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 py-3 font-extrabold text-surface hover:bg-primary-hover sm:w-auto"
+					className="bg-primary text-surface hover:bg-primary-hover mt-7 inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 py-3 font-extrabold sm:w-auto"
 				>
 					Jogar agora
 				</Link>
