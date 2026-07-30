@@ -3,6 +3,7 @@
 import { Card, Chip } from "@heroui/react"
 import Link from "next/link"
 
+import { GameFavicon } from "@/components/games/game-favicon"
 import type { CurrentUser } from "@/modules/auth"
 import type { ProfileGameSession } from "@/modules/administration"
 import type { ActiveGameSession } from "@/modules/game-sessions"
@@ -83,15 +84,22 @@ export function ProfileContent({ user, activeSessions, sessions }: ProfileConten
 											key={session.id}
 											className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
 										>
-											<div>
-												<p className="text-foreground font-bold">{session.gameName}</p>
-												<p className="text-muted text-sm">
-													Iniciado em {formatDate(session.startedAt)}
-												</p>
+											<div className="flex items-center gap-3">
+												<GameFavicon
+													gameSlug={session.gameSlug}
+													gameName={session.gameName}
+													className="border-border h-12 w-12 shrink-0 rounded-xl border object-cover"
+												/>
+												<div>
+													<p className="text-foreground font-bold">{session.gameName}</p>
+													<p className="text-muted text-sm">
+														Iniciado em {formatDate(session.startedAt)}
+													</p>
+												</div>
 											</div>
 											<Link
 												href={`/games/${session.gameSlug}/play/${session.id}`}
-												className="bg-primary text-primary-foreground rounded-xl px-4 py-2 text-center text-sm font-semibold hover:brightness-95"
+												className="bg-primary hover:bg-primary-hover rounded-xl px-4 py-2 text-center text-sm font-semibold text-white"
 											>
 												Continuar
 											</Link>
@@ -121,11 +129,18 @@ export function ProfileContent({ user, activeSessions, sessions }: ProfileConten
 											key={session.id}
 											className="flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between"
 										>
-											<div>
-												<p className="text-foreground font-bold">{session.gameName}</p>
-												<p className="text-muted text-sm">
-													{formatDate(new Date(session.finishedAt))}
-												</p>
+											<div className="flex items-center gap-3">
+												<GameFavicon
+													gameSlug={session.gameSlug}
+													gameName={session.gameName}
+													className="border-border h-12 w-12 shrink-0 rounded-xl border object-cover"
+												/>
+												<div>
+													<p className="text-foreground font-bold">{session.gameName}</p>
+													<p className="text-muted text-sm">
+														Finalizado em {formatDate(new Date(session.finishedAt))}
+													</p>
+												</div>
 											</div>
 											<p className="text-muted text-sm">
 												{session.durationMinutes} min · {session.roundsPlayed} rodada

@@ -1,5 +1,6 @@
 export { GameBadge } from "./game-badge"
 export { GameCard } from "./game-card"
+export { GameFavicon } from "./game-favicon"
 export { GameMetadata } from "./game-metadata"
 export { GameRules } from "./game-rules"
 export { nemAPatoGame } from "./nem-a-pato-metadata"
