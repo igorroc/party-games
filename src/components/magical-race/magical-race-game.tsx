@@ -489,6 +489,9 @@ function Race({
 						const column = index % 10
 						const order = row * 10 + (row % 2 ? 9 - column : column)
 						const space = index === 0 ? null : track[index - 1]
+						const racersAtSpace = state.racers.filter(
+							(racer) => (boardPositions?.[racer.id] ?? racer.position) === index,
+						)
 						return (
 							<div
 								key={index}
@@ -503,19 +506,19 @@ function Race({
 										{spaceIcon(space?.type)}
 									</span>
 								</div>
-								<div className="absolute right-1 bottom-1 left-1 flex flex-wrap justify-center gap-0.5">
-									{state.racers
-										.filter((racer) => (boardPositions?.[racer.id] ?? racer.position) === index)
-										.map((racer) => (
-											<RacerToken
-												key={racer.id}
-												racer={racer}
-												player={state.players.find((player) => player.id === racer.ownerId)}
-												position={boardPositions?.[racer.id] ?? racer.position}
-												moving={racer.id === movedRacerId && Boolean(boardPositions)}
-												isActive={racer.id === state.activeRacerId}
-											/>
-										))}
+								<div
+									className={`space-racers ${racersAtSpace.length > 1 ? "space-racers-many" : ""}`}
+								>
+									{racersAtSpace.map((racer) => (
+										<RacerToken
+											key={racer.id}
+											racer={racer}
+											player={state.players.find((player) => player.id === racer.ownerId)}
+											position={boardPositions?.[racer.id] ?? racer.position}
+											moving={racer.id === movedRacerId && Boolean(boardPositions)}
+											isActive={racer.id === state.activeRacerId}
+										/>
+									))}
 								</div>
 							</div>
 						)
@@ -773,7 +776,7 @@ function RacerToken({
 		<span
 			tabIndex={0}
 			aria-label={`Ver carta de ${definition?.publicName}`}
-			className="group relative"
+			className="racer-token-wrapper group relative"
 		>
 			<span
 				className={`arcade-token ${moving ? "arcade-token-moving" : ""} ${isActive ? "arcade-token-active" : ""}`}
