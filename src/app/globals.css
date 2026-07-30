@@ -67,6 +67,102 @@ body {
 		background: rgb(var(--color-surface));
 		box-shadow: 5px 5px 0 rgb(var(--color-primary) / 0.14);
 	}
+
+	.arcade-board {
+		background: linear-gradient(135deg, #182733, #0f4d5b 58%, #173b2c);
+		box-shadow: 7px 7px 0 rgb(var(--color-accent) / 0.4);
+	}
+
+	.arcade-space {
+		border: 2px solid #17212b;
+		background: #4f9dd3;
+		box-shadow: inset 0 -5px 0 rgb(0 0 0 / 0.16);
+	}
+
+	.arcade-space:nth-child(4n + 2) {
+		background: #f5b82e;
+	}
+	.arcade-space:nth-child(4n + 3) {
+		background: #dd78ad;
+	}
+	.arcade-space:nth-child(4n + 4) {
+		background: #55a447;
+	}
+	.arcade-space-trip {
+		background: #df5a54 !important;
+	}
+	.arcade-space-bonus-point {
+		background: #8b6bd6 !important;
+	}
+	.arcade-space-arrow {
+		background: #ed8f39 !important;
+	}
+	.arcade-space-start {
+		background: #3d84bb !important;
+	}
+	.arcade-space-finish {
+		background: #f3d765 !important;
+	}
+
+	.arcade-token {
+		display: grid;
+		width: 1.9rem;
+		height: 1.9rem;
+		place-items: center;
+		border: 2px solid #17212b;
+		border-radius: 999px;
+		background: var(--token);
+		box-shadow: 2px 2px 0 rgb(0 0 0 / 0.32);
+		font-size: 1rem;
+		transition: transform 250ms ease;
+	}
+
+	.arcade-token-moving {
+		animation: arcade-hop 620ms ease-out;
+	}
+	.arcade-die {
+		display: grid;
+		width: 3.3rem;
+		height: 3.3rem;
+		place-items: center;
+		border: 3px solid #18212a;
+		border-radius: 0.8rem;
+		background: #fff8e8;
+		box-shadow: 4px 4px 0 #ee704b;
+		color: #18212a;
+		font-family: var(--font-display);
+		font-size: 2rem;
+		line-height: 1;
+	}
+	.arcade-die-rolling {
+		animation: arcade-roll 550ms cubic-bezier(0.3, 0.7, 0.3, 1);
+	}
+}
+
+@keyframes arcade-roll {
+	0% {
+		transform: rotate(0) scale(1);
+	}
+	35% {
+		transform: rotate(190deg) scale(1.2);
+	}
+	70% {
+		transform: rotate(395deg) scale(0.9);
+	}
+	100% {
+		transform: rotate(720deg) scale(1);
+	}
+}
+@keyframes arcade-hop {
+	0% {
+		transform: translateY(-2.5rem) rotate(-12deg) scale(1.2);
+	}
+	65% {
+		transform: translateY(0.25rem) rotate(5deg);
+	}
+	100% {
+		transform: translateY(0) rotate(0);
+	}
 }
 
 @layer utilities {
