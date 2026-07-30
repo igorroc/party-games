@@ -49,7 +49,9 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 			const result = (await response.json()) as ApiResult
 			if (!response.ok || !result.success)
 				throw new Error(result.success ? "Ação inválida." : result.error.message)
-			if (action.type === "ROLL_MAIN_DIE") await animateRoll(state, result.data)
+			if (action.type === "ROLL_MAIN_DIE") await animateTurn(state, result.data, true)
+			else if (action.type === "RESOLVE_ROCKET_SCIENTIST" || action.type === "RESOLVE_CHEERLEADER")
+				await animateTurn(state, result.data, false)
 			else setState(result.data)
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : "Erro ao jogar.")
@@ -57,12 +59,18 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 			setBusy(false)
 		}
 	}
-	async function animateRoll(previous: PublicMagicalRaceState, next: PublicMagicalRaceState) {
+	async function animateTurn(
+		previous: PublicMagicalRaceState,
+		next: PublicMagicalRaceState,
+		showDie: boolean,
+	) {
 		const dieEvent = [...next.events].reverse().find((event) => event.type === "MAIN_DIE_ROLLED")
-		setRollingValue(dieEvent ? Number(dieEvent.payload.die) : null)
-		setRolling(true)
-		await delay(550)
-		setRolling(false)
+		if (showDie) {
+			setRollingValue(dieEvent ? Number(dieEvent.payload.die) : null)
+			setRolling(true)
+			await delay(550)
+			setRolling(false)
+		}
 		const startPositions = Object.fromEntries(
 			previous.racers.map((racer) => [racer.id, racer.position]),
 		)
@@ -92,7 +100,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 			})
 		}
 		setBoardPositions(null)
-		setRollingValue(null)
+		if (showDie) setRollingValue(null)
 		setState(next)
 	}
 	if (!state) return <main className="flex-1 p-8 text-center">Preparando a pista...</main>
@@ -173,6 +181,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 					</p>
 				)}
 				{infoOpen && <MatchInfoModal state={state} onClose={() => setInfoOpen(false)} />}
+				{state.pendingDecision && <PendingDecisionModal state={state} act={act} busy={busy} />}
 			</AppContainer>
 		</main>
 	)
@@ -622,6 +631,68 @@ function TrackLegend() {
 			<span>
 				<b>↗</b> movimento imediato
 			</span>
+		</div>
+	)
+}
+
+function PendingDecisionModal({
+	state,
+	act,
+	busy,
+}: {
+	state: PublicMagicalRaceState
+	act: (action: Record<string, unknown>) => Promise<void>
+	busy: boolean
+}) {
+	const decision = state.pendingDecision
+	if (!decision) return null
+	const rocket = decision.type === "rocket-scientist"
+	return (
+		<div
+			className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-4"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="decision-title"
+		>
+			<section className="decision-modal w-full max-w-lg rounded-3xl p-6 shadow-2xl sm:p-8">
+				<p className="text-xs font-black tracking-[.16em] uppercase">Poder opcional</p>
+				<h2 id="decision-title" className="font-display mt-2 text-3xl">
+					{rocket ? "Acionar o propulsor?" : "Animar quem está em último?"}
+				</h2>
+				<p className="mt-3 leading-relaxed">
+					{rocket
+						? `O resultado foi ${decision.die}. Você pode mover ${decision.die * 2} casas, mas o Cientista Foguete tropeçará no próximo turno.`
+						: "Todos os corredores empatados na última posição avançam 2 casas. Depois, a Torcida Lunar avança mais 1 casa e rola o dado normalmente."}
+				</p>
+				<div className="mt-6 flex flex-wrap justify-end gap-3">
+					<Button
+						variant="outline"
+						isDisabled={busy}
+						onPress={() =>
+							act(
+								rocket
+									? { type: "RESOLVE_ROCKET_SCIENTIST", double: false }
+									: { type: "RESOLVE_CHEERLEADER", useAbility: false },
+							)
+						}
+					>
+						{rocket ? `Manter ${decision.die}` : "Não animar"}
+					</Button>
+					<Button
+						variant="primary"
+						isDisabled={busy}
+						onPress={() =>
+							act(
+								rocket
+									? { type: "RESOLVE_ROCKET_SCIENTIST", double: true }
+									: { type: "RESOLVE_CHEERLEADER", useAbility: true },
+							)
+						}
+					>
+						{rocket ? "Usar propulsor" : "Animar a torcida"}
+					</Button>
+				</div>
+			</section>
 		</div>
 	)
 }

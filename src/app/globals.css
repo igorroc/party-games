@@ -284,6 +284,17 @@ body {
 		box-shadow: 4px 4px 0 rgb(233 109 66 / 0.22);
 	}
 
+	.decision-modal {
+		border: 3px solid #f0c95f;
+		background: linear-gradient(145deg, #fff9e9, #f5dca8);
+		color: #18212a;
+		box-shadow: 8px 8px 0 rgb(0 0 0 / 0.28);
+	}
+
+	.decision-modal > p:first-child {
+		color: #b44f32;
+	}
+
 	.arcade-token {
 		display: grid;
 		width: 2.35rem;
