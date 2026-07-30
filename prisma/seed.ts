@@ -374,7 +374,7 @@ const questions: SeedQuestion[] = [
 ]
 
 async function main() {
-	const game = await prisma.game.upsert({
+	await prisma.game.upsert({
 		where: { slug: "nem-a-pato" },
 		update: {
 			name: "Nem a Pato",
@@ -397,7 +397,7 @@ async function main() {
 
 	const categoryIds = new Map<string, string>()
 	for (const category of categories) {
-		const savedCategory = await prisma.questionCategory.upsert({
+		const savedCategory = await prisma.nemAPatoCategory.upsert({
 			where: { slug: category.slug },
 			update: { name: category.name },
 			create: category,
@@ -424,10 +424,10 @@ async function main() {
 			isReviewed: true,
 		}
 
-		await prisma.gameQuestion.upsert({
-			where: { gameId_prompt: { gameId: game.id, prompt: question.prompt } },
+		await prisma.nemAPatoQuestion.upsert({
+			where: { prompt: question.prompt },
 			update: data,
-			create: { gameId: game.id, prompt: question.prompt, ...data },
+			create: { prompt: question.prompt, ...data },
 		})
 	}
 

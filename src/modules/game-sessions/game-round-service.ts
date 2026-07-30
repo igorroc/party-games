@@ -18,7 +18,7 @@ export class GameRoundService {
 		const result = await db.$transaction(async (tx) => {
 			const session = await this.lockSession(tx, sessionId)
 			if (!session) return null
-			const current = await tx.gameRound.findFirst({
+			const current = await tx.nemAPatoRound.findFirst({
 				where: { sessionId, completedAt: null },
 				orderBy: { roundNumber: "desc" },
 			})
@@ -28,11 +28,14 @@ export class GameRoundService {
 					"Revele a resposta antes de iniciar outra rodada.",
 				)
 
+			const nemAPatoSession = await tx.nemAPatoSession.findUniqueOrThrow({
+				where: { sessionId },
+				select: { categoryId: true, difficulty: true },
+			})
 			const questionId = await QuestionSelectionService.selectUnusedQuestion(tx, {
 				sessionId,
-				gameId: session.gameId,
-				categoryId: session.categoryId,
-				difficulty: session.difficulty,
+				categoryId: nemAPatoSession.categoryId,
+				difficulty: nemAPatoSession.difficulty,
 			})
 			if (!questionId)
 				throw new GameSessionDomainError(
@@ -41,8 +44,8 @@ export class GameRoundService {
 				)
 			const now = new Date()
 			if (current)
-				await tx.gameRound.update({ where: { id: current.id }, data: { completedAt: now } })
-			const round = await tx.gameRound.create({
+				await tx.nemAPatoRound.update({ where: { id: current.id }, data: { completedAt: now } })
+			const round = await tx.nemAPatoRound.create({
 				data: { sessionId, questionId, roundNumber: (current?.roundNumber ?? 0) + 1 },
 				include: { question: { include: { category: true } } },
 			})
@@ -63,7 +66,7 @@ export class GameRoundService {
 		const result = await db.$transaction(async (tx) => {
 			const session = await this.lockSession(tx, sessionId)
 			if (!session) return null
-			const round = await tx.gameRound.findFirst({
+			const round = await tx.nemAPatoRound.findFirst({
 				where: { id: roundId, sessionId },
 				include: { question: { include: { category: true } } },
 			})
@@ -71,7 +74,7 @@ export class GameRoundService {
 				throw new GameSessionDomainError("ROUND_NOT_FOUND", "Rodada não encontrada nesta sessão.")
 			const revealedAt = round.revealedAt ?? new Date()
 			if (!round.revealedAt)
-				await tx.gameRound.update({ where: { id: round.id }, data: { revealedAt } })
+				await tx.nemAPatoRound.update({ where: { id: round.id }, data: { revealedAt } })
 			await tx.gameSession.update({
 				where: { id: sessionId },
 				data: { lastActivityAt: revealedAt },

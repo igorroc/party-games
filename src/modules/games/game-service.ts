@@ -21,28 +21,25 @@ export class GameService {
 		})
 	}
 
-	static async getActiveBySlug(slug: string): Promise<GameDetails | null> {
+	static async getActiveNemAPato(): Promise<GameDetails | null> {
 		return db.game
 			.findFirst({
-				where: { slug, status: "ACTIVE" },
-				select: {
-					...gameSelect,
-					questions: {
-						where: { isActive: true, isReviewed: true },
-						select: {
-							category: { select: { id: true, slug: true, name: true } },
-							difficulty: true,
-						},
-					},
-				},
+				where: { slug: "nem-a-pato", status: "ACTIVE" },
+				select: gameSelect,
 			})
-			.then((game) => {
+			.then(async (game) => {
 				if (!game) return null
+				const questions = await db.nemAPatoQuestion.findMany({
+					where: { isActive: true, isReviewed: true },
+					select: {
+						category: { select: { id: true, slug: true, name: true } },
+						difficulty: true,
+					},
+				})
 
-				const categories = new Map(game.questions.map(({ category }) => [category.id, category]))
-				const difficulties = [...new Set(game.questions.map(({ difficulty }) => difficulty))]
-				const { questions: _, ...details } = game
-				return { ...details, categories: [...categories.values()], difficulties }
+				const categories = new Map(questions.map(({ category }) => [category.id, category]))
+				const difficulties = [...new Set(questions.map(({ difficulty }) => difficulty))]
+				return { ...game, categories: [...categories.values()], difficulties }
 			})
 	}
 }

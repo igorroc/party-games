@@ -30,7 +30,7 @@ A especificação de produto completa está em [README.md](README.md). Este plan
 | Tema                      | Decisão proposta                                                                                                            |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | Nome da plataforma        | `NEXT_PUBLIC_APP_NAME`, com `Mesa de Jogos` como padrão temporário.                                                         |
-| Filtros "todas" e "mista" | Persistir `categoryId` e `difficulty` como `null`; `null` significa sem filtro.                                             |
+| Filtros "todas" e "mista" | Persistir `categoryId` e `difficulty` em `NemAPatoSession` como `null`; `null` significa sem filtro.                        |
 | Conclusão de rodada       | Revelação é obrigatória; adicionar `completedAt` quando a próxima rodada for criada ou a sessão for finalizada.             |
 | Esgotamento de perguntas  | "Jogar novamente" cria uma nova sessão, preservando o histórico da anterior.                                                |
 | Sessão abandonada         | Expirar sessão ativa sem atividade após período definido; aplicar a transição por verificação no servidor, sem cron no MVP. |

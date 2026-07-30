@@ -37,6 +37,7 @@ export function domainErrorResponse(error: unknown) {
 		const statusByCode = {
 			GAME_NOT_FOUND: 404,
 			GAME_NOT_ACTIVE: 409,
+			GAME_NOT_SUPPORTED: 409,
 			SESSION_NOT_FOUND: 404,
 			SESSION_ACCESS_DENIED: 403,
 			SESSION_ALREADY_FINISHED: 409,

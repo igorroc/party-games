@@ -3,7 +3,7 @@ import "server-only"
 import type { Prisma } from "@/generated/prisma/client"
 import type { PublicRoundQuestion, RevealedRoundAnswer } from "./types"
 
-type RoundWithQuestion = Prisma.GameRoundGetPayload<{
+type RoundWithQuestion = Prisma.NemAPatoRoundGetPayload<{
 	include: { question: { include: { category: true } } }
 }>
 

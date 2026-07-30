@@ -2,6 +2,7 @@ import "server-only"
 
 import { Prisma, type GameSession, type PrismaClient } from "@/generated/prisma/client"
 import db from "@/lib/db"
+import { NEM_A_PATO_SLUG } from "@/modules/games"
 import { QuestionService } from "@/modules/questions"
 import { GameSessionCookie } from "./game-session-cookie"
 import { GameSessionDomainError } from "./errors"
@@ -21,6 +22,11 @@ export class GameSessionService {
 		},
 		userId: string | null,
 	): Promise<CreatedGameSession> {
+		if (input.gameSlug !== NEM_A_PATO_SLUG)
+			throw new GameSessionDomainError(
+				"GAME_NOT_SUPPORTED",
+				"Este jogo ainda não possui uma implementação de partida.",
+			)
 		const game = await db.game.findUnique({
 			where: { slug: input.gameSlug },
 			select: { id: true, status: true },
@@ -30,8 +36,8 @@ export class GameSessionService {
 			throw new GameSessionDomainError("GAME_NOT_ACTIVE", "Este jogo não está disponível.")
 
 		if (input.categoryId) {
-			const category = await db.gameQuestion.findFirst({
-				where: { gameId: game.id, categoryId: input.categoryId },
+			const category = await db.nemAPatoQuestion.findFirst({
+				where: { categoryId: input.categoryId },
 				select: { id: true },
 			})
 			if (!category)
@@ -48,10 +54,11 @@ export class GameSessionService {
 				gameId: game.id,
 				userId,
 				playerCount: input.playerCount,
-				categoryId: input.categoryId,
-				difficulty: input.difficulty,
 				anonymousTokenHash: GameSessionCookie.hashToken(anonymousToken),
 				anonymousTokenExpiresAt: expiresAt,
+				nemAPatoSession: {
+					create: { categoryId: input.categoryId, difficulty: input.difficulty },
+				},
 			},
 			include: sessionViewInclude,
 		})
@@ -78,7 +85,7 @@ export class GameSessionService {
 		const result = await db.$transaction(async (tx) => {
 			const session = await this.lockActiveSession(tx, sessionId)
 			if (!session) return null
-			const activeRound = await tx.gameRound.findFirst({
+			const activeRound = await tx.nemAPatoRound.findFirst({
 				where: { sessionId, completedAt: null },
 				orderBy: { roundNumber: "desc" },
 			})
@@ -88,7 +95,7 @@ export class GameSessionService {
 					"Revele a resposta antes de finalizar a partida.",
 				)
 			const now = new Date()
-			await tx.gameRound.updateMany({
+			await tx.nemAPatoRound.updateMany({
 				where: { sessionId, completedAt: null },
 				data: { completedAt: now },
 			})
@@ -106,20 +113,23 @@ export class GameSessionService {
 	static toView(
 		session: Prisma.GameSessionGetPayload<{ include: typeof sessionViewInclude }>,
 	): GameSessionView {
-		const currentRound = session.rounds[0] ?? null
+		const currentRound = session.nemAPatoSession?.rounds[0] ?? null
 		return {
 			id: session.id,
 			game: session.game,
 			playerCount: session.playerCount,
-			category: session.category
-				? { slug: session.category.slug, name: session.category.name }
+			category: session.nemAPatoSession?.category
+				? {
+						slug: session.nemAPatoSession.category.slug,
+						name: session.nemAPatoSession.category.name,
+					}
 				: null,
-			difficulty: session.difficulty,
+			difficulty: session.nemAPatoSession?.difficulty ?? null,
 			status: session.status,
 			startedAt: session.startedAt.toISOString(),
 			finishedAt: session.finishedAt?.toISOString() ?? null,
 			currentRound: currentRound ? QuestionService.toPublicRoundQuestion(currentRound) : null,
-			roundsPlayed: session._count.rounds,
+			roundsPlayed: session.nemAPatoSession?._count.rounds ?? 0,
 		}
 	}
 
@@ -170,11 +180,15 @@ export class GameSessionService {
 
 const sessionViewInclude = {
 	game: { select: { slug: true, name: true } },
-	category: { select: { slug: true, name: true } },
-	rounds: {
-		orderBy: { roundNumber: "desc" },
-		take: 1,
-		include: { question: { include: { category: true } } },
+	nemAPatoSession: {
+		include: {
+			category: { select: { slug: true, name: true } },
+			rounds: {
+				orderBy: { roundNumber: "desc" },
+				take: 1,
+				include: { question: { include: { category: true } } },
+			},
+			_count: { select: { rounds: true } },
+		},
 	},
-	_count: { select: { rounds: true } },
 } as const

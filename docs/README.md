@@ -767,45 +767,7 @@ model Game {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  questions   GameQuestion[]
   sessions    GameSession[]
-}
-
-model QuestionCategory {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  questions GameQuestion[]
-}
-
-model GameQuestion {
-  id              String             @id @default(cuid())
-  gameId          String
-  categoryId      String
-  prompt          String
-  answerValue     Decimal?
-  answerText      String
-  answerUnit      String?
-  explanation     String?
-  sourceName      String?
-  sourceUrl       String?
-  verifiedAt      DateTime?
-  difficulty      QuestionDifficulty
-  locale          String             @default("pt-BR")
-  isActive        Boolean            @default(true)
-  isReviewed      Boolean            @default(false)
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-
-  game            Game             @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  category        QuestionCategory @relation(fields: [categoryId], references: [id])
-  rounds          GameRound[]
-
-  @@index([gameId, isActive])
-  @@index([gameId, categoryId, difficulty])
 }
 
 model GameSession {
@@ -813,8 +775,6 @@ model GameSession {
   gameId         String
   userId         String?
   playerCount    Int
-  categoryId     String?
-  difficulty     QuestionDifficulty?
   status         GameSessionStatus @default(ACTIVE)
   startedAt      DateTime          @default(now())
   finishedAt     DateTime?
@@ -823,22 +783,49 @@ model GameSession {
 
   game           Game        @relation(fields: [gameId], references: [id])
   user           User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  rounds         GameRound[]
+  nemAPatoSession NemAPatoSession?
 
   @@index([userId])
   @@index([gameId, status])
 }
 
-model GameRound {
-  id          String    @id @default(cuid())
+model NemAPatoSession {
+  sessionId  String @id
+  categoryId String?
+  difficulty QuestionDifficulty?
+
+  session  GameSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  category NemAPatoCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  rounds   NemAPatoRound[]
+}
+
+model NemAPatoCategory {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  questions NemAPatoQuestion[]
+}
+
+model NemAPatoQuestion {
+  id          String             @id @default(cuid())
+  categoryId  String
+  prompt      String
+  answerValue Decimal?
+  answerText  String
+  difficulty  QuestionDifficulty
+
+  category NemAPatoCategory @relation(fields: [categoryId], references: [id])
+  rounds   NemAPatoRound[]
+}
+
+model NemAPatoRound {
+  id          String @id @default(cuid())
   sessionId   String
   questionId  String
   roundNumber Int
-  revealedAt  DateTime?
-  createdAt   DateTime  @default(now())
 
-  session     GameSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  question    GameQuestion @relation(fields: [questionId], references: [id])
+  session  NemAPatoSession  @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+  question NemAPatoQuestion @relation(fields: [questionId], references: [id])
 
   @@unique([sessionId, roundNumber])
   @@unique([sessionId, questionId])

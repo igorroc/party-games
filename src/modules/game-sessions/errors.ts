@@ -3,6 +3,7 @@ export class GameSessionDomainError extends Error {
 		public readonly code:
 			| "GAME_NOT_FOUND"
 			| "GAME_NOT_ACTIVE"
+			| "GAME_NOT_SUPPORTED"
 			| "SESSION_NOT_FOUND"
 			| "SESSION_ACCESS_DENIED"
 			| "SESSION_ALREADY_FINISHED"

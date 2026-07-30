@@ -13,7 +13,6 @@ describe("QuestionSelectionService", () => {
 			} as never,
 			{
 				sessionId: "session-1",
-				gameId: "game-1",
 				categoryId: "category-1",
 				difficulty: "HARD",
 			},
@@ -25,15 +24,13 @@ describe("QuestionSelectionService", () => {
 		expect(query?.strings.join("?")).toContain('r."sessionId" = ? AND r."questionId" = q.id')
 		expect(query?.strings.join("?")).toContain('q."categoryId" = ?')
 		expect(query?.strings.join("?")).toContain('q.difficulty = ?::"QuestionDifficulty"')
-		expect(query?.values).toEqual(
-			expect.arrayContaining(["game-1", "session-1", "category-1", "HARD"]),
-		)
+		expect(query?.values).toEqual(expect.arrayContaining(["session-1", "category-1", "HARD"]))
 	})
 
 	test("sinaliza esgotamento com null quando a consulta não encontra pergunta", async () => {
 		const selected = await QuestionSelectionService.selectUnusedQuestion(
 			{ $queryRaw: async () => [] } as never,
-			{ sessionId: "session-1", gameId: "game-1", categoryId: null, difficulty: null },
+			{ sessionId: "session-1", categoryId: null, difficulty: null },
 		)
 		expect(selected).toBeNull()
 	})

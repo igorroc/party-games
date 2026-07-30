@@ -7,7 +7,6 @@ export const questionDifficultySchema = z.enum(["EASY", "MEDIUM", "HARD"])
 export const questionStatusSchema = z.enum(["ALL", "ACTIVE", "INACTIVE", "REVIEWED", "PENDING"])
 
 export const questionInputSchema = z.object({
-	gameId: z.string().trim().min(1, "Selecione o jogo."),
 	categoryId: z.string().trim().min(1, "Selecione a categoria."),
 	prompt: z.string().trim().min(10, "A pergunta deve ter ao menos 10 caracteres.").max(1_000),
 	answerText: z.string().trim().min(1, "Informe a resposta.").max(2_000),

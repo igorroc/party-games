@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { GameService, NEM_A_PATO_SLUG } from "@/modules/games"
+import { GameService } from "@/modules/games"
 import { PlaySetup } from "@/components/nem-a-pato/play-setup"
 
 export const dynamic = "force-dynamic"
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function NemAPatoPlayPage() {
-	const game = await GameService.getActiveBySlug(NEM_A_PATO_SLUG)
+	const game = await GameService.getActiveNemAPato()
 
 	if (!game) {
 		return <main className="text-muted flex-1 p-6 text-center">Este jogo não está disponível.</main>

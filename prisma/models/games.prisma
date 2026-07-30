@@ -8,52 +8,10 @@ model Game {
   maxPlayers  Int?
   durationMin Int?
 
-  questions GameQuestion[]
-  sessions  GameSession[]
+  sessions GameSession[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model QuestionCategory {
-  id   String @id @default(cuid())
-  slug String @unique
-  name String
-
-  questions GameQuestion[]
-  sessions  GameSession[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model GameQuestion {
-  id          String             @id @default(cuid())
-  gameId      String
-  categoryId  String
-  prompt      String
-  answerValue Decimal?
-  answerText  String
-  answerUnit  String?
-  explanation String?
-  sourceName  String?
-  sourceUrl   String?
-  verifiedAt  DateTime?
-  difficulty  QuestionDifficulty
-  locale      String             @default("pt-BR")
-  isActive    Boolean            @default(true)
-  isReviewed  Boolean            @default(false)
-
-  game     Game             @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  category QuestionCategory @relation(fields: [categoryId], references: [id])
-  rounds   GameRound[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([gameId, prompt])
-  @@index([gameId, isActive, isReviewed])
-  @@index([gameId, categoryId, difficulty])
 }
 
 enum GameStatus {

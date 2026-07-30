@@ -140,7 +140,7 @@ export default async function QuestionsPage({ searchParams }: QuestionsPageProps
 									</div>
 									<h2 className="text-foreground mt-3 text-lg font-extrabold">{question.prompt}</h2>
 									<p className="text-muted mt-2 text-sm">
-										{question.game.name} · Atualizada em{" "}
+										Atualizada em{" "}
 										{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(
 											new Date(question.updatedAt),
 										)}

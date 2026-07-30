@@ -9,7 +9,6 @@ export class QuestionSelectionService {
 		db: DatabaseClient,
 		input: {
 			sessionId: string
-			gameId: string
 			categoryId: string | null
 			difficulty: QuestionDifficulty | null
 		},
@@ -22,14 +21,13 @@ export class QuestionSelectionService {
 			: Prisma.empty
 		const rows = await db.$queryRaw<{ id: string }[]>(Prisma.sql`
 			SELECT q.id
-			FROM "GameQuestion" q
-			WHERE q."gameId" = ${input.gameId}
-				AND q."isActive" = true
+			FROM "NemAPatoQuestion" q
+			WHERE q."isActive" = true
 				AND q."isReviewed" = true
 				${categoryFilter}
 				${difficultyFilter}
 				AND NOT EXISTS (
-					SELECT 1 FROM "GameRound" r
+					SELECT 1 FROM "NemAPatoRound" r
 					WHERE r."sessionId" = ${input.sessionId} AND r."questionId" = q.id
 				)
 			ORDER BY RANDOM()

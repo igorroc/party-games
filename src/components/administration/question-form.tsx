@@ -5,15 +5,14 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "react-toastify"
 import type { AdminQuestion } from "@/modules/administration"
-import type { GameOption, QuestionCategoryOption } from "@/modules/administration/types"
+import type { QuestionCategoryOption } from "@/modules/administration/types"
 
 type QuestionFormProps = {
 	question?: AdminQuestion
-	games: GameOption[]
 	categories: QuestionCategoryOption[]
 }
 
-export function QuestionForm({ question, games, categories }: QuestionFormProps) {
+export function QuestionForm({ question, categories }: QuestionFormProps) {
 	const router = useRouter()
 	const [isLoading, setIsLoading] = useState(false)
 
@@ -21,7 +20,6 @@ export function QuestionForm({ question, games, categories }: QuestionFormProps)
 		event.preventDefault()
 		const form = new FormData(event.currentTarget)
 		const body = {
-			gameId: String(form.get("gameId") ?? ""),
 			categoryId: String(form.get("categoryId") ?? ""),
 			prompt: String(form.get("prompt") ?? ""),
 			answerText: String(form.get("answerText") ?? ""),
@@ -61,23 +59,7 @@ export function QuestionForm({ question, games, categories }: QuestionFormProps)
 
 	return (
 		<form onSubmit={submit} className="space-y-6" aria-busy={isLoading}>
-			<div className="grid gap-5 md:grid-cols-2">
-				<label className="text-foreground grid gap-2 font-bold">
-					Jogo
-					<select
-						name="gameId"
-						defaultValue={question?.gameId}
-						required
-						className="border-border bg-surface min-h-12 rounded-xl border px-3 font-normal"
-					>
-						<option value="">Selecione um jogo</option>
-						{games.map((game) => (
-							<option key={game.id} value={game.id}>
-								{game.name}
-							</option>
-						))}
-					</select>
-				</label>
+			<div className="grid gap-5">
 				<label className="text-foreground grid gap-2 font-bold">
 					Categoria
 					<select

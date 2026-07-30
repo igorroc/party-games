@@ -1,11 +1,9 @@
 import type { QuestionDifficulty } from "@/generated/prisma/client"
 
 export type QuestionCategoryOption = { id: string; name: string }
-export type GameOption = { id: string; name: string; slug: string }
 
 export type AdminQuestion = {
 	id: string
-	gameId: string
 	categoryId: string
 	prompt: string
 	answerText: string
@@ -19,7 +17,6 @@ export type AdminQuestion = {
 	locale: string
 	isActive: boolean
 	isReviewed: boolean
-	game: { name: string; slug: string }
 	category: { name: string }
 	updatedAt: string
 }
@@ -27,7 +24,6 @@ export type AdminQuestion = {
 export type AdminQuestionList = {
 	questions: AdminQuestion[]
 	categories: QuestionCategoryOption[]
-	games: GameOption[]
 }
 
 export type ProfileGameSession = {

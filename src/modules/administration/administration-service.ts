@@ -10,13 +10,12 @@ type QuestionInput = z.infer<typeof questionInputSchema>
 type QuestionListQuery = z.infer<typeof questionListQuerySchema>
 
 const questionInclude = {
-	game: { select: { name: true, slug: true } },
 	category: { select: { name: true } },
 } as const
 
 export class AdministrationService {
 	static async listQuestions(query: QuestionListQuery): Promise<AdminQuestionList> {
-		const where: Prisma.GameQuestionWhereInput = {
+		const where: Prisma.NemAPatoQuestionWhereInput = {
 			...(query.search ? { prompt: { contains: query.search, mode: "insensitive" } } : {}),
 			...(query.categoryId ? { categoryId: query.categoryId } : {}),
 			...(query.difficulty ? { difficulty: query.difficulty } : {}),
@@ -25,25 +24,27 @@ export class AdministrationService {
 			...(query.status === "REVIEWED" ? { isReviewed: true } : {}),
 			...(query.status === "PENDING" ? { isReviewed: false } : {}),
 		}
-		const [questions, categories, games] = await Promise.all([
-			db.gameQuestion.findMany({
+		const [questions, categories] = await Promise.all([
+			db.nemAPatoQuestion.findMany({
 				where,
 				include: questionInclude,
 				orderBy: { updatedAt: "desc" },
 			}),
-			db.questionCategory.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
-			db.game.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
+			db.nemAPatoCategory.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
 		])
-		return { questions: questions.map(this.toQuestion), categories, games }
+		return { questions: questions.map(this.toQuestion), categories }
 	}
 
 	static async getQuestion(id: string): Promise<AdminQuestion | null> {
-		const question = await db.gameQuestion.findUnique({ where: { id }, include: questionInclude })
+		const question = await db.nemAPatoQuestion.findUnique({
+			where: { id },
+			include: questionInclude,
+		})
 		return question ? this.toQuestion(question) : null
 	}
 
 	static async createQuestion(input: QuestionInput): Promise<AdminQuestion> {
-		const question = await db.gameQuestion.create({
+		const question = await db.nemAPatoQuestion.create({
 			data: this.toQuestionData(input),
 			include: questionInclude,
 		})
@@ -51,9 +52,9 @@ export class AdministrationService {
 	}
 
 	static async updateQuestion(id: string, input: QuestionInput): Promise<AdminQuestion | null> {
-		const existing = await db.gameQuestion.findUnique({ where: { id }, select: { id: true } })
+		const existing = await db.nemAPatoQuestion.findUnique({ where: { id }, select: { id: true } })
 		if (!existing) return null
-		const question = await db.gameQuestion.update({
+		const question = await db.nemAPatoQuestion.update({
 			where: { id },
 			data: this.toQuestionData(input),
 			include: questionInclude,
@@ -62,7 +63,10 @@ export class AdministrationService {
 	}
 
 	static async deactivateQuestion(id: string): Promise<boolean> {
-		const result = await db.gameQuestion.updateMany({ where: { id }, data: { isActive: false } })
+		const result = await db.nemAPatoQuestion.updateMany({
+			where: { id },
+			data: { isActive: false },
+		})
 		return result.count > 0
 	}
 
@@ -74,7 +78,7 @@ export class AdministrationService {
 				startedAt: true,
 				finishedAt: true,
 				game: { select: { name: true, slug: true } },
-				_count: { select: { rounds: true } },
+				nemAPatoSession: { select: { _count: { select: { rounds: true } } } },
 			},
 			orderBy: { finishedAt: "desc" },
 		})
@@ -87,11 +91,11 @@ export class AdministrationService {
 				1,
 				Math.round((session.finishedAt!.getTime() - session.startedAt.getTime()) / 60_000),
 			),
-			roundsPlayed: session._count.rounds,
+			roundsPlayed: session.nemAPatoSession?._count.rounds ?? 0,
 		}))
 	}
 
-	private static toQuestionData(input: QuestionInput): Prisma.GameQuestionUncheckedCreateInput {
+	private static toQuestionData(input: QuestionInput): Prisma.NemAPatoQuestionUncheckedCreateInput {
 		return {
 			...input,
 			answerValue: input.answerValue ? input.answerValue.replace(",", ".") : null,
@@ -103,7 +107,7 @@ export class AdministrationService {
 	}
 
 	private static toQuestion(
-		question: Prisma.GameQuestionGetPayload<{ include: typeof questionInclude }>,
+		question: Prisma.NemAPatoQuestionGetPayload<{ include: typeof questionInclude }>,
 	): AdminQuestion {
 		return {
 			...question,
