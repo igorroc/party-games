@@ -25,6 +25,7 @@ export type MagicalRaceEvent = {
 	message: string
 	payload: Record<string, unknown>
 }
+export type PendingDecision = { type: "rocket-scientist"; racerId: string; die: number }
 export type MagicalRaceState = {
 	version: number
 	status: MagicalRaceStatus
@@ -42,6 +43,7 @@ export type MagicalRaceState = {
 	activeRacerId: string | null
 	turnQueue: string[]
 	finishers: string[]
+	pendingDecision: PendingDecision | null
 	events: MagicalRaceEvent[]
 }
 
@@ -49,6 +51,7 @@ export type MagicalRaceAction =
 	| { type: "DRAFT_RACER"; racerDefinitionId: string }
 	| { type: "SUBMIT_RACE_SELECTION"; racerDefinitionIds: string[] }
 	| { type: "ROLL_MAIN_DIE" }
+	| { type: "RESOLVE_ROCKET_SCIENTIST"; double: boolean }
 	| { type: "CONFIRM_NEXT_RACE" }
 	| { type: "ABANDON_MATCH" }
 

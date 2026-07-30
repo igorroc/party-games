@@ -514,6 +514,7 @@ function Race({
 					<FinishZone state={state} boardPositions={boardPositions} movedRacerId={movedRacerId} />
 				</div>
 			</div>
+			{state.trackId === "wild" && <TrackLegend />}
 			<div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
 				<div className="border-accent/40 bg-accent/5 rounded-2xl border-2 border-dashed p-4">
 					<p className="text-accent text-xs font-black tracking-[0.16em] uppercase">
@@ -531,7 +532,33 @@ function Race({
 						O servidor calcula dado, movimento e os efeitos da pista.
 					</p>
 				</div>
-				{isResult ? (
+				{state.pendingDecision?.type === "rocket-scientist" ? (
+					<div className="rocket-decision rounded-2xl p-4">
+						<p className="text-xs font-black tracking-[0.14em] uppercase">Decisão de poder</p>
+						<p className="font-display mt-1 text-xl">
+							Dobrar {state.pendingDecision.die} para {state.pendingDecision.die * 2} casas?
+						</p>
+						<p className="mt-1 text-sm">
+							Se usar o propulsor, o Cientista Foguete tropeçará no próximo turno.
+						</p>
+						<div className="mt-3 flex gap-2">
+							<Button
+								variant="outline"
+								isDisabled={busy}
+								onPress={() => act({ type: "RESOLVE_ROCKET_SCIENTIST", double: false })}
+							>
+								Manter {state.pendingDecision.die}
+							</Button>
+							<Button
+								variant="primary"
+								isDisabled={busy}
+								onPress={() => act({ type: "RESOLVE_ROCKET_SCIENTIST", double: true })}
+							>
+								Usar propulsor
+							</Button>
+						</div>
+					</div>
+				) : isResult ? (
 					<div className="text-right">
 						<p className="font-display text-2xl">Chegada definida!</p>
 						<Button
@@ -555,6 +582,22 @@ function Race({
 				)}
 			</div>
 		</>
+	)
+}
+
+function TrackLegend() {
+	return (
+		<div className="track-legend mt-3 flex flex-wrap justify-center gap-2 text-xs">
+			<span>
+				<b>!</b> tropeço: perde o próximo movimento
+			</span>
+			<span>
+				<b>+</b> ponto extra
+			</span>
+			<span>
+				<b>↗</b> movimento imediato
+			</span>
+		</div>
 	)
 }
 
@@ -647,7 +690,7 @@ function RacerToken({
 			>
 				<RacerArt definitionId={racer.definitionId} />
 			</span>
-			<span className="arcade-racer-card pointer-events-auto absolute bottom-full left-1/2 z-20 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-200 select-text group-hover:opacity-100 group-focus-visible:opacity-100">
+			<span className="arcade-racer-card pointer-events-none absolute bottom-full left-1/2 z-20 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-200 select-text group-hover:pointer-events-auto group-hover:opacity-100 group-focus-visible:pointer-events-auto group-focus-visible:opacity-100">
 				<span
 					className="mb-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-white/70 text-5xl"
 					style={{ background: visual.color }}

@@ -79,6 +79,7 @@ export function createMatch(
 		activeRacerId: null,
 		turnQueue: [],
 		finishers: [],
+		pendingDecision: null,
 		events: [{ sequence: 1, type: "MATCH_CREATED", message: "Partida criada.", payload: {} }],
 	}
 }
@@ -105,6 +106,8 @@ export function dispatch(
 	else if (action.type === "SUBMIT_RACE_SELECTION")
 		selectRacers(next, actorId, action.racerDefinitionIds, random)
 	else if (action.type === "ROLL_MAIN_DIE") roll(next, actorId, random)
+	else if (action.type === "RESOLVE_ROCKET_SCIENTIST")
+		resolveRocketScientist(next, actorId, action.double)
 	else if (action.type === "CONFIRM_NEXT_RACE") nextRace(next, actorId)
 	else {
 		next.status = "abandoned"
@@ -179,6 +182,7 @@ function selectRacers(
 function roll(state: MagicalRaceState, actorId: string, random: RandomProvider) {
 	if (state.status !== "racing" || state.activePlayerId !== actorId)
 		throw new Error("Não é a vez deste jogador.")
+	if (state.pendingDecision) throw new Error("Resolva a decisão pendente antes de continuar.")
 	const racer = activeRacer(state, actorId)
 	if (!racer) throw new Error("Não há corredor ativo.")
 	state.activeRacerId = racer.id
@@ -190,7 +194,41 @@ function roll(state: MagicalRaceState, actorId: string, random: RandomProvider) 
 	}
 	const die = random.rollDie(6)
 	event(state, "MAIN_DIE_ROLLED", `Dado: ${die}.`, { racerId: racer.id, die })
+	if (racer.definitionId === "rocket-scientist") {
+		state.pendingDecision = { type: "rocket-scientist", racerId: racer.id, die }
+		event(state, "DECISION_REQUESTED", "O Cientista Foguete pode dobrar o movimento.", {
+			racerId: racer.id,
+			die,
+		})
+		return
+	}
 	move(state, racer.id, die)
+	if (state.status === "racing") advanceTurn(state)
+}
+
+function resolveRocketScientist(state: MagicalRaceState, actorId: string, double: boolean) {
+	const decision = state.pendingDecision
+	if (!decision || decision.type !== "rocket-scientist" || state.activePlayerId !== actorId)
+		throw new Error("Esta decisão não está disponível.")
+	const racer = state.racers.find((item) => item.id === decision.racerId)
+	if (!racer || racer.status !== "active") throw new Error("Corredor inválido para esta decisão.")
+	state.pendingDecision = null
+	const amount = double ? decision.die * 2 : decision.die
+	event(
+		state,
+		"ABILITY_RESOLVED",
+		double
+			? "Cientista Foguete dobrou o movimento e tropeçará depois."
+			: "Cientista Foguete manteve o movimento normal.",
+		{ racerId: racer.id, amount },
+	)
+	move(state, racer.id, amount)
+	if (double && racer.status === "active") {
+		racer.tripPending = true
+		event(state, "RACER_TRIPPED", "O propulsor deixou o Cientista Foguete tropeçado.", {
+			racerId: racer.id,
+		})
+	}
 	if (state.status === "racing") advanceTurn(state)
 }
 
@@ -255,6 +293,7 @@ function nextRace(state: MagicalRaceState, actorId: string) {
 	state.activePlayerId = null
 	state.activeRacerId = null
 	state.turnQueue = []
+	state.pendingDecision = null
 	event(state, "NEXT_RACE_PREPARED", `Corrida ${state.raceNumber} preparada.`, {})
 }
 

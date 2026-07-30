@@ -24,6 +24,7 @@ export const magicalRaceActionSchema = z.object({
 			racerDefinitionIds: z.array(z.string()).min(1).max(2),
 		}),
 		z.object({ type: z.literal("ROLL_MAIN_DIE") }),
+		z.object({ type: z.literal("RESOLVE_ROCKET_SCIENTIST"), double: z.boolean() }),
 		z.object({ type: z.literal("CONFIRM_NEXT_RACE") }),
 		z.object({ type: z.literal("ABANDON_MATCH") }),
 	]),

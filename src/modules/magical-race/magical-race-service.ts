@@ -114,7 +114,11 @@ export class MagicalRaceService {
 	}
 
 	private static actorFor(state: MagicalRaceState, action: MagicalRaceAction) {
-		if (action.type === "DRAFT_RACER" || action.type === "ROLL_MAIN_DIE")
+		if (
+			action.type === "DRAFT_RACER" ||
+			action.type === "ROLL_MAIN_DIE" ||
+			action.type === "RESOLVE_ROCKET_SCIENTIST"
+		)
 			return state.activePlayerId ?? ""
 		if (action.type === "SUBMIT_RACE_SELECTION")
 			return state.players.find((player) => !state.secretSelections[player.id])?.id ?? ""
