@@ -7,6 +7,7 @@ import { GameService, NEM_A_PATO_SLUG } from "@/modules/games"
 
 export const metadata: Metadata = {
 	title: "Gerenciar jogos",
+	description: "Gerencie o catálogo e a disponibilidade dos jogos.",
 	robots: { index: false, follow: false },
 }
 

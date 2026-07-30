@@ -9,6 +9,12 @@ import { racerDefinitions } from "@/modules/magical-race/racers"
 export const metadata: Metadata = {
 	title: magicalRaceGame.name,
 	description: magicalRaceGame.description,
+	alternates: { canonical: "/games/magical-race" },
+	openGraph: {
+		title: magicalRaceGame.name,
+		description: magicalRaceGame.description,
+		images: [{ url: "/assets/banner.png" }],
+	},
 }
 export default function MagicalRacePage() {
 	return (

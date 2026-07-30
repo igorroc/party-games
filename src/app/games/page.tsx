@@ -8,6 +8,7 @@ import { GameService } from "@/modules/games"
 export const metadata: Metadata = {
 	title: "Jogos",
 	description: "Encontre o próximo jogo para reunir o grupo.",
+	alternates: { canonical: "/games" },
 }
 
 type GamesPageProps = { searchParams: Promise<{ search?: string }> }

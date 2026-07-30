@@ -4,9 +4,11 @@ import { AttackModeControl, SeedButton } from "@/components/administration"
 import { AppContainer } from "@/components/design-system"
 import { AuthSession } from "@/modules/auth"
 import { OperationalSettingsService } from "@/modules/administration"
+import { appName } from "@/lib/site-url"
 
 export const metadata: Metadata = {
 	title: "Administração",
+	description: `Painel administrativo da ${appName}.`,
 	robots: { index: false, follow: false },
 }
 

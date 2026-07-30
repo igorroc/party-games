@@ -8,6 +8,7 @@ import { AdministrationService } from "@/modules/administration"
 
 export const metadata: Metadata = {
 	title: "Editar pergunta",
+	description: "Edite uma pergunta do catálogo de Nem a Pato.",
 	robots: { index: false, follow: false },
 }
 type EditQuestionPageProps = { params: Promise<{ "question-id": string }> }

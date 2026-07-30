@@ -78,17 +78,17 @@ Mesmo existindo apenas um jogo, a estrutura deve permitir adicionar novos jogos 
 
 # 4. Nome e identidade
 
-O nome definitivo da plataforma ainda não foi escolhido.
+O nome da plataforma é **Party Games**.
 
 Não espalhe um nome fixo pelo código.
 
 Crie uma configuração centralizada, preferencialmente utilizando:
 
 ```env
-NEXT_PUBLIC_APP_NAME="Mesa de Jogos"
+NEXT_PUBLIC_APP_NAME="Party Games"
 ```
 
-Use **Mesa de Jogos** apenas como nome temporário.
+Use `NEXT_PUBLIC_APP_NAME` para alterar o nome da plataforma.
 
 O título **Nem a Pato** pode ser utilizado na página do jogo, mas deve permanecer centralizado nos metadados do jogo, e não repetido manualmente em diversos componentes.
 

@@ -7,6 +7,7 @@ import { AdministrationService } from "@/modules/administration"
 
 export const metadata: Metadata = {
 	title: "Nova pergunta",
+	description: "Cadastre uma nova pergunta para o Nem a Pato.",
 	robots: { index: false, follow: false },
 }
 

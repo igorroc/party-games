@@ -4,7 +4,7 @@ Status: concluído em 30 de julho de 2026. Este documento preserva as decisões,
 
 ## Objetivo
 
-Transformar a base fullstack existente em **Mesa de Jogos**, uma plataforma de jogos presenciais guiados por uma tela compartilhada. O MVP entrega exclusivamente **Nem a Pato**: jogo de estimativas numéricas em que a aplicação apresenta perguntas, oculta a resposta até a ação explícita de revelação, impede repetição por partida e mostra um resumo ao terminar.
+Transformar a base fullstack existente em **Party Games**, uma plataforma de jogos presenciais guiados por uma tela compartilhada. O MVP entrega exclusivamente **Nem a Pato**: jogo de estimativas numéricas em que a aplicação apresenta perguntas, oculta a resposta até a ação explícita de revelação, impede repetição por partida e mostra um resumo ao terminar.
 
 A especificação de produto completa está em [README.md](README.md). Este plano define a ordem de entrega, as responsabilidades paralelizáveis e os critérios para integrar o trabalho sem reescrever a arquitetura existente.
 
@@ -29,7 +29,7 @@ A especificação de produto completa está em [README.md](README.md). Este plan
 
 | Tema                      | Decisão proposta                                                                                                            |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Nome da plataforma        | `NEXT_PUBLIC_APP_NAME`, com `Mesa de Jogos` como padrão temporário.                                                         |
+| Nome da plataforma        | `NEXT_PUBLIC_APP_NAME`, com `Party Games` como padrão.                                                                      |
 | Filtros "todas" e "mista" | Persistir `categoryId` e `difficulty` em `NemAPatoSession` como `null`; `null` significa sem filtro.                        |
 | Conclusão de rodada       | Revelação é obrigatória; adicionar `completedAt` quando a próxima rodada for criada ou a sessão for finalizada.             |
 | Esgotamento de perguntas  | "Jogar novamente" cria uma nova sessão, preservando o histórico da anterior.                                                |

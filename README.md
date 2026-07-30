@@ -1,4 +1,4 @@
-# Mesa de Jogos
+# Party Games
 
 Uma plataforma de jogos de mesa presenciais conduzidos por uma tela compartilhada. Reúna o grupo em torno de um celular, tablet, notebook ou televisão, escolha um jogo e deixe a aplicação organizar a partida.
 

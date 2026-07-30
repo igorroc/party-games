@@ -1,6 +1,6 @@
 # Project Architecture
 
-Mesa de Jogos is a Next.js App Router application for in-person party games conducted from one shared screen. It is not online multiplayer: participants interact verbally while the application manages the game flow, persistent content, and session lifecycle.
+Party Games is a Next.js App Router application for in-person party games conducted from one shared screen. It is not online multiplayer: participants interact verbally while the application manages the game flow, persistent content, and session lifecycle.
 
 The first implementation is **Nem a Pato**. Its code is the reference for a game implementation, not a shared rules engine that future games should extend with conditionals.
 

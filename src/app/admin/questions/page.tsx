@@ -7,6 +7,7 @@ import { AdministrationService, questionListQuerySchema } from "@/modules/admini
 
 export const metadata: Metadata = {
 	title: "Perguntas do Nem A Pato",
+	description: "Gerencie as perguntas disponíveis no Nem a Pato.",
 	robots: { index: false, follow: false },
 }
 

@@ -7,6 +7,7 @@ import { NemAPatoAdminService } from "@/modules/nem-a-pato"
 
 export const metadata: Metadata = {
 	title: "Gerenciar Nem a Pato",
+	description: "Gerencie o catálogo e as perguntas do jogo Nem a Pato.",
 	robots: { index: false, follow: false },
 }
 

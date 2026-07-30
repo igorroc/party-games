@@ -7,7 +7,12 @@ import { GameMetadata, GameRules, nemAPatoGame } from "@/components/games"
 export const metadata: Metadata = {
 	title: nemAPatoGame.name,
 	description: nemAPatoGame.description,
-	openGraph: { title: nemAPatoGame.name, description: nemAPatoGame.description },
+	alternates: { canonical: "/games/nem-a-pato" },
+	openGraph: {
+		title: nemAPatoGame.name,
+		description: nemAPatoGame.description,
+		images: [{ url: "/assets/banner.png" }],
+	},
 }
 
 export default function NemAPatoPage() {

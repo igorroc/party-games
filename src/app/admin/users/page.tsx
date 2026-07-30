@@ -6,6 +6,7 @@ import { AdministrationService } from "@/modules/administration"
 
 export const metadata: Metadata = {
 	title: "Gerenciar usuários",
+	description: "Gerencie as contas cadastradas na plataforma.",
 	robots: { index: false, follow: false },
 }
 

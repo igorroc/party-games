@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css"
 import { Providers } from "./providers"
 import { AppFooter, AppHeader } from "@/components/layout"
 import { Analytics } from "@vercel/analytics/next"
+import { appName, siteUrl } from "@/lib/site-url"
 
 const displayFont = Bree_Serif({
 	subsets: ["latin"],
@@ -17,10 +18,8 @@ const bodyFont = Nunito_Sans({
 	variable: "--font-body",
 })
 
-const appName = process.env.NEXT_PUBLIC_APP_NAME?.trim() || "Mesa de Jogos"
-
 export const metadata: Metadata = {
-	metadataBase: new URL("http://localhost:3000"),
+	metadataBase: siteUrl,
 	title: {
 		default: appName,
 		template: `%s | ${appName}`,
@@ -30,7 +29,11 @@ export const metadata: Metadata = {
 		type: "website",
 		locale: "pt_BR",
 		siteName: appName,
+		title: appName,
+		description: "Jogos presenciais guiados por uma tela compartilhada.",
+		images: [{ url: "/assets/banner.png" }],
 	},
+	twitter: { card: "summary_large_image", images: ["/assets/banner.png"] },
 	icons: { icon: "/favicon.png" },
 }
 
