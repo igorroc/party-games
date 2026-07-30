@@ -69,7 +69,7 @@ O sistema não deve possuir:
 
 Durante a partida:
 
-1. Os dois jogadores recebem o mesmo conjunto de rostos sintéticos.
+1. Os dois jogadores recebem o mesmo conjunto de avatares ilustrados.
 2. Cada jogador recebe secretamente um rosto-alvo pertencente ao conjunto.
 3. O jogador A tenta descobrir o rosto secreto do jogador B.
 4. O jogador B tenta descobrir o rosto secreto do jogador A.
@@ -111,10 +111,8 @@ Configuração inicial:
 - quantidade não deve ser configurável pelo usuário no primeiro MVP;
 - cada partida utiliza um tabuleiro novo;
 - uma revanche gera um novo conjunto de rostos;
-- cada rosto deve representar uma pessoa adulta sintética;
-- não gerar crianças;
-- não gerar celebridades;
-- não gerar pessoas reais conhecidas;
+- cada rosto deve ser um avatar ilustrado sintético;
+- não usar fotografias, celebridades ou pessoas reais conhecidas;
 - não permitir upload de fotos pelos jogadores.
 
 Os dois jogadores usam o mesmo conjunto de rostos, na mesma ordem visual.
@@ -216,36 +214,29 @@ A sala aceita exatamente dois participantes.
 
 Terceiros não podem visualizar nem entrar na sala.
 
-4.5 Preparação das imagens
+4.5 Preparação do tabuleiro
 
 Depois que o segundo jogador entrar:
 
-1. A sala muda para PREPARING_FACES.
+1. A sala muda para PREPARING_BOARD.
 2. O servidor cria uma rodada.
-3. Gera um roundSeed criptograficamente seguro.
-4. Deriva 24 especificações de rostos.
-5. Gera ou recupera os assets correspondentes.
+3. Gera 24 seeds aleatórias e criptograficamente seguras, sem repetição.
+4. Registra as 24 seeds e respectivas posições do tabuleiro.
+5. O cliente renderiza cada avatar por meio do `HiddenFaceAvatar`.
 6. Registra os 24 rostos do tabuleiro.
 7. Escolhe dois rostos secretos diferentes.
 8. Associa um alvo a cada jogador.
 9. Determina aleatoriamente o primeiro jogador.
-10. Quando todos os assets estiverem disponíveis, a sala muda para READY.
+10. Quando as seeds e os alvos estiverem persistidos, a sala muda para READY.
 
-Enquanto prepara:
-
-- mostrar progresso;
-- informar quantos rostos estão prontos;
-- continuar sincronizando por HTTP polling;
-- permitir cancelar;
-- tratar falhas individualmente;
-- não iniciar com rostos ausentes.
+Enquanto prepara, a interface pode mostrar um estado breve de preparação, continuar sincronizando por HTTP polling e permitir cancelar. Não há geração, download ou persistência prévia de imagens no servidor.
 
 4.6 Início da partida
 
 O host pode iniciar quando:
 
 - existem exatamente dois jogadores;
-- os rostos foram gerados;
+- as seeds dos rostos foram registradas;
 - os dois alvos foram definidos;
 - a sala está READY.
 
@@ -342,8 +333,8 @@ Uma revanche:
 
 - utiliza os mesmos jogadores;
 - cria nova rodada;
-- gera novo roundSeed;
-- gera rostos diferentes;
+- gera novas seeds;
+- exibe novos avatares;
 - sorteia novos alvos;
 - sorteia novamente o primeiro jogador;
 - não reutiliza o estado de eliminação anterior.
@@ -367,7 +358,7 @@ Utilizar HTTP polling.
 Intervalos sugeridos:
 
 - sala de espera: a cada 2 ou 3 segundos;
-- preparação de rostos: a cada 1,5 ou 2 segundos;
+- preparação do tabuleiro: a cada 1,5 ou 2 segundos;
 - partida em andamento: a cada 1 segundo quando estiver aguardando o adversário;
 - partida em andamento durante o próprio turno: a cada 3 segundos, além das respostas das ações;
 - partida finalizada: interromper polling.
@@ -404,7 +395,7 @@ Não espalhar setInterval por vários componentes.
 
 Não será implementado um algoritmo próprio de geração de rostos. Os rostos serão avatares ilustrados e determinísticos fornecidos pela API do DiceBear.
 
-Para cada posição do tabuleiro, o servidor deve gerar uma seed aleatória única e persistir essa seed como a identidade do rosto naquela partida. Os dois jogadores recebem as mesmas seeds, na mesma ordem. A seed do alvo secreto deve ser tratada com as mesmas regras de privacidade aplicadas aos demais dados secretos da partida.
+Para cada posição do tabuleiro, o servidor deve gerar uma seed aleatória única e persistir essa seed como a identidade do rosto naquela partida. Os dois jogadores recebem as mesmas seeds, na mesma ordem. A associação entre jogador e rosto-alvo é secreta; a seed do rosto continua visível no tabuleiro compartilhado.
 
 O mesmo valor de seed deve sempre resultar no mesmo avatar. Não use URLs aleatórias, listas fixas de imagens, fotos de pessoas reais, prompts, modelos de IA, object storage ou processamento próprio de assets.
 
@@ -457,7 +448,7 @@ Estrutura conceitual:
 
 enum HiddenFaceRoomStatus {
 WAITING_FOR_PLAYER
-PREPARING_FACES
+ PREPARING_BOARD
 READY
 IN_PROGRESS
 FINISHED
@@ -508,22 +499,6 @@ user      User           @relation(...)
 @@unique([roomId, seat])
 }
 
-model SyntheticFaceAsset {
-id                String   @id @default(cuid())
-faceHash          String   @unique
-generationVersion String
-modelId           String
-modelRevision     String
-promptVersion     String
-profile           Json
-assetKey          String   @unique
-checksum          String
-contentType       String
-width             Int
-height            Int
-createdAt         DateTime @default(now())
-}
-
 model HiddenFaceMatch {
 id              String                @id @default(cuid())
 roomId          String
@@ -534,7 +509,6 @@ winnerPlayerId  String?
 loserPlayerId   String?
 resultReason    HiddenFaceResultReason?
 faceCount       Int
-roundSeedHash   String
 version         Int                   @default(1)
 turnNumber      Int                   @default(1)
 startedAt       DateTime?
@@ -561,7 +535,7 @@ createdAt        DateTime @default(now())
 
 match            HiddenFaceMatch @relation(...)
 user             User            @relation(...)
-secretFace       SyntheticFaceAsset @relation(...)
+ secretFace       HiddenFaceMatchFace @relation("HiddenFaceSecretFace", fields: [secretFaceId], references: [id])
 boardStates      HiddenFaceBoardFace[]
 
 @@unique([matchId, userId])
@@ -569,16 +543,17 @@ boardStates      HiddenFaceBoardFace[]
 }
 
 model HiddenFaceMatchFace {
-id        String @id @default(cuid())
-matchId   String
-faceId    String
-position  Int
+ id        String   @id @default(cuid())
+ matchId   String
+ seed      String
+ position  Int
 
-match     HiddenFaceMatch   @relation(...)
-face      SyntheticFaceAsset @relation(...)
+ match     HiddenFaceMatch        @relation(...)
+ secretFor HiddenFaceMatchPlayer[] @relation("HiddenFaceSecretFace")
+ boardStates HiddenFaceBoardFace[]
 
-@@unique([matchId, faceId])
-@@unique([matchId, position])
+ @@unique([matchId, seed])
+ @@unique([matchId, position])
 }
 
 model HiddenFaceBoardFace {
@@ -589,7 +564,7 @@ isLowered     Boolean  @default(false)
 updatedAt     DateTime @updatedAt
 
 matchPlayer   HiddenFaceMatchPlayer @relation(...)
-face          SyntheticFaceAsset    @relation(...)
+ face          HiddenFaceMatchFace   @relation(...)
 
 @@unique([matchPlayerId, faceId])
 }
@@ -609,11 +584,9 @@ match         HiddenFaceMatch @relation(...)
 @@index([matchId, sequence])
 }
 
-O roundSeed bruto não precisa ser retornado nem exposto.
+As seeds pertencem ao tabuleiro compartilhado e podem ser retornadas no DTO do jogador. A associação entre `secretFaceId` e jogador não pode ser retornada para o adversário antes do fim da partida.
 
-Caso precise persistir, armazenar criptografado.
-
-Armazenar ao menos o hash para auditoria.
+Não há hash de imagem a armazenar. Os eventos da partida fornecem a auditoria necessária sobre a criação do tabuleiro e a escolha dos alvos.
 
 ======================================================================
 8. MÁQUINAS DE ESTADO
@@ -622,7 +595,7 @@ Armazenar ao menos o hash para auditoria.
 Sala:
 
 WAITING_FOR_PLAYER
-→ PREPARING_FACES
+→ PREPARING_BOARD
 → READY
 → IN_PROGRESS
 → FINISHED
@@ -735,11 +708,9 @@ Registrar eventos imutáveis:
 - INVITE_CREATED
 - PLAYER_JOINED
 - INVITE_INVALIDATED
-- FACE_PREPARATION_STARTED
-- FACE_PROFILE_DERIVED
-- FACE_GENERATED
-- FACE_GENERATION_RETRIED
-- FACE_PREPARATION_COMPLETED
+- BOARD_PREPARATION_STARTED
+- BOARD_SEEDS_CREATED
+- BOARD_PREPARATION_COMPLETED
 - SECRET_FACE_ASSIGNED
 - FIRST_PLAYER_SELECTED
 - MATCH_STARTED
@@ -758,8 +729,6 @@ Registrar eventos imutáveis:
 Não registrar:
 
 - token de convite em texto puro;
-- chave de API;
-- FACE_SEED_SECRET;
 - targetFaceId do adversário em logs acessíveis ao cliente;
 - perfil privado de usuário desnecessário.
 
@@ -811,9 +780,9 @@ displayName: string
 avatarUrl: string | null
 remainingFaceCount?: number
 }>
-mySecretFace: PublicSyntheticFace
-myBoard: Array<{
-face: PublicSyntheticFace
+ mySecretFace: PublicHiddenFace
+ myBoard: Array<{
+ face: PublicHiddenFace
 position: number
 isLowered: boolean
 }>
@@ -822,7 +791,7 @@ winnerPlayerId: string
 reason: HiddenFaceResultReason
 revealedSecrets: Array<{
 playerId: string
-face: PublicSyntheticFace
+ face: PublicHiddenFace
 }>
 } | null
 }
@@ -832,19 +801,13 @@ Antes do fim, não incluir:
 - opponentSecretFaceId;
 - opponentSecretFace;
 - opponentBoardStates;
-- opponentRemainingFaces, se isso puder entregar informação desnecessária;
-- roundSeed;
-- faceSeed;
-- profile técnico completo;
-- links internos do provedor.
+ - opponentRemainingFaces, se isso puder entregar informação desnecessária.
 
-PublicSyntheticFace:
+PublicHiddenFace:
 
-type PublicSyntheticFace = {
-id: string
-imageUrl: string
-width: number
-height: number
+type PublicHiddenFace = {
+ id: string
+ seed: string
 }
 
 Não gerar nomes para os rostos.
@@ -881,7 +844,7 @@ Autorização:
 
 Segredos:
 
-- alvos secretos ficam apenas no servidor;
+- a associação entre jogador e alvo fica no servidor e só é retornada ao próprio jogador;
 - DTO depende do viewer;
 - não enviar estado completo para o navegador;
 - não inserir dados secretos em HTML ou Server Component serializado;
@@ -901,12 +864,12 @@ Concorrência:
 
 Rostos:
 
-- apenas imagens sintéticas;
+- apenas avatares ilustrados sintéticos do DiceBear;
 - não usar upload;
 - não usar scraping;
-- documentar o modelo e a licença;
+- documentar o DiceBear, o estilo `adventurer` e sua licença;
 - não afirmar que um rosto pertence a uma raça ou identidade real;
-- os atributos são parâmetros de aparência de personagens sintéticos.
+- não inferir atributos de aparência a partir dos avatares.
 
 ======================================================================
 13. INTERAÇÃO DE ABAIXAR O ROSTO
@@ -1046,7 +1009,7 @@ src/components/games/hidden-face/
 ├── invite-link-card.tsx
 ├── invite-qr-code.tsx
 ├── player-seat.tsx
-├── face-generation-progress.tsx
+├── hidden-face-avatar.tsx
 ├── hidden-face-game.tsx
 ├── secret-face-card.tsx
 ├── face-board.tsx
@@ -1165,7 +1128,7 @@ Implementar:
 - navegação por teclado;
 - aria-live para mudança de turno;
 - aria-live para resultado;
-- texto alternativo “Rosto sintético na posição X”;
+- texto alternativo “Avatar ilustrado na posição X”;
 - não descrever gênero, raça ou características no alt;
 - não entregar dicas automáticas no alt;
 - estado abaixado anunciado;
@@ -1190,9 +1153,7 @@ Criar estados específicos para:
 - convite inválido;
 - convite expirado;
 - sala cheia;
-- preparando rostos;
-- geração parcialmente concluída;
-- falha na geração;
+- preparando tabuleiro;
 - partida pronta;
 - seu turno;
 - turno do adversário;
@@ -1240,8 +1201,6 @@ Criar códigos consistentes:
 - MATCH_ALREADY_FINISHED
 - STALE_MATCH_VERSION
 - DUPLICATE_ACTION
-- FACE_GENERATION_FAILED
-- FACE_ASSET_NOT_READY
 - SECRET_FACE_NOT_CONFIGURED
 - INVALID_STATE_TRANSITION
 - RATE_LIMITED
@@ -1250,32 +1209,23 @@ Criar códigos consistentes:
 21. TESTES
     ======================================================================
 
-21.1 Determinismo
+21.1 Seeds e DiceBear
 
 Testar:
 
-- mesmo roundSeed, index e versão produzem mesmo faceSeed;
-- mesmo faceSeed produz mesmo profile;
-- mesmo profile e versão produzem mesmo faceHash;
-- alteração de modelRevision altera faceHash;
-- alteração de promptVersion altera faceHash;
-- mesma chave de asset nunca é sobrescrita;
+- a mesma seed produz a mesma URL do DiceBear;
+- a URL usa a versão `10.x`, o estilo `adventurer` e codifica a seed corretamente;
+- o `HiddenFaceAvatar` é o único componente responsável por construir essa URL;
+- as seeds do tabuleiro são únicas dentro da partida;
 - board positions são estáveis;
-- fake generator é previsível.
+- alvos diferentes pertencem ao tabuleiro.
 
-21.2 Diversidade
+21.2 Tabuleiro
 
 Testar:
 
 - 24 rostos únicos;
-- sem faceHash duplicado;
-- presença de óculos e ausência de óculos;
-- presença de cabelos variados;
-- presença de diferentes skinTone buckets;
-- presença de diferentes apresentações;
-- presença e ausência de barba;
-- presença de pelo menos um careca;
-- ausência de combinações inválidas;
+- sem seed duplicada na partida;
 - alvos diferentes;
 - alvos pertencem ao tabuleiro.
 
@@ -1353,7 +1303,7 @@ Criar cenário completo:
 
 1. usuário A cria;
 2. usuário B entra;
-3. rostos são preparados;
+3. seeds do tabuleiro são registradas;
 4. host inicia;
 5. A abaixa rostos;
 6. A confirma;
@@ -1383,26 +1333,20 @@ Registrar de forma estruturada:
 - currentPlayerId;
 - faceCount;
 - remainingFaceCount do próprio ator;
-- generationVersion;
-- modelRevision;
-- generationDuration;
+- boardPreparationDuration;
 - pollingDuration;
 - errorCode.
 
 Não registrar:
 
-- segredo do provedor;
-- roundSeed bruto;
 - invite token;
 - target do adversário em log de cliente;
-- conteúdo binário;
-- prompt completo com credenciais.
 
 Métricas úteis:
 
 - tempo até segundo jogador entrar;
-- tempo de geração;
-- taxa de falha;
+- tempo de preparação do tabuleiro;
+- taxa de falha ao criar o tabuleiro;
 - duração da partida;
 - quantidade média de turnos;
 - abandono;
@@ -1467,8 +1411,8 @@ Não implementar:
 - filtro por nomes;
 - compartilhamento público da sala;
 - replay visual completo;
-- geração no navegador;
-- armazenamento de chave do gerador no cliente.
+- geração própria de imagens;
+- persistência de assets de rosto.
 
 ======================================================================
 25. ORDEM DE IMPLEMENTAÇÃO
@@ -1492,21 +1436,15 @@ Etapa 2:
 
 Etapa 3:
 
-- criar derivação de seeds;
-- criar FaceProfile;
-- criar DiversityPlanner;
-- criar faceHash;
-- criar providers;
-- criar persistência;
-- criar testes determinísticos.
+- gerar e persistir seeds únicas para cada tabuleiro;
+- criar `HiddenFaceAvatar` com DiceBear `adventurer` v10;
+- criar testes de seed e URL determinística.
 
 Etapa 4:
 
-- criar geração em lote;
-- criar progresso;
-- criar retries;
-- criar object storage;
-- criar validação de assets.
+- integrar `HiddenFaceAvatar` ao tabuleiro e ao alvo secreto;
+- criar estado visual de carregamento ou falha da imagem;
+- configurar o carregamento remoto de SVG conforme o framework exigir.
 
 Etapa 5:
 
@@ -1530,7 +1468,7 @@ Etapa 7:
 
 - criar página;
 - criar lobby;
-- criar progresso;
+- criar estado de preparação do tabuleiro;
 - criar partida;
 - criar resultado.
 
@@ -1565,8 +1503,8 @@ A implementação será considerada concluída quando:
 - terceiro usuário não entra;
 - não existe WebSocket;
 - o estado sincroniza por polling;
-- 24 rostos sintéticos são preparados;
-- todos os rostos possuem faceHash único;
+- 24 seeds únicas são registradas;
+- o mesmo valor de seed renderiza o mesmo avatar DiceBear;
 - os dois jogadores veem o mesmo tabuleiro;
 - cada jogador possui um alvo diferente;
 - nenhum jogador recebe o alvo do adversário;
@@ -1610,20 +1548,19 @@ Ao concluir, apresente:
 9. Endpoints.
 10. Estratégia de polling.
 11. Estratégia determinística.
-12. Estratégia de geração.
-13. Estratégia de storage.
-14. Segurança dos segredos.
-15. Componentes criados.
-16. Funcionamento do gesto.
-17. Funcionamento do som.
-18. Testes adicionados.
-19. Comandos executados.
-20. Resultado de lint.
-21. Resultado de type check.
-22. Resultado de build.
-23. Limitações conhecidas.
-24. Custos ou dependências externas.
-25. Próximos passos.
+12. Estratégia de seeds e integração com DiceBear.
+13. Segurança dos segredos.
+14. Componentes criados.
+15. Funcionamento do gesto.
+16. Funcionamento do som.
+17. Testes adicionados.
+18. Comandos executados.
+19. Resultado de lint.
+20. Resultado de type check.
+21. Resultado de build.
+22. Limitações conhecidas.
+23. Custos ou dependências externas.
+24. Próximos passos.
 
 ======================================================================
 28. DIRETRIZ FINAL
@@ -1641,9 +1578,9 @@ A interface:
 - mostra atualizações;
 - anima resultados confirmados.
 
-A identidade de cada rosto é o faceHash.
+A identidade de cada rosto é a seed persistida no registro do tabuleiro.
 
-A imagem deve ser gerada uma vez e persistida.
+A imagem é renderizada sob demanda pelo `HiddenFaceAvatar` a partir da URL determinística do DiceBear.
 
 O resultado final deve ser calculado por igualdade entre IDs ou hashes registrados, nunca por comparação visual.
 
