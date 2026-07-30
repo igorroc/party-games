@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import Link from "next/link"
 import { AppContainer, SectionHeading } from "@/components/design-system"
 import { GameMetadata, nemAPatoGame } from "@/components/games"
@@ -10,6 +11,11 @@ export const metadata: Metadata = {
 }
 
 type GamesPageProps = { searchParams: Promise<{ search?: string }> }
+
+const gameCoverBySlug: Record<string, string> = {
+	"nem-a-pato": "/assets/games/nem-a-pato.png",
+	"magical-race": "/assets/games/corrida-arcana.png",
+}
 
 export default async function GamesPage({ searchParams }: GamesPageProps) {
 	const search = (await searchParams).search?.trim() ?? ""
@@ -47,31 +53,40 @@ export default async function GamesPage({ searchParams }: GamesPageProps) {
 				</form>
 				<section aria-label="Jogos disponíveis" className="grid gap-6 md:grid-cols-2">
 					{filteredGames.map((game) => (
-						<article key={game.slug} className="paper-card flex flex-col rounded-3xl p-6 sm:p-8">
-							<p className="text-accent text-sm font-extrabold tracking-[0.16em] uppercase">
-								Disponível agora
-							</p>
-							<h2 className="font-display text-foreground mt-3 text-4xl">{game.name}</h2>
-							<p className="text-muted mt-4 flex-1 leading-7">{game.description}</p>
-							<div className="mt-6">
-								<GameMetadata
-									players={
-										game.minPlayers && game.maxPlayers
-											? `${game.minPlayers} a ${game.maxPlayers} jogadores`
-											: "Grupo livre"
-									}
-									duration={game.durationMin ? `${game.durationMin} min` : "No seu ritmo"}
-									difficulty={
-										game.slug === "nem-a-pato" ? nemAPatoGame.difficulty : "Fácil de aprender"
-									}
-								/>
+						<article key={game.slug} className="paper-card overflow-hidden rounded-3xl">
+							<div className="bg-primary relative aspect-[16/9] overflow-hidden">
+								{gameCoverBySlug[game.slug] && (
+									<Image
+										src={gameCoverBySlug[game.slug]}
+										alt=""
+										fill
+										sizes="(min-width: 768px) 50vw, 100vw"
+										className="object-cover"
+									/>
+								)}
 							</div>
-							<Link
-								href={`/games/${game.slug}`}
-								className="bg-primary mt-7 inline-flex min-h-11 items-center justify-center rounded-xl px-4 font-extrabold text-white"
-							>
-								Ver jogo
-							</Link>
+							<div className="flex flex-col p-6 sm:p-8">
+								<p className="text-muted line-clamp-2 min-h-14 leading-7">{game.description}</p>
+								<div className="mt-6">
+									<GameMetadata
+										players={
+											game.minPlayers && game.maxPlayers
+												? `${game.minPlayers} a ${game.maxPlayers} jogadores`
+												: "Grupo livre"
+										}
+										duration={game.durationMin ? `${game.durationMin} min` : "No seu ritmo"}
+										difficulty={
+											game.slug === "nem-a-pato" ? nemAPatoGame.difficulty : "Fácil de aprender"
+										}
+									/>
+								</div>
+								<Link
+									href={`/games/${game.slug}`}
+									className="bg-primary mt-7 inline-flex min-h-11 items-center justify-center rounded-xl px-4 font-extrabold text-white"
+								>
+									Ver jogo
+								</Link>
+							</div>
 						</article>
 					))}
 				</section>
