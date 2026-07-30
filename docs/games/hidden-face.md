@@ -23,6 +23,8 @@ DECISÃO DE IMPLEMENTAÇÃO ATUAL:
 - Não há salas, convites, login obrigatório, participantes remotos nem sincronização entre dispositivos.
 - A sessão usa o `GameSession` genérico da plataforma e pode ser anônima ou autenticada, como os demais jogos locais.
 - Nas trocas de vez, a interface mostra uma barreira de privacidade antes de buscar e exibir o avatar secreto do próximo jogador. A resposta que confirma a vez não inclui esse avatar.
+- Antes dos palpites, cada jogador confirma que está com o dispositivo e memoriza seu avatar secreto. Durante os palpites, esse avatar começa oculto e só aparece como lembrete após uma ação explícita.
+- Não há polling na variante local.
 - Os trechos deste documento que descrevem multiplayer online, salas, convites, assentos, autenticação obrigatória e polling entre jogadores ficam substituídos por esta decisão.
 
 ======================================================================
