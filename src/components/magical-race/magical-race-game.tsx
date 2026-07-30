@@ -598,7 +598,7 @@ function RacerToken({
 			>
 				<RacerArt definitionId={racer.definitionId} />
 			</span>
-			<span className="arcade-racer-card pointer-events-none absolute bottom-[calc(100%+.45rem)] left-1/2 z-20 w-52 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100 group-focus-visible:-translate-y-1 group-focus-visible:opacity-100">
+			<span className="arcade-racer-card pointer-events-auto absolute bottom-full left-1/2 z-20 w-52 -translate-x-1/2 opacity-0 transition-opacity duration-200 select-text group-hover:opacity-100 group-focus-visible:opacity-100">
 				<span
 					className="mb-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-white/70 text-5xl"
 					style={{ background: visual.color }}
