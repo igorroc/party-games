@@ -5,14 +5,16 @@ import Link from "next/link"
 
 import type { CurrentUser } from "@/modules/auth"
 import type { ProfileGameSession } from "@/modules/administration"
+import type { ActiveGameSession } from "@/modules/game-sessions"
 
 type ProfileContentProps = {
 	user: CurrentUser
+	activeSessions: ActiveGameSession[]
 	sessions: ProfileGameSession[]
 }
 
-export function ProfileContent({ user, sessions }: ProfileContentProps) {
-	const formatDate = (date?: Date) => {
+export function ProfileContent({ user, activeSessions, sessions }: ProfileContentProps) {
+	const formatDate = (date?: Date | string) => {
 		if (!date) return "N/A"
 		return new Date(date).toLocaleDateString("pt-BR", {
 			year: "numeric",
@@ -57,6 +59,42 @@ export function ProfileContent({ user, sessions }: ProfileContentProps) {
 						</div>
 
 						<hr className="border-border" />
+
+						<section aria-labelledby="ongoing-heading">
+							<div className="flex items-baseline justify-between gap-4">
+								<h2 id="ongoing-heading" className="font-display text-foreground text-xl">
+									Jogos em andamento
+								</h2>
+								<span className="text-muted text-sm">{activeSessions.length} em andamento</span>
+							</div>
+							{activeSessions.length === 0 ? (
+								<p className="border-border bg-surface-strong text-muted mt-3 rounded-xl border p-4 text-sm">
+									Você não tem partidas em andamento.
+								</p>
+							) : (
+								<ul className="divide-border border-border bg-surface-strong mt-3 divide-y rounded-xl border">
+									{activeSessions.map((session) => (
+										<li
+											key={session.id}
+											className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+										>
+											<div>
+												<p className="text-foreground font-bold">{session.gameName}</p>
+												<p className="text-muted text-sm">
+													Iniciado em {formatDate(session.startedAt)}
+												</p>
+											</div>
+											<Link
+												href={`/games/${session.gameSlug}/play/${session.id}`}
+												className="bg-primary text-primary-foreground rounded-xl px-4 py-2 text-center text-sm font-semibold hover:brightness-95"
+											>
+												Continuar
+											</Link>
+										</li>
+									))}
+								</ul>
+							)}
+						</section>
 
 						<section aria-labelledby="history-heading">
 							<div className="flex items-baseline justify-between gap-4">

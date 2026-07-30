@@ -6,7 +6,7 @@ import { NEM_A_PATO_SLUG } from "@/modules/games"
 import { QuestionService } from "@/modules/questions"
 import { GameSessionCookie } from "./game-session-cookie"
 import { GameSessionDomainError } from "./errors"
-import type { CreatedGameSession, GameSessionView, SessionOwner } from "./types"
+import type { ActiveGameSession, CreatedGameSession, GameSessionView, SessionOwner } from "./types"
 
 const SESSION_INACTIVITY_MS = 1000 * 60 * 60 * 24
 
@@ -77,6 +77,31 @@ export class GameSessionService {
 
 	static async assertOwnership(sessionId: string, owner: SessionOwner): Promise<void> {
 		await this.findOwned(sessionId, owner)
+	}
+
+	static async listActiveByUser(userId: string): Promise<ActiveGameSession[]> {
+		const inactiveSince = new Date(Date.now() - SESSION_INACTIVITY_MS)
+		await db.gameSession.updateMany({
+			where: { userId, status: "ACTIVE", lastActivityAt: { lte: inactiveSince } },
+			data: { status: "ABANDONED" },
+		})
+		const sessions = await db.gameSession.findMany({
+			where: { userId, status: "ACTIVE" },
+			select: {
+				id: true,
+				startedAt: true,
+				lastActivityAt: true,
+				game: { select: { name: true, slug: true } },
+			},
+			orderBy: { lastActivityAt: "desc" },
+		})
+		return sessions.map((session) => ({
+			id: session.id,
+			gameName: session.game.name,
+			gameSlug: session.game.slug,
+			startedAt: session.startedAt.toISOString(),
+			lastActivityAt: session.lastActivityAt.toISOString(),
+		}))
 	}
 
 	static async finish(sessionId: string, owner: SessionOwner): Promise<GameSessionView> {

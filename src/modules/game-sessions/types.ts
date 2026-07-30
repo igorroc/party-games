@@ -17,3 +17,11 @@ export type GameSessionView = {
 }
 
 export type CreatedGameSession = { session: GameSessionView; anonymousToken: string }
+
+export type ActiveGameSession = {
+	id: string
+	gameName: string
+	gameSlug: string
+	startedAt: string
+	lastActivityAt: string
+}
