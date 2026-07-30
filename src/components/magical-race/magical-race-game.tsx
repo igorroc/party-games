@@ -148,7 +148,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 								submitted={submitted}
 							/>
 						)}
-						{state.status === "racing" && (
+						{(state.status === "racing" || state.status === "race-result") && (
 							<Race
 								state={state}
 								act={act}
@@ -156,22 +156,8 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 								rolling={rolling}
 								rollingValue={rollingValue}
 								boardPositions={boardPositions}
+								isResult={state.status === "race-result"}
 							/>
-						)}
-						{state.status === "race-result" && (
-							<div className="text-center">
-								<h2 className="font-display text-3xl">Chegada!</h2>
-								<p className="text-muted mt-3">
-									Prepare a próxima corrida quando a mesa estiver pronta.
-								</p>
-								<Button
-									className="mt-6 transition-transform hover:-translate-y-0.5"
-									variant="primary"
-									onPress={() => act({ type: "CONFIRM_NEXT_RACE" })}
-								>
-									Próxima corrida
-								</Button>
-							</div>
 						)}
 						{state.status === "finished" && (
 							<div className="text-center">
@@ -457,6 +443,7 @@ function Race({
 	rolling,
 	rollingValue,
 	boardPositions,
+	isResult,
 }: {
 	state: PublicMagicalRaceState
 	act: (action: Record<string, unknown>) => Promise<void>
@@ -464,6 +451,7 @@ function Race({
 	rolling: boolean
 	rollingValue: number | null
 	boardPositions: Record<string, number> | null
+	isResult: boolean
 }) {
 	const lastEvent = state.events.at(-1)
 	const dieEvent = [...state.events].reverse().find((event) => event.type === "MAIN_DIE_ROLLED")
@@ -476,7 +464,7 @@ function Race({
 	const track = getTrack(state.trackId)
 	return (
 		<>
-			<div className="arcade-board rounded-[2rem] p-3 sm:p-5">
+			<div className="arcade-board relative rounded-[2rem] p-3 sm:p-5">
 				<div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2">
 					<div>
 						<p className="text-xs font-black tracking-[0.18em] text-white/75 uppercase">
@@ -487,20 +475,20 @@ function Race({
 					<Die value={die} rolling={rolling} />
 				</div>
 				<div className="grid grid-cols-5 gap-1.5 sm:grid-cols-10 sm:gap-2">
-					{Array.from({ length: 31 }, (_, index) => {
+					{Array.from({ length: 30 }, (_, index) => {
 						const row = Math.floor(index / 10)
 						const column = index % 10
 						const order = row * 10 + (row % 2 ? 9 - column : column)
-						const space = index === 0 || index === 30 ? null : track[index - 1]
+						const space = index === 0 ? null : track[index - 1]
 						return (
 							<div
 								key={index}
 								style={{ order }}
-								className={`arcade-space arcade-space-${space?.type ?? (index === 0 ? "start" : "finish")} relative min-h-20 rounded-lg p-1.5 sm:min-h-24`}
+								className={`arcade-space arcade-space-${space?.type ?? "start"} relative min-h-20 rounded-lg p-1.5 sm:min-h-24`}
 							>
 								<div className="flex items-start justify-between">
 									<span className="rounded bg-black/20 px-1 text-[10px] font-black text-white">
-										{index === 0 ? "VAI" : index === 30 ? "FIM" : index}
+										{index === 0 ? "VAI" : index}
 									</span>
 									<span aria-hidden="true" className="text-sm">
 										{spaceIcon(space?.type)}
@@ -523,6 +511,7 @@ function Race({
 							</div>
 						)
 					})}
+					<FinishZone state={state} boardPositions={boardPositions} movedRacerId={movedRacerId} />
 				</div>
 			</div>
 			<div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
@@ -542,17 +531,77 @@ function Race({
 						O servidor calcula dado, movimento e os efeitos da pista.
 					</p>
 				</div>
-				<Button
-					variant="primary"
-					size="lg"
-					className="min-h-16 px-8 text-lg transition-transform hover:-translate-y-1 hover:shadow-lg"
-					isDisabled={busy}
-					onPress={() => act({ type: "ROLL_MAIN_DIE" })}
-				>
-					{rolling ? "Rolando..." : "Lançar dado"}
-				</Button>
+				{isResult ? (
+					<div className="text-right">
+						<p className="font-display text-2xl">Chegada definida!</p>
+						<Button
+							variant="primary"
+							className="mt-2 transition-transform hover:-translate-y-0.5"
+							onPress={() => act({ type: "CONFIRM_NEXT_RACE" })}
+						>
+							Próxima corrida
+						</Button>
+					</div>
+				) : (
+					<Button
+						variant="primary"
+						size="lg"
+						className="min-h-16 px-8 text-lg transition-transform hover:-translate-y-1 hover:shadow-lg"
+						isDisabled={busy}
+						onPress={() => act({ type: "ROLL_MAIN_DIE" })}
+					>
+						{rolling ? "Rolando..." : "Lançar dado"}
+					</Button>
+				)}
 			</div>
 		</>
+	)
+}
+
+function FinishZone({
+	state,
+	boardPositions,
+	movedRacerId,
+}: {
+	state: PublicMagicalRaceState
+	boardPositions: Record<string, number> | null
+	movedRacerId: string | null
+}) {
+	const finishers = state.racers
+		.filter((racer) => (boardPositions?.[racer.id] ?? racer.position) >= 30)
+		.sort((first, second) => state.finishers.indexOf(first.id) - state.finishers.indexOf(second.id))
+	return (
+		<div className="finish-zone">
+			<div className="finish-slot">
+				<span className="finish-symbol" aria-label="Primeiro lugar">
+					👑
+				</span>
+				{finishers[0] && (
+					<RacerToken
+						racer={finishers[0]}
+						player={state.players.find((player) => player.id === finishers[0]?.ownerId)}
+						position={30}
+						moving={finishers[0].id === movedRacerId && Boolean(boardPositions)}
+						isActive={false}
+					/>
+				)}
+			</div>
+			<span className="finish-divider" aria-hidden="true" />
+			<div className="finish-slot finish-slot-second">
+				<span className="finish-medal" aria-label="Segundo lugar">
+					●
+				</span>
+				{finishers[1] && (
+					<RacerToken
+						racer={finishers[1]}
+						player={state.players.find((player) => player.id === finishers[1]?.ownerId)}
+						position={30}
+						moving={finishers[1].id === movedRacerId && Boolean(boardPositions)}
+						isActive={false}
+					/>
+				)}
+			</div>
+		</div>
 	)
 }
 
