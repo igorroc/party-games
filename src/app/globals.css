@@ -180,7 +180,7 @@ body {
 	}
 
 	.arcade-space {
-		border: 2px solid #17212b;
+		border: 4px solid var(--player);
 		background: #4f9dd3;
 		box-shadow: inset 0 -5px 0 rgb(0 0 0 / 0.16);
 	}
@@ -212,19 +212,44 @@ body {
 
 	.arcade-token {
 		display: grid;
-		width: 1.9rem;
-		height: 1.9rem;
+		width: 2.35rem;
+		height: 2.35rem;
 		place-items: center;
-		border: 2px solid #17212b;
+		border: 0;
 		border-radius: 999px;
-		background: var(--token);
-		box-shadow: 2px 2px 0 rgb(0 0 0 / 0.32);
+		overflow: hidden;
+		background: transparent;
+		box-shadow:
+			3px 3px 0 var(--player),
+			4px 4px 0 rgb(0 0 0 / 0.42);
 		font-size: 1rem;
 		transition: transform 250ms ease;
 	}
 
 	.arcade-token-moving {
 		animation: arcade-hop 620ms ease-out;
+	}
+
+	.arcade-token-active {
+		animation: arcade-active-pulse 1s ease-in-out infinite;
+	}
+
+	.arcade-token-moving.arcade-token-active {
+		animation: arcade-hop 620ms ease-out;
+	}
+
+	.active-turn-card {
+		border: 3px solid var(--player);
+		background: rgb(var(--color-surface));
+		box-shadow: 4px 4px 0 color-mix(in srgb, var(--player) 28%, transparent);
+	}
+
+	.active-turn-dot {
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 999px;
+		background: var(--player);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--player) 18%, transparent);
 	}
 
 	.arcade-racer-card {
@@ -276,6 +301,17 @@ body {
 	}
 	100% {
 		transform: translateY(0) rotate(0);
+	}
+}
+@keyframes arcade-active-pulse {
+	0%,
+	100% {
+		transform: scale(1);
+		filter: brightness(1);
+	}
+	50% {
+		transform: scale(1.18);
+		filter: brightness(1.18);
 	}
 }
 

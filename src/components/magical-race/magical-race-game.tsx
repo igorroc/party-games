@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@heroui/react"
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import { AppContainer } from "@/components/design-system"
 import { racerDefinitions } from "@/modules/magical-race/racers"
@@ -96,6 +97,7 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 	}
 	if (!state) return <main className="flex-1 p-8 text-center">Preparando a pista...</main>
 	const active = state.players.find((player) => player.id === state.activePlayerId)
+	const activeRacer = state.racers.find((racer) => racer.id === state.activeRacerId)
 	const submitted = new Set(state.selectionsSubmittedByPlayerId)
 	return (
 		<main className="flex-1 py-5 sm:py-8">
@@ -112,8 +114,17 @@ export function MagicalRaceGame({ sessionId }: { sessionId: string }) {
 							{state.status === "drafting" ? "Draft" : `Corrida ${state.raceNumber}`}
 						</h1>
 					</div>
-					<div className="paper-card rounded-xl px-4 py-2 font-bold">
-						{active ? `Vez: ${active.name}` : "Resultado"}
+					<div
+						className="active-turn-card rounded-xl px-4 py-2 font-bold"
+						style={{ "--player": playerColor(active?.seatOrder) } as React.CSSProperties}
+					>
+						<p className="text-xs tracking-[0.12em] uppercase">Agora é a vez</p>
+						<p className="flex items-center gap-2 text-lg">
+							<span className="active-turn-dot" />
+							{active
+								? `${active.name}${activeRacer ? ` · ${racerDefinitions.find((racer) => racer.id === activeRacer.definitionId)?.publicName}` : ""}`
+								: "Resultado"}
+						</p>
 					</div>
 				</header>
 				<div className="flex justify-end">
@@ -235,10 +246,10 @@ function Draft({
 						>
 							<div className="flex items-start gap-3">
 								<span
-									className="grid h-16 w-16 shrink-0 place-items-center rounded-xl border-2 border-white/70 text-4xl shadow-sm"
+									className="draft-racer-art grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl border-2 border-white/70 text-4xl shadow-sm"
 									style={{ background: visual.color }}
 								>
-									{visual.icon}
+									<RacerArt definitionId={racer.id} />
 								</span>
 								<span>
 									<strong className="font-display block text-2xl leading-none">
@@ -325,9 +336,9 @@ function MatchInfoModal({
 										<span
 											key={racerId}
 											title={racerDefinitions.find((racer) => racer.id === racerId)?.publicName}
-											className="bg-surface grid h-7 w-7 place-items-center rounded-full border text-sm"
+											className="bg-surface grid h-7 w-7 place-items-center overflow-hidden rounded-full border text-sm"
 										>
-											{racerVisual(racerId).icon}
+											<RacerArt definitionId={racerId} />
 										</span>
 									))}
 								</div>
@@ -419,8 +430,8 @@ function Selection({
 								}
 								className={`cursor-pointer rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${isPicked ? "border-primary bg-primary/10" : "border-border hover:border-primary hover:bg-primary/5"}`}
 							>
-								<span className="mr-2 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-current bg-white text-xl">
-									{racerVisual(racer.id).icon}
+								<span className="mr-2 inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-current bg-white text-xl">
+									<RacerArt definitionId={racer.id} />
 								</span>
 								<strong>{racer.publicName}</strong>
 								<span className="text-muted mt-1 block text-sm">{racer.abilitySummary}</span>
@@ -505,6 +516,7 @@ function Race({
 												player={state.players.find((player) => player.id === racer.ownerId)}
 												position={boardPositions?.[racer.id] ?? racer.position}
 												moving={racer.id === movedRacerId && Boolean(boardPositions)}
+												isActive={racer.id === state.activeRacerId}
 											/>
 										))}
 								</div>
@@ -559,11 +571,13 @@ function RacerToken({
 	player,
 	position,
 	moving,
+	isActive,
 }: {
 	racer: PublicMagicalRaceState["racers"][number]
 	player: PublicMagicalRaceState["players"][number] | undefined
 	position: number
 	moving: boolean
+	isActive: boolean
 }) {
 	const definition = racerDefinitions.find((item) => item.id === racer.definitionId)
 	const visual = racerVisual(racer.definitionId)
@@ -574,17 +588,22 @@ function RacerToken({
 			className="group relative"
 		>
 			<span
-				className={`arcade-token ${moving ? "arcade-token-moving" : ""}`}
-				style={{ "--token": visual.color } as React.CSSProperties}
+				className={`arcade-token ${moving ? "arcade-token-moving" : ""} ${isActive ? "arcade-token-active" : ""}`}
+				style={
+					{
+						"--token": visual.color,
+						"--player": playerColor(player?.seatOrder),
+					} as React.CSSProperties
+				}
 			>
-				{visual.icon}
+				<RacerArt definitionId={racer.definitionId} />
 			</span>
 			<span className="arcade-racer-card pointer-events-none absolute bottom-[calc(100%+.45rem)] left-1/2 z-20 w-52 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:-translate-y-1 group-hover:opacity-100 group-focus-visible:-translate-y-1 group-focus-visible:opacity-100">
 				<span
-					className="mb-2 flex h-20 items-center justify-center rounded-lg border-2 border-dashed border-white/70 text-5xl"
+					className="mb-3 flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-white/70 text-5xl"
 					style={{ background: visual.color }}
 				>
-					{visual.icon}
+					<RacerArt definitionId={racer.definitionId} />
 				</span>
 				<span className="block text-sm font-black text-white">{definition?.publicName}</span>
 				<span className="mt-1 block text-xs leading-snug text-white/80">
@@ -616,6 +635,35 @@ function racerVisual(id: string) {
 	return visuals[
 		[...id].reduce((total, character) => total + character.charCodeAt(0), 0) % visuals.length
 	]!
+}
+function RacerArt({ definitionId }: { definitionId: string }) {
+	const [failed, setFailed] = useState(false)
+	const definition = racerDefinitions.find((racer) => racer.id === definitionId)
+	const visual = racerVisual(definitionId)
+	if (!definition || failed) return <span aria-hidden="true">{visual.icon}</span>
+	return (
+		<Image
+			src={racerAssetSrc(definition.publicName)}
+			alt=""
+			width={96}
+			height={96}
+			sizes="96px"
+			className="h-full w-full object-contain"
+			onError={() => setFailed(true)}
+		/>
+	)
+}
+function racerAssetSrc(publicName: string) {
+	const slug = publicName
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/(^-|-$)/g, "")
+	return `/assets/games/corrida-arcana-personagens/${slug}.png`
+}
+function playerColor(seatOrder: number | undefined) {
+	return ["#e85d45", "#3969c8", "#2f9865", "#d68a16", "#8a55b5", "#ba477a"][(seatOrder ?? 0) % 6]!
 }
 function delay(milliseconds: number) {
 	return new Promise<void>((resolve) => window.setTimeout(resolve, milliseconds))
