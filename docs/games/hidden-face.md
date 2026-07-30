@@ -17,7 +17,16 @@ IMPORTANTE:
 - A implementação deve possuir identidade visual própria e ser integrada ao design system já existente no Party Games.
 - A inspiração deve ficar restrita à mecânica geral de dedução por eliminação de rostos.
 
+DECISÃO DE IMPLEMENTAÇÃO ATUAL:
+
+- Rosto Oculto é uma partida local para dois jogadores em um único dispositivo compartilhado.
+- Não há salas, convites, login obrigatório, participantes remotos nem sincronização entre dispositivos.
+- A sessão usa o `GameSession` genérico da plataforma e pode ser anônima ou autenticada, como os demais jogos locais.
+- Nas trocas de vez, a interface mostra uma barreira de privacidade antes de buscar e exibir o avatar secreto do próximo jogador. A resposta que confirma a vez não inclui esse avatar.
+- Os trechos deste documento que descrevem multiplayer online, salas, convites, assentos, autenticação obrigatória e polling entre jogadores ficam substituídos por esta decisão.
+
 ======================================================================
+
 1. ANÁLISE OBRIGATÓRIA DO PROJETO EXISTENTE
    ======================================================================
 
@@ -26,14 +35,14 @@ Antes de modificar qualquer arquivo:
 1. Analise integralmente o repositório atual.
 2. Leia o README, documentação de arquitetura, instruções para agentes, package.json, schema do Prisma e módulos existentes.
 3. Entenda:
-    - como o catálogo de jogos funciona;
-    - como Nem a Pato foi implementado;
-    - como Corrida Arcana foi implementada;
-    - como funcionam autenticação e sessões;
-    - como usuários convidados e autenticados são diferenciados;
-    - como APIs, módulos, componentes, erros e validações são organizados;
-    - como o design system é configurado;
-    - como estados multiplayer ou salas já são tratados, caso existam.
+   - como o catálogo de jogos funciona;
+   - como Nem a Pato foi implementado;
+   - como Corrida Arcana foi implementada;
+   - como funcionam autenticação e sessões;
+   - como usuários convidados e autenticados são diferenciados;
+   - como APIs, módulos, componentes, erros e validações são organizados;
+   - como o design system é configurado;
+   - como estados multiplayer ou salas já são tratados, caso existam.
 4. Reutilize a arquitetura atual.
 5. Não crie um segundo sistema de autenticação.
 6. Não substitua bibliotecas sem necessidade real.
@@ -46,9 +55,8 @@ Todo código deve usar nomes em inglês.
 
 Comentários no código devem ser escritos em português.
 
+====================================================================== 2. VISÃO DO JOGO
 ======================================================================
-2. VISÃO DO JOGO
-   ======================================================================
 
 Rosto Oculto é um jogo multiplayer para exatamente dois jogadores autenticados.
 
@@ -96,9 +104,8 @@ O servidor deve ser a autoridade de:
 - versão do estado;
 - histórico de eventos.
 
+====================================================================== 3. DECISÕES DE PRODUTO
 ======================================================================
-3. DECISÕES DE PRODUTO
-   ======================================================================
 
 Configuração inicial:
 
@@ -127,9 +134,8 @@ Os alvos secretos devem ser diferentes por padrão.
 
 Caso não seja possível garantir alvos diferentes, a criação da partida deve falhar e ser tentada novamente. Não use o mesmo rosto secreto para os dois jogadores.
 
+====================================================================== 4. FLUXO COMPLETO
 ======================================================================
-4. FLUXO COMPLETO
-   ======================================================================
 
 4.1 Página do jogo
 
@@ -339,9 +345,8 @@ Uma revanche:
 - sorteia novamente o primeiro jogador;
 - não reutiliza o estado de eliminação anterior.
 
+====================================================================== 5. SINCRONIZAÇÃO SEM WEBSOCKET
 ======================================================================
-5. SINCRONIZAÇÃO SEM WEBSOCKET
-   ======================================================================
 
 Não utilizar:
 
@@ -389,9 +394,8 @@ O polling deve ser encapsulado em um hook ou serviço reutilizável.
 
 Não espalhar setInterval por vários componentes.
 
+====================================================================== 6. EXIBIÇÃO DETERMINÍSTICA DE ROSTOS
 ======================================================================
-6. EXIBIÇÃO DETERMINÍSTICA DE ROSTOS
-   ======================================================================
 
 Não será implementado um algoritmo próprio de geração de rostos. Os rostos serão avatares ilustrados e determinísticos fornecidos pela API do DiceBear.
 
@@ -417,9 +421,9 @@ alt: string
 }
 
 function HiddenFaceAvatar({ seed, alt }: HiddenFaceAvatarProps) {
-  const src = `https://api.dicebear.com/10.x/adventurer/svg?seed=${encodeURIComponent(seed)}`
+const src = `https://api.dicebear.com/10.x/adventurer/svg?seed=${encodeURIComponent(seed)}`
 
-  return <img src={src} alt={alt} />
+return <img src={src} alt={alt} />
 }
 
 6.2 Identidade e persistência
@@ -436,9 +440,8 @@ As imagens SVG são carregadas diretamente da API pública do DiceBear. A interf
 
 Como o estilo `adventurer` é ilustrado, os textos da interface e das regras devem descrevê-los como avatares ou rostos ilustrados sintéticos, e não como fotografias de pessoas reais.
 
+====================================================================== 7. MODELO DE DADOS
 ======================================================================
-7. MODELO DE DADOS
-   ======================================================================
 
 Adapte ao schema existente.
 
@@ -448,7 +451,7 @@ Estrutura conceitual:
 
 enum HiddenFaceRoomStatus {
 WAITING_FOR_PLAYER
- PREPARING_BOARD
+PREPARING_BOARD
 READY
 IN_PROGRESS
 FINISHED
@@ -471,114 +474,114 @@ ROOM_EXPIRED
 }
 
 model HiddenFaceRoom {
-id              String               @id @default(cuid())
-hostUserId      String
+id String @id @default(cuid())
+hostUserId String
 inviteTokenHash String
-status          HiddenFaceRoomStatus
-version         Int                  @default(1)
-expiresAt       DateTime
-createdAt       DateTime             @default(now())
-updatedAt       DateTime             @updatedAt
+status HiddenFaceRoomStatus
+version Int @default(1)
+expiresAt DateTime
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
 
-host            User                 @relation(...)
-players         HiddenFaceRoomPlayer[]
-matches         HiddenFaceMatch[]
+host User @relation(...)
+players HiddenFaceRoomPlayer[]
+matches HiddenFaceMatch[]
 }
 
 model HiddenFaceRoomPlayer {
-id        String   @id @default(cuid())
-roomId    String
-userId    String
-seat      Int
-joinedAt  DateTime @default(now())
+id String @id @default(cuid())
+roomId String
+userId String
+seat Int
+joinedAt DateTime @default(now())
 
-room      HiddenFaceRoom @relation(...)
-user      User           @relation(...)
+room HiddenFaceRoom @relation(...)
+user User @relation(...)
 
 @@unique([roomId, userId])
 @@unique([roomId, seat])
 }
 
 model HiddenFaceMatch {
-id              String                @id @default(cuid())
-roomId          String
-roundNumber     Int
-status          HiddenFaceMatchStatus
+id String @id @default(cuid())
+roomId String
+roundNumber Int
+status HiddenFaceMatchStatus
 currentPlayerId String?
-winnerPlayerId  String?
-loserPlayerId   String?
-resultReason    HiddenFaceResultReason?
-faceCount       Int
-version         Int                   @default(1)
-turnNumber      Int                   @default(1)
-startedAt       DateTime?
-finishedAt      DateTime?
-createdAt       DateTime              @default(now())
-updatedAt       DateTime              @updatedAt
+winnerPlayerId String?
+loserPlayerId String?
+resultReason HiddenFaceResultReason?
+faceCount Int
+version Int @default(1)
+turnNumber Int @default(1)
+startedAt DateTime?
+finishedAt DateTime?
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
 
-room            HiddenFaceRoom        @relation(...)
-faces           HiddenFaceMatchFace[]
-players         HiddenFaceMatchPlayer[]
-events          HiddenFaceMatchEvent[]
+room HiddenFaceRoom @relation(...)
+faces HiddenFaceMatchFace[]
+players HiddenFaceMatchPlayer[]
+events HiddenFaceMatchEvent[]
 
 @@unique([roomId, roundNumber])
 }
 
 model HiddenFaceMatchPlayer {
-id               String   @id @default(cuid())
-matchId          String
-userId           String
-seat             Int
-secretFaceId     String
-confirmedTurns   Int      @default(0)
-createdAt        DateTime @default(now())
+id String @id @default(cuid())
+matchId String
+userId String
+seat Int
+secretFaceId String
+confirmedTurns Int @default(0)
+createdAt DateTime @default(now())
 
-match            HiddenFaceMatch @relation(...)
-user             User            @relation(...)
- secretFace       HiddenFaceMatchFace @relation("HiddenFaceSecretFace", fields: [secretFaceId], references: [id])
-boardStates      HiddenFaceBoardFace[]
+match HiddenFaceMatch @relation(...)
+user User @relation(...)
+secretFace HiddenFaceMatchFace @relation("HiddenFaceSecretFace", fields: [secretFaceId], references: [id])
+boardStates HiddenFaceBoardFace[]
 
 @@unique([matchId, userId])
 @@unique([matchId, seat])
 }
 
 model HiddenFaceMatchFace {
- id        String   @id @default(cuid())
- matchId   String
- seed      String
- position  Int
+id String @id @default(cuid())
+matchId String
+seed String
+position Int
 
- match     HiddenFaceMatch        @relation(...)
- secretFor HiddenFaceMatchPlayer[] @relation("HiddenFaceSecretFace")
- boardStates HiddenFaceBoardFace[]
+match HiddenFaceMatch @relation(...)
+secretFor HiddenFaceMatchPlayer[] @relation("HiddenFaceSecretFace")
+boardStates HiddenFaceBoardFace[]
 
- @@unique([matchId, seed])
- @@unique([matchId, position])
+@@unique([matchId, seed])
+@@unique([matchId, position])
 }
 
 model HiddenFaceBoardFace {
-id            String   @id @default(cuid())
+id String @id @default(cuid())
 matchPlayerId String
-faceId        String
-isLowered     Boolean  @default(false)
-updatedAt     DateTime @updatedAt
+faceId String
+isLowered Boolean @default(false)
+updatedAt DateTime @updatedAt
 
-matchPlayer   HiddenFaceMatchPlayer @relation(...)
- face          HiddenFaceMatchFace   @relation(...)
+matchPlayer HiddenFaceMatchPlayer @relation(...)
+face HiddenFaceMatchFace @relation(...)
 
 @@unique([matchPlayerId, faceId])
 }
 
 model HiddenFaceMatchEvent {
-id            String   @id @default(cuid())
-matchId       String
-sequence      Int
-type          String
-actorUserId   String?
-payload       Json
-createdAt     DateTime @default(now())
+id String @id @default(cuid())
+matchId String
+sequence Int
+type String
+actorUserId String?
+payload Json
+createdAt DateTime @default(now())
 
-match         HiddenFaceMatch @relation(...)
+match HiddenFaceMatch @relation(...)
 
 @@unique([matchId, sequence])
 @@index([matchId, sequence])
@@ -588,9 +591,8 @@ As seeds pertencem ao tabuleiro compartilhado e podem ser retornadas no DTO do j
 
 Não há hash de imagem a armazenar. Os eventos da partida fornecem a auditoria necessária sobre a criação do tabuleiro e a escolha dos alvos.
 
+====================================================================== 8. MÁQUINAS DE ESTADO
 ======================================================================
-8. MÁQUINAS DE ESTADO
-   ======================================================================
 
 Sala:
 
@@ -637,9 +639,8 @@ Exemplos proibidos:
 - dois jogadores como currentPlayer ao mesmo tempo;
 - nova rodada reutilizando estado anterior.
 
+====================================================================== 9. AÇÕES DE DOMÍNIO
 ======================================================================
-9. AÇÕES DE DOMÍNIO
-   ======================================================================
 
 Modelar ações como discriminated union.
 
@@ -698,9 +699,8 @@ Validações obrigatórias:
 - idempotência;
 - sala não expirada.
 
-======================================================================
-10. EVENTOS
-    ======================================================================
+====================================================================== 10. EVENTOS
+\======================================================================
 
 Registrar eventos imutáveis:
 
@@ -732,9 +732,8 @@ Não registrar:
 - targetFaceId do adversário em logs acessíveis ao cliente;
 - perfil privado de usuário desnecessário.
 
-======================================================================
-11. APIs
-    ======================================================================
+====================================================================== 11. APIs
+\======================================================================
 
 Adapte os caminhos ao padrão real do projeto.
 
@@ -780,9 +779,9 @@ displayName: string
 avatarUrl: string | null
 remainingFaceCount?: number
 }>
- mySecretFace: PublicHiddenFace
- myBoard: Array<{
- face: PublicHiddenFace
+mySecretFace: PublicHiddenFace
+myBoard: Array<{
+face: PublicHiddenFace
 position: number
 isLowered: boolean
 }>
@@ -791,7 +790,7 @@ winnerPlayerId: string
 reason: HiddenFaceResultReason
 revealedSecrets: Array<{
 playerId: string
- face: PublicHiddenFace
+face: PublicHiddenFace
 }>
 } | null
 }
@@ -801,20 +800,19 @@ Antes do fim, não incluir:
 - opponentSecretFaceId;
 - opponentSecretFace;
 - opponentBoardStates;
- - opponentRemainingFaces, se isso puder entregar informação desnecessária.
+- opponentRemainingFaces, se isso puder entregar informação desnecessária.
 
 PublicHiddenFace:
 
 type PublicHiddenFace = {
- id: string
- seed: string
+id: string
+seed: string
 }
 
 Não gerar nomes para os rostos.
 
-======================================================================
-12. SEGURANÇA
-    ======================================================================
+====================================================================== 12. SEGURANÇA
+\======================================================================
 
 Autenticação:
 
@@ -871,9 +869,8 @@ Rostos:
 - não afirmar que um rosto pertence a uma raça ou identidade real;
 - não inferir atributos de aparência a partir dos avatares.
 
-======================================================================
-13. INTERAÇÃO DE ABAIXAR O ROSTO
-    ======================================================================
+====================================================================== 13. INTERAÇÃO DE ABAIXAR O ROSTO
+\======================================================================
 
 Este requisito é obrigatório.
 
@@ -950,9 +947,8 @@ Acessibilidade obrigatória:
 - prefers-reduced-motion;
 - não depender apenas de rotação para comunicar o estado.
 
-======================================================================
-14. SOM DA PEÇA
-    ======================================================================
+====================================================================== 14. SOM DA PEÇA
+\======================================================================
 
 Ao abaixar um rosto, reproduzir um som curto semelhante a uma peça plástica encaixando.
 
@@ -995,9 +991,8 @@ Em testes:
 - mockar o controller;
 - não depender de áudio real.
 
-======================================================================
-15. FRONTEND
-    ======================================================================
+====================================================================== 15. FRONTEND
+\======================================================================
 
 Estrutura sugerida:
 
@@ -1043,9 +1038,8 @@ Separar:
 - domínio;
 - efeitos sonoros.
 
-======================================================================
-16. DESIGN VISUAL
-    ======================================================================
+====================================================================== 16. DESIGN VISUAL
+\======================================================================
 
 Preservar o design system do Party Games.
 
@@ -1086,9 +1080,8 @@ Pode utilizar apenas posição interna não visível.
 
 A peça abaixada deve mostrar um verso gráfico original, sem texto.
 
-======================================================================
-17. RESPONSIVIDADE
-    ======================================================================
+====================================================================== 17. RESPONSIVIDADE
+\======================================================================
 
 Desktop:
 
@@ -1117,9 +1110,8 @@ Mobile:
 
 O layout deve funcionar a partir de 320px.
 
-======================================================================
-18. ACESSIBILIDADE
-    ======================================================================
+====================================================================== 18. ACESSIBILIDADE
+\======================================================================
 
 Implementar:
 
@@ -1142,9 +1134,8 @@ Implementar:
 
 O alt não pode expor metadados que facilitariam perguntas ou classificações não visíveis.
 
-======================================================================
-19. ESTADOS DE INTERFACE
-    ======================================================================
+====================================================================== 19. ESTADOS DE INTERFACE
+\======================================================================
 
 Criar estados específicos para:
 
@@ -1176,9 +1167,8 @@ Oferecer ações recuperáveis:
 - recarregar estado;
 - criar nova partida.
 
-======================================================================
-20. ERROS DE DOMÍNIO
-    ======================================================================
+====================================================================== 20. ERROS DE DOMÍNIO
+\======================================================================
 
 Criar códigos consistentes:
 
@@ -1205,9 +1195,8 @@ Criar códigos consistentes:
 - INVALID_STATE_TRANSITION
 - RATE_LIMITED
 
-======================================================================
-21. TESTES
-    ======================================================================
+====================================================================== 21. TESTES
+\======================================================================
 
 21.1 Seeds e DiceBear
 
@@ -1316,9 +1305,8 @@ Criar cenário completo:
 13. segredos são revelados;
 14. revanche gera rostos novos.
 
-======================================================================
-22. OBSERVABILIDADE
-    ======================================================================
+====================================================================== 22. OBSERVABILIDADE
+\======================================================================
 
 Registrar de forma estruturada:
 
@@ -1354,9 +1342,8 @@ Métricas úteis:
 - conflitos de versão;
 - latência do polling.
 
-======================================================================
-23. SEO E CATÁLOGO
-    ======================================================================
+====================================================================== 23. SEO E CATÁLOGO
+\======================================================================
 
 Adicionar ao catálogo:
 
@@ -1380,9 +1367,8 @@ Metadados:
 - noindex para convite;
 - não expor IDs privados em sitemap.
 
-======================================================================
-24. FORA DO ESCOPO
-    ======================================================================
+====================================================================== 24. FORA DO ESCOPO
+\======================================================================
 
 Não implementar:
 
@@ -1414,9 +1400,8 @@ Não implementar:
 - geração própria de imagens;
 - persistência de assets de rosto.
 
-======================================================================
-25. ORDEM DE IMPLEMENTAÇÃO
-    ======================================================================
+====================================================================== 25. ORDEM DE IMPLEMENTAÇÃO
+\======================================================================
 
 Etapa 1:
 
@@ -1489,9 +1474,8 @@ Etapa 9:
 - atualizar README;
 - atualizar documentação da arquitetura.
 
-======================================================================
-26. CRITÉRIOS DE ACEITAÇÃO
-    ======================================================================
+====================================================================== 26. CRITÉRIOS DE ACEITAÇÃO
+\======================================================================
 
 A implementação será considerada concluída quando:
 
@@ -1531,9 +1515,8 @@ A implementação será considerada concluída quando:
 - Corrida Arcana continua funcionando;
 - nenhuma marca ou asset comercial é copiado.
 
-======================================================================
-27. ENTREGÁVEIS
-    ======================================================================
+====================================================================== 27. ENTREGÁVEIS
+\======================================================================
 
 Ao concluir, apresente:
 
@@ -1562,9 +1545,8 @@ Ao concluir, apresente:
 23. Custos ou dependências externas.
 24. Próximos passos.
 
-======================================================================
-28. DIRETRIZ FINAL
-    ======================================================================
+====================================================================== 28. DIRETRIZ FINAL
+\======================================================================
 
 Não implemente este jogo como um conjunto de componentes React que confiam no navegador.
 

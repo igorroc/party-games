@@ -1,5 +1,5 @@
 import type { PrismaClient } from "../src/generated/prisma/client"
-import { MAGICAL_RACE_SLUG, NEM_A_PATO_SLUG } from "@/modules/games"
+import { HIDDEN_FACE_SLUG, MAGICAL_RACE_SLUG, NEM_A_PATO_SLUG } from "@/modules/games"
 const verifiedAt = new Date("2026-07-30T00:00:00.000Z")
 
 const categories = [
@@ -931,6 +931,26 @@ const questions: SeedQuestion[] = [
 ]
 
 export async function seedDatabase(prisma: PrismaClient) {
+	await prisma.game.upsert({
+		where: { slug: HIDDEN_FACE_SLUG },
+		update: {
+			name: "Rosto Oculto",
+			description: "Descubra o avatar secreto eliminando possibilidades em uma mesa para dois.",
+			status: "ACTIVE",
+			minPlayers: 2,
+			maxPlayers: 2,
+			durationMin: 20,
+		},
+		create: {
+			slug: HIDDEN_FACE_SLUG,
+			name: "Rosto Oculto",
+			description: "Descubra o avatar secreto eliminando possibilidades em uma mesa para dois.",
+			status: "ACTIVE",
+			minPlayers: 2,
+			maxPlayers: 2,
+			durationMin: 20,
+		},
+	})
 	await prisma.game.upsert({
 		where: { slug: MAGICAL_RACE_SLUG },
 		update: {
