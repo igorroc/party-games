@@ -78,7 +78,7 @@ export function FaceTile({
 		}
 	}
 
-	const angle = (isLowered ? 78 : 0) + (isLowered ? -78 : 78) * dragProgress
+	const angle = (isLowered ? -78 : 0) + (isLowered ? 78 : -78) * dragProgress
 	const verticalOffset = (isLowered ? 14 : 0) + (isLowered ? -14 : 14) * dragProgress
 
 	return (
@@ -96,10 +96,10 @@ export function FaceTile({
 			onPointerCancel={(event) => finishGesture(event, true)}
 			aria-pressed={isLowered}
 			aria-label={`${isLowered ? "Levantar" : "Abaixar"} rosto ${face.position + 1}`}
-			className="border-border bg-surface focus-visible:outline-primary relative aspect-square touch-pan-x overflow-hidden rounded-xl border p-0 [perspective:600px] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed"
+			className={`focus-visible:outline-primary relative aspect-square touch-pan-x rounded-xl p-0 [perspective:600px] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed ${isLowered || dragProgress > 0 ? "z-10" : ""}`}
 		>
 			<span
-				className="relative block h-full w-full overflow-hidden rounded-[0.7rem] shadow-sm transition-transform duration-200 motion-reduce:transition-none"
+				className="border-border bg-surface relative block h-full w-full overflow-hidden rounded-[0.7rem] border shadow-sm transition-transform duration-200 motion-reduce:transition-none"
 				style={{
 					transform: `translateY(${verticalOffset}%) rotateX(${angle}deg) scale(${1 - dragProgress * 0.03})`,
 					transformOrigin: "bottom center",
