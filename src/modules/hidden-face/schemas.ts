@@ -6,6 +6,11 @@ export const createHiddenFaceSchema = z.object({
 		.transform(([first, second]) => [first, second] as [string, string]),
 })
 
+const loweredFaceIdsSchema = z
+	.array(z.string().min(1))
+	.max(23)
+	.refine((ids) => new Set(ids).size === ids.length, "Avatares devem ser únicos.")
+
 export const hiddenFaceActionSchema = z.object({
 	expectedVersion: z.number().int().nonnegative(),
 	action: z.discriminatedUnion("type", [
@@ -14,7 +19,14 @@ export const hiddenFaceActionSchema = z.object({
 			faceId: z.string().min(1),
 			isLowered: z.boolean(),
 		}),
-		z.object({ type: z.literal("CONFIRM_TURN") }),
+		z.object({
+			type: z.literal("SET_LOWERED_FACES"),
+			loweredFaceIds: loweredFaceIdsSchema,
+		}),
+		z.object({
+			type: z.literal("CONFIRM_TURN"),
+			loweredFaceIds: loweredFaceIdsSchema.optional(),
+		}),
 		z.object({ type: z.literal("REMATCH") }),
 		z.object({ type: z.literal("ABANDON_MATCH") }),
 	]),

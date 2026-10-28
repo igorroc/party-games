@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { AppContainer } from "@/components/design-system"
 import type { HiddenFaceAction, PublicHiddenFaceState } from "@/modules/hidden-face/types"
 import { FaceTile } from "./face-tile"
+import { createActionQueue } from "./action-queue"
+import { createBoardAutosave } from "./board-autosave"
 import { HiddenFaceAvatar } from "./hidden-face-avatar"
 import { useTileSound } from "./use-tile-sound"
 
@@ -20,6 +22,33 @@ export function HiddenFaceGame({
 	initialState: PublicHiddenFaceState | null
 }) {
 	const [state, setState] = useState(initialState)
+	const confirmedState = useRef(initialState)
+	const enqueue = useRef(createActionQueue())
+	const generation = useRef(0)
+	const localFaces = useRef<string[] | null>(null)
+	const revision = useRef(0)
+	const autosave = useRef(createBoardAutosave())
+	const transitioning = useRef(false)
+	const [changingTurn, setChangingTurn] = useState(false)
+	const [dirty, setDirty] = useState(false)
+	const [pendingActions, setPendingActions] = useState(0)
+
+	useEffect(() => {
+		const saver = autosave.current
+		return () => {
+			saver.cancel()
+			generation.current += 1
+		}
+	}, [])
+
+	function publishState(next: PublicHiddenFaceState | null) {
+		confirmedState.current = next
+		if (!next) {
+			setState(null)
+			return
+		}
+		setState({ ...next, loweredFaceIds: localFaces.current ?? next.loweredFaceIds })
+	}
 	const [loading, setLoading] = useState(false)
 	const [secretVisible, setSecretVisible] = useState(false)
 	const [introSeat, setIntroSeat] = useState<0 | 1 | null>(
@@ -40,7 +69,7 @@ export function HiddenFaceGame({
 			const result = (await response.json()) as ApiResult<PublicHiddenFaceState>
 			if (!response.ok || !result.success || !result.data)
 				throw new Error(result.error?.message ?? "Não foi possível carregar a partida.")
-			setState(result.data)
+			publishState(result.data)
 			setSecretVisible(showSecret)
 		} catch (reason) {
 			setError(reason instanceof Error ? reason.message : "Não foi possível carregar a partida.")
@@ -49,7 +78,8 @@ export function HiddenFaceGame({
 		}
 	}
 
-	async function act(action: HiddenFaceAction, expectedState = state) {
+	async function sendAction(action: HiddenFaceAction, sentRevision: number) {
+		const expectedState = confirmedState.current
 		if (!expectedState) return false
 		setError(null)
 		try {
@@ -59,40 +89,104 @@ export function HiddenFaceGame({
 				body: JSON.stringify({ expectedVersion: expectedState.version, action }),
 			})
 			const result = (await response.json()) as ApiResult<ActionResult>
+			if (response.status === 409) {
+				generation.current += 1
+				localFaces.current = null
+				setDirty(false)
+				autosave.current.cancel()
+				await load(false, expectedState.currentPlayerIndex)
+				setError("A partida foi sincronizada. Confira o tabuleiro e tente novamente.")
+				return false
+			}
 			if (!response.ok || !result.success || !result.data)
 				throw new Error(result.error?.message ?? "Não foi possível atualizar a partida.")
+			if (sentRevision === revision.current) {
+				localFaces.current = null
+				setDirty(false)
+			}
 			if (result.data.type === "handoff") {
-				setState(null)
+				publishState(null)
 				setSecretVisible(false)
 				setIntroSeat(action.type === "REMATCH" ? 0 : null)
 				setNeedsHandoff(action.type !== "REMATCH")
 				await load(false, result.data.currentPlayerIndex)
 				return true
 			}
-			setState(result.data.state)
+			publishState(result.data.state)
 			setSecretVisible(false)
 			return true
 		} catch (reason) {
+			generation.current += 1
+			localFaces.current = null
+			setDirty(false)
+			autosave.current.cancel()
+			await load(false, expectedState.currentPlayerIndex)
 			setError(reason instanceof Error ? reason.message : "Não foi possível atualizar a partida.")
 			return false
 		}
 	}
 
-	async function setFaceLowered(faceId: string, isLowered: boolean) {
-		if (!state) return
-		const previousState = state
-		setState({
-			...state,
-			loweredFaceIds: isLowered
-				? [...state.loweredFaceIds, faceId]
-				: state.loweredFaceIds.filter((id) => id !== faceId),
-		})
-		const updated = await act({ type: "SET_FACE_LOWERED", faceId, isLowered }, previousState)
-		if (!updated) {
-			setState(previousState)
+	async function act(getAction: () => HiddenFaceAction | null) {
+		const actionGeneration = generation.current
+		setPendingActions((count) => count + 1)
+		try {
+			return await enqueue.current(async () => {
+				if (actionGeneration !== generation.current) return false
+				const action = getAction()
+				if (!action) return true
+				return sendAction(action, revision.current)
+			})
+		} finally {
+			setPendingActions((count) => count - 1)
+		}
+	}
+
+	function setFaceLowered(faceId: string, isLowered: boolean) {
+		const current = confirmedState.current
+		if (!current || current.status !== "active" || transitioning.current || loading) return
+		const lowered = new Set(localFaces.current ?? current.loweredFaceIds)
+		if (isLowered && !lowered.has(faceId) && lowered.size >= current.faces.length - 1) {
+			setError("Mantenha pelo menos um avatar levantado.")
 			return
 		}
+		if (isLowered) lowered.add(faceId)
+		else lowered.delete(faceId)
+		localFaces.current = [...lowered]
+		revision.current += 1
+		setDirty(true)
+		setError(null)
+		publishState(current)
 		if (isLowered) tileSound.playLowerSound()
+		autosave.current.schedule(() => {
+			const saveRevision = revision.current
+			void act(() =>
+				localFaces.current && saveRevision === revision.current && !transitioning.current
+					? { type: "SET_LOWERED_FACES", loweredFaceIds: [...localFaces.current] }
+					: null,
+			)
+		})
+	}
+
+	async function changeTurn(type: "CONFIRM_TURN" | "REMATCH") {
+		if (transitioning.current || loading) return
+		transitioning.current = true
+		setChangingTurn(true)
+		autosave.current.cancel()
+		try {
+			await act(() =>
+				type === "CONFIRM_TURN"
+					? {
+							type,
+							loweredFaceIds: [
+								...(localFaces.current ?? confirmedState.current?.loweredFaceIds ?? []),
+							],
+						}
+					: { type },
+			)
+		} finally {
+			transitioning.current = false
+			setChangingTurn(false)
+		}
 	}
 
 	if (!state) return <LoadingScreen loading={loading} error={error} />
@@ -216,7 +310,8 @@ export function HiddenFaceGame({
 						</div>
 						<button
 							type="button"
-							onClick={() => void act({ type: "REMATCH" })}
+							disabled={changingTurn || loading}
+							onClick={() => void changeTurn("REMATCH")}
 							className="bg-surface text-primary mt-5 min-h-11 rounded-xl px-4 font-extrabold"
 						>
 							Jogar novamente
@@ -225,7 +320,7 @@ export function HiddenFaceGame({
 				)}
 				<section
 					aria-label="Tabuleiro de avatares"
-					className="grid grid-cols-3 gap-3 pr-8 sm:grid-cols-4 md:pr-0 md:grid-cols-6"
+					className="grid grid-cols-3 gap-3 pr-8 sm:grid-cols-4 md:grid-cols-6 md:pr-0"
 				>
 					{state.faces.map((face) => {
 						const isLowered = lowered.has(face.id)
@@ -234,7 +329,7 @@ export function HiddenFaceGame({
 								key={face.id}
 								face={face}
 								isLowered={isLowered}
-								disabled={state.status !== "active"}
+								disabled={state.status !== "active" || loading || changingTurn}
 								onToggle={(faceId, nextIsLowered) => void setFaceLowered(faceId, nextIsLowered)}
 								onInteraction={tileSound.initialize}
 							/>
@@ -248,13 +343,23 @@ export function HiddenFaceGame({
 						</p>
 						<button
 							type="button"
-							onClick={() => void act({ type: "CONFIRM_TURN" })}
+							disabled={changingTurn || loading}
+							onClick={() => void changeTurn("CONFIRM_TURN")}
 							className={`min-h-12 rounded-xl px-5 font-extrabold text-white ${accent.button}`}
 						>
 							{remaining === 1 ? "Confirmar palpite" : "Confirmar vez"}
 						</button>
 					</section>
 				)}
+				<p role="status" className="text-muted text-sm">
+					{error
+						? "Confira o tabuleiro antes de continuar."
+						: pendingActions > 0
+							? "Salvando…"
+							: dirty
+								? "Alterações ainda não salvas."
+								: "Tabuleiro salvo."}
+				</p>
 				{error && (
 					<p role="alert" className="bg-danger/10 text-danger rounded-xl p-3 font-bold">
 						{error}

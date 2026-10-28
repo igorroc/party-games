@@ -58,8 +58,11 @@ export function dispatchHiddenFaceAction(
 	}
 	const next = structuredClone(state) as HiddenFaceState
 	if (action.type === "SET_FACE_LOWERED") setFaceLowered(next, action.faceId, action.isLowered)
-	else if (action.type === "CONFIRM_TURN") confirmTurn(next)
-	else {
+	else if (action.type === "SET_LOWERED_FACES") setLoweredFaces(next, action.loweredFaceIds)
+	else if (action.type === "CONFIRM_TURN") {
+		if (action.loweredFaceIds !== undefined) setLoweredFaces(next, action.loweredFaceIds)
+		confirmTurn(next)
+	} else {
 		next.status = "abandoned"
 		event(next, "MATCH_ABANDONED", {})
 	}
@@ -78,6 +81,25 @@ function setFaceLowered(state: HiddenFaceState, faceId: string, isLowered: boole
 	} else lowered.delete(faceId)
 	state.loweredFaceIds[player] = [...lowered]
 	event(state, isLowered ? "FACE_LOWERED" : "FACE_RAISED", { faceId })
+}
+
+function setLoweredFaces(state: HiddenFaceState, loweredFaceIds: string[]) {
+	const selected = new Set(loweredFaceIds)
+	if (selected.size !== loweredFaceIds.length) throw new Error("Avatares devem ser únicos.")
+	const faceIds = new Set(state.faces.map((face) => face.id))
+	if (loweredFaceIds.some((id) => !faceIds.has(id))) throw new Error("Avatar indisponível.")
+	if (selected.size >= state.faces.length)
+		throw new Error("Mantenha pelo menos um avatar levantado.")
+
+	const player = state.currentPlayerIndex
+	const previous = new Set(state.loweredFaceIds[player])
+	for (const faceId of previous) {
+		if (!selected.has(faceId)) event(state, "FACE_RAISED", { faceId })
+	}
+	for (const faceId of selected) {
+		if (!previous.has(faceId)) event(state, "FACE_LOWERED", { faceId })
+	}
+	state.loweredFaceIds[player] = [...loweredFaceIds]
 }
 
 function confirmTurn(state: HiddenFaceState) {

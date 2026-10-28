@@ -26,7 +26,8 @@ export type HiddenFaceState = {
 
 export type HiddenFaceAction =
 	| { type: "SET_FACE_LOWERED"; faceId: string; isLowered: boolean }
-	| { type: "CONFIRM_TURN" }
+	| { type: "SET_LOWERED_FACES"; loweredFaceIds: string[] }
+	| { type: "CONFIRM_TURN"; loweredFaceIds?: string[] }
 	| { type: "REMATCH" }
 	| { type: "ABANDON_MATCH" }
 
