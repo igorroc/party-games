@@ -1,20 +1,25 @@
 import Image from "next/image"
 import Link from "next/link"
-import { GameMetadata, magicalRaceGame, nemAPatoGame } from "@/components/games"
+import {
+	GameMetadata,
+	hiddenFaceGame,
+	magicalRaceGame,
+	nemAPatoGame,
+} from "@/components/games"
 import { AppContainer, SectionHeading } from "@/components/design-system"
 
 const featuredGames = [
+	{
+		game: hiddenFaceGame,
+		eyebrow: "Dedução cara a cara",
+		cover: "/assets/games/rosto-oculto.png",
+		coverAlt: "Capa do jogo Rosto Oculto",
+	},
 	{
 		game: nemAPatoGame,
 		eyebrow: "Estimativas em voz alta",
 		cover: "/assets/games/nem-a-pato.png",
 		coverAlt: "Capa do jogo Nem a Pato",
-	},
-	{
-		game: magicalRaceGame,
-		eyebrow: "Corrida fantástica",
-		cover: "/assets/games/corrida-arcana.png",
-		coverAlt: "Capa do jogo Corrida Arcana",
 	},
 ] as const
 
@@ -64,7 +69,7 @@ export function HomeContent() {
 						<div className="from-primary/85 via-primary/20 absolute inset-0 bg-gradient-to-t to-transparent" />
 						<div className="absolute right-3 bottom-3 left-3 rounded-2xl bg-black/35 p-4 text-white backdrop-blur-sm sm:right-6 sm:bottom-6 sm:left-auto sm:max-w-64">
 							<p className="font-display text-2xl leading-tight">
-								Uma tela. Dois mundos. Muitas histórias.
+								Uma tela. Muitos mundos. Muitas histórias.
 							</p>
 							<p className="mt-2 text-sm leading-5 text-white/85">
 								Funciona do celular à TV da sala.
@@ -76,8 +81,8 @@ export function HomeContent() {
 					<SectionHeading
 						id="available-games"
 						eyebrow="Escolha sua aventura"
-						title="Do palpite impossível à ultrapassagem mágica."
-						description="Dois jeitos de colocar todo mundo na mesma história, sem precisar distribuir regras ou baixar aplicativos."
+						title="Palpites, corridas e rostos misteriosos."
+						description="Três jeitos de colocar todo mundo na mesma história, sem precisar distribuir regras ou baixar aplicativos."
 					/>
 					<div className="grid gap-6 lg:grid-cols-2">
 						{featuredGames.map(({ game, eyebrow, cover, coverAlt }) => (
