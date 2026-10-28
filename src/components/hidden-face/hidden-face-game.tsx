@@ -152,9 +152,6 @@ export function HiddenFaceGame({
 								: `Vez de ${state.playerNames[state.currentPlayerIndex]}`}
 						</h1>
 					</div>
-					<p className={`rounded-full px-3 py-1 text-sm font-bold ${accent.badge}`}>
-						{remaining} avatares levantados
-					</p>
 					<button
 						type="button"
 						onClick={tileSound.toggleMuted}
@@ -228,7 +225,7 @@ export function HiddenFaceGame({
 				)}
 				<section
 					aria-label="Tabuleiro de avatares"
-					className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6"
+					className="grid grid-cols-3 gap-3 pr-8 sm:grid-cols-4 md:pr-0 md:grid-cols-6"
 				>
 					{state.faces.map((face) => {
 						const isLowered = lowered.has(face.id)
