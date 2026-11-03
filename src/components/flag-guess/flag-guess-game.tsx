@@ -90,6 +90,7 @@ export function FlagGuessGame({
 
 	const { round } = state
 	const triedCodes = new Set(round.guesses.map((item) => item.code))
+	const isRevealMode = state.mode === "REVEAL"
 	const isLastRound = state.currentRound >= state.totalRounds
 	const difficultyName =
 		flagGuessGame.difficulties.find((item) => item.value === state.difficulty)?.name ?? ""
@@ -103,11 +104,31 @@ export function FlagGuessGame({
 							Rodada {round.number} de {state.totalRounds}
 						</p>
 						<p className="text-sm font-extrabold tracking-[.14em] text-white/85 uppercase">
-							{difficultyName} · {state.score} {state.score === 1 ? "acerto" : "acertos"}
+							{difficultyName}
+							{!isRevealMode && ` · ${state.score} ${state.score === 1 ? "acerto" : "acertos"}`}
 						</p>
 					</div>
 					<div className="flex flex-col items-center gap-6 p-6 sm:p-10">
-						{round.status === "pending" ? (
+						{round.status === "pending" && isRevealMode ? (
+							<>
+								<h1 className="font-display text-center text-3xl">Que país é este?</h1>
+								<FlagImage
+									key={round.flagUrl}
+									src={round.flagUrl}
+									alt="Bandeira de um país misterioso"
+									className="w-full max-w-xl"
+									priority
+								/>
+								<button
+									type="button"
+									disabled={busy}
+									onClick={() => void send({ type: "REVEAL" })}
+									className={`${primaryButton} w-full max-w-xl`}
+								>
+									Revelar
+								</button>
+							</>
+						) : round.status === "pending" ? (
 							<>
 								<h1 className="font-display text-center text-3xl">De qual país é esta bandeira?</h1>
 								<FlagImage
@@ -156,10 +177,18 @@ export function FlagGuessGame({
 							<>
 								<h1
 									className={`font-display text-center text-4xl ${
-										round.status === "solved" ? "text-success" : "text-accent"
+										round.status === "solved"
+											? "text-success"
+											: round.status === "revealed"
+												? "text-primary"
+												: "text-accent"
 									}`}
 								>
-									{round.status === "solved" ? "Você acertou!" : "Era este país"}
+									{round.status === "solved"
+										? "Você acertou!"
+										: round.status === "revealed"
+											? "Este é o país"
+											: "Era este país"}
 								</h1>
 								{round.answer && (
 									<>
@@ -247,6 +276,7 @@ function RecentAttempts({ guesses }: { guesses: PublicFlagGuessState["round"]["g
 }
 
 function Summary({ state }: { state: PublicFlagGuessState }) {
+	const isRevealMode = state.mode === "REVEAL"
 	return (
 		<main className="flex-1 py-10 sm:py-16">
 			<AppContainer className="max-w-2xl">
@@ -256,10 +286,14 @@ function Summary({ state }: { state: PublicFlagGuessState }) {
 							Fim de jogo
 						</p>
 						<h1 className="font-display mt-2 text-5xl">
-							{state.score} de {state.totalRounds}
+							{isRevealMode ? state.totalRounds : `${state.score} de ${state.totalRounds}`}
 						</h1>
 						<p className="mt-2 text-lg text-white/80">
-							{state.score === 1 ? "bandeira acertada" : "bandeiras acertadas"}
+							{isRevealMode
+								? "bandeiras reveladas"
+								: state.score === 1
+									? "bandeira acertada"
+									: "bandeiras acertadas"}
 						</p>
 					</div>
 					<div className="space-y-6 p-6 sm:p-10">
@@ -275,12 +309,14 @@ function Summary({ state }: { state: PublicFlagGuessState }) {
 										className="w-16 shrink-0 rounded-md border"
 									/>
 									<span className="min-w-0 flex-1 truncate font-bold">{result.answer.name}</span>
-									<span
-										className={result.status === "solved" ? "text-success" : "text-danger"}
-										aria-label={result.status === "solved" ? "Acertou" : "Pulou"}
-									>
-										{result.status === "solved" ? "✓" : "✗"}
-									</span>
+									{!isRevealMode && (
+										<span
+											className={result.status === "solved" ? "text-success" : "text-danger"}
+											aria-label={result.status === "solved" ? "Acertou" : "Pulou"}
+										>
+											{result.status === "solved" ? "✓" : "✗"}
+										</span>
+									)}
 								</li>
 							))}
 						</ul>

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { AppContainer } from "@/components/design-system"
 import { flagGuessGame } from "@/components/games/flag-guess-metadata"
-import type { FlagGuessDifficulty } from "@/modules/flag-guess/types"
+import type { FlagGuessDifficulty, FlagGuessMode } from "@/modules/flag-guess/types"
 
 type ApiResult<T> = { success: boolean; data?: T; error?: { message: string } }
 
@@ -13,6 +13,7 @@ const optionClass =
 
 export function FlagGuessSetup() {
 	const router = useRouter()
+	const [mode, setMode] = useState<FlagGuessMode>("GUESS")
 	const [totalRounds, setTotalRounds] = useState<number>(10)
 	const [difficulty, setDifficulty] = useState<FlagGuessDifficulty>("EASY")
 	const [busy, setBusy] = useState(false)
@@ -26,7 +27,7 @@ export function FlagGuessSetup() {
 			const response = await fetch("/api/games/flag-guess/matches", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ difficulty, totalRounds }),
+				body: JSON.stringify({ difficulty, mode, totalRounds }),
 			})
 			const result = (await response.json()) as ApiResult<{ id: string }>
 			if (!response.ok || !result.success || !result.data)
@@ -52,6 +53,29 @@ export function FlagGuessSetup() {
 						</p>
 					</div>
 					<div className="space-y-8 p-7 sm:p-10">
+						<fieldset>
+							<legend className="font-display text-2xl">Qual o modo de jogo?</legend>
+							<div className="mt-4 grid gap-3 sm:grid-cols-2">
+								{flagGuessGame.modes.map((option) => (
+									<label key={option.value}>
+										<input
+											type="radio"
+											name="mode"
+											value={option.value}
+											checked={mode === option.value}
+											onChange={() => setMode(option.value)}
+											className="peer sr-only"
+										/>
+										<span className={`${optionClass} h-full`}>
+											<span className="font-display block text-2xl">{option.name}</span>
+											<span className="text-muted mt-1 block text-sm leading-5 font-bold">
+												{option.description}
+											</span>
+										</span>
+									</label>
+								))}
+							</div>
+						</fieldset>
 						<fieldset>
 							<legend className="font-display text-2xl">Quantas rodadas?</legend>
 							<div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
