@@ -1,11 +1,17 @@
 import Image from "next/image"
 
-import { HIDDEN_FACE_SLUG, MAGICAL_RACE_SLUG, NEM_A_PATO_SLUG } from "@/modules/games/game-registry"
+import {
+	FLAG_GUESS_SLUG,
+	HIDDEN_FACE_SLUG,
+	MAGICAL_RACE_SLUG,
+	NEM_A_PATO_SLUG,
+} from "@/modules/games/game-registry"
 
 const faviconByGameSlug: Record<string, string> = {
 	[NEM_A_PATO_SLUG]: "/assets/games/nem-a-pato-favicon.png",
 	[MAGICAL_RACE_SLUG]: "/assets/games/corrida-arcana-favicon.png",
 	[HIDDEN_FACE_SLUG]: "/assets/games/rosto-oculto-favicon.png",
+	[FLAG_GUESS_SLUG]: "/assets/games/advinhe-bandeira-favicon.png",
 }
 
 type GameFaviconProps = {

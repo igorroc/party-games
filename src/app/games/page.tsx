@@ -17,6 +17,7 @@ const gameCoverBySlug: Record<string, string> = {
 	"nem-a-pato": "/assets/games/nem-a-pato.png",
 	"magical-race": "/assets/games/corrida-arcana.png",
 	"hidden-face": "/assets/games/rosto-oculto.png",
+	"flag-guess": "/assets/games/advinhe-bandeira.png",
 }
 
 export default async function GamesPage({ searchParams }: GamesPageProps) {
