@@ -1,5 +1,10 @@
 import type { PrismaClient } from "../src/generated/prisma/client"
-import { HIDDEN_FACE_SLUG, MAGICAL_RACE_SLUG, NEM_A_PATO_SLUG } from "@/modules/games"
+import {
+	FLAG_GUESS_SLUG,
+	HIDDEN_FACE_SLUG,
+	MAGICAL_RACE_SLUG,
+	NEM_A_PATO_SLUG,
+} from "@/modules/games/game-registry"
 const verifiedAt = new Date("2026-07-30T00:00:00.000Z")
 
 const categories = [
@@ -931,6 +936,26 @@ const questions: SeedQuestion[] = [
 ]
 
 export async function seedDatabase(prisma: PrismaClient) {
+	await prisma.game.upsert({
+		where: { slug: FLAG_GUESS_SLUG },
+		update: {
+			name: "Adivinhe a Bandeira",
+			description: "Reconheça a bandeira, digite o nome do país e acumule acertos a cada rodada.",
+			status: "ACTIVE",
+			minPlayers: 1,
+			maxPlayers: 1,
+			durationMin: 10,
+		},
+		create: {
+			slug: FLAG_GUESS_SLUG,
+			name: "Adivinhe a Bandeira",
+			description: "Reconheça a bandeira, digite o nome do país e acumule acertos a cada rodada.",
+			status: "ACTIVE",
+			minPlayers: 1,
+			maxPlayers: 1,
+			durationMin: 10,
+		},
+	})
 	await prisma.game.upsert({
 		where: { slug: HIDDEN_FACE_SLUG },
 		update: {

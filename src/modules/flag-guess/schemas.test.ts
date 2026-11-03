@@ -1,0 +1,42 @@
+import { describe, expect, test } from "bun:test"
+import { createFlagGuessSchema, flagGuessActionSchema } from "./schemas"
+
+describe("contratos de Adivinhe a Bandeira", () => {
+	test("aceita configuração válida", () => {
+		expect(createFlagGuessSchema.parse({ difficulty: "HARD", totalRounds: 10 })).toEqual({
+			difficulty: "HARD",
+			mode: "GUESS",
+			totalRounds: 10,
+		})
+		expect(
+			createFlagGuessSchema.parse({ difficulty: "EASY", mode: "REVEAL", totalRounds: 5 }).mode,
+		).toBe("REVEAL")
+	})
+
+	test("rejeita dificuldade e rodadas inválidas", () => {
+		for (const input of [
+			{ difficulty: "ANY", totalRounds: 10 },
+			{ difficulty: "EASY", totalRounds: 0 },
+			{ difficulty: "EASY", totalRounds: 21 },
+			{ difficulty: "EASY", totalRounds: 2.5 },
+			{ difficulty: "EASY" },
+			{ difficulty: "EASY", mode: "TYPE", totalRounds: 5 },
+		])
+			expect(createFlagGuessSchema.safeParse(input).success).toBe(false)
+	})
+
+	test("valida as ações da rodada", () => {
+		expect(flagGuessActionSchema.parse({ type: "GUESS", countryCode: "br" })).toEqual({
+			type: "GUESS",
+			countryCode: "br",
+		})
+		expect(flagGuessActionSchema.safeParse({ type: "SKIP" }).success).toBe(true)
+		expect(flagGuessActionSchema.safeParse({ type: "REVEAL" }).success).toBe(true)
+		expect(flagGuessActionSchema.safeParse({ type: "NEXT" }).success).toBe(true)
+		expect(flagGuessActionSchema.safeParse({ type: "GUESS", countryCode: "BRA" }).success).toBe(
+			false,
+		)
+		expect(flagGuessActionSchema.safeParse({ type: "GUESS", countryCode: "" }).success).toBe(false)
+		expect(flagGuessActionSchema.safeParse({ type: "PEEK" }).success).toBe(false)
+	})
+})
