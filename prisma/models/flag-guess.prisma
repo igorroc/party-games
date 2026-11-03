@@ -4,15 +4,22 @@ enum FlagGuessDifficulty {
   HARD
 }
 
+enum FlagGuessMode {
+  GUESS
+  REVEAL
+}
+
 enum FlagGuessRoundStatus {
   PENDING
   SOLVED
   SKIPPED
+  REVEALED
 }
 
 model FlagGuessSession {
   sessionId    String              @id
   difficulty   FlagGuessDifficulty
+  mode         FlagGuessMode       @default(GUESS)
   totalRounds  Int
   currentRound Int                 @default(1)
   score        Int                 @default(0)
