@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import { FlagGuessGame } from "@/components/flag-guess/flag-guess-game"
 import { AuthSession } from "@/modules/auth"
-import { FlagGuessService } from "@/modules/flag-guess"
+import { FlagGuessService, listFlagGuessOptions } from "@/modules/flag-guess"
 import { GameSessionCookie } from "@/modules/game-sessions"
 
 export const metadata: Metadata = {
@@ -21,5 +21,11 @@ export default async function FlagGuessSessionPage({ params }: Props) {
 		userId: user?.id ?? null,
 		anonymousToken: token,
 	}).catch(() => null)
-	return <FlagGuessGame sessionId={sessionId} initialState={initialState} />
+	return (
+		<FlagGuessGame
+			sessionId={sessionId}
+			initialState={initialState}
+			countryOptions={listFlagGuessOptions()}
+		/>
+	)
 }

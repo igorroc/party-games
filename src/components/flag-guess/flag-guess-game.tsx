@@ -1,14 +1,16 @@
 "use client"
 
 import Link from "next/link"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { AppContainer } from "@/components/design-system"
 import { flagGuessGame } from "@/components/games/flag-guess-metadata"
 import type {
 	FlagGuessAction,
 	FlagGuessActionResult,
+	FlagGuessCountryOption,
 	PublicFlagGuessState,
 } from "@/modules/flag-guess/types"
+import { CountryAutocomplete } from "./country-autocomplete"
 import { FlagImage } from "./flag-image"
 import { SpeakButton } from "./speak-button"
 
@@ -22,17 +24,17 @@ const secondaryButton =
 export function FlagGuessGame({
 	sessionId,
 	initialState,
+	countryOptions,
 }: {
 	sessionId: string
 	initialState: PublicFlagGuessState | null
+	countryOptions: FlagGuessCountryOption[]
 }) {
 	const [state, setState] = useState(initialState)
 	const [showSummary, setShowSummary] = useState(initialState?.status === "finished")
-	const [guess, setGuess] = useState("")
-	const [wrongGuess, setWrongGuess] = useState<string | null>(null)
+	const [selectedCode, setSelectedCode] = useState("")
 	const [busy, setBusy] = useState(false)
 	const [error, setError] = useState<string | null>(null)
-	const inputRef = useRef<HTMLInputElement>(null)
 
 	async function send(action: FlagGuessAction) {
 		if (busy) return null
@@ -59,18 +61,9 @@ export function FlagGuessGame({
 
 	async function submitGuess(event: React.FormEvent) {
 		event.preventDefault()
-		const value = guess.trim()
-		if (!value) return
-		const result = await send({ type: "GUESS", guess: value })
-		if (!result) return
-		setGuess("")
-		setWrongGuess(result.correct ? null : value)
-		if (!result.correct) inputRef.current?.focus()
-	}
-
-	async function advance() {
-		const result = await send({ type: "NEXT" })
-		if (result) setWrongGuess(null)
+		if (!selectedCode) return
+		const result = await send({ type: "GUESS", countryCode: selectedCode })
+		if (result) setSelectedCode("")
 	}
 
 	if (!state)
@@ -96,6 +89,7 @@ export function FlagGuessGame({
 	if (showSummary && state.status === "finished") return <Summary state={state} />
 
 	const { round } = state
+	const triedCodes = new Set(round.guesses.map((item) => item.code))
 	const isLastRound = state.currentRound >= state.totalRounds
 	const difficultyName =
 		flagGuessGame.difficulties.find((item) => item.value === state.difficulty)?.name ?? ""
@@ -124,30 +118,21 @@ export function FlagGuessGame({
 									priority
 								/>
 								<form onSubmit={submitGuess} className="w-full max-w-xl space-y-3">
-									<label className="block">
-										<span className="mb-1 block text-sm font-bold">Nome do país</span>
-										<input
-											ref={inputRef}
-											value={guess}
-											onChange={(event) => setGuess(event.target.value)}
-											maxLength={64}
-											autoFocus
-											autoComplete="off"
-											autoCapitalize="none"
-											spellCheck={false}
-											placeholder="Digite o nome do país"
-											className="bg-surface border-border focus:border-primary min-h-12 w-full rounded-xl border-2 px-4 text-lg font-bold"
+									<div>
+										<span className="mb-1 block text-sm font-bold">País</span>
+										<CountryAutocomplete
+											key={`${round.number}-${round.guesses.length}`}
+											options={countryOptions}
+											value={selectedCode}
+											onChange={setSelectedCode}
+											disabledCodes={triedCodes}
+											disabled={busy}
 										/>
-									</label>
-									{wrongGuess && (
-										<p role="status" className="bg-danger/10 text-danger rounded-xl p-3 font-bold">
-											“{wrongGuess}” não é o país certo. Tente de novo!
-										</p>
-									)}
+									</div>
 									<div className="flex flex-wrap gap-3">
 										<button
 											type="submit"
-											disabled={busy || !guess.trim()}
+											disabled={busy || !selectedCode}
 											className={`${primaryButton} flex-1`}
 										>
 											Chutar
@@ -156,7 +141,7 @@ export function FlagGuessGame({
 											type="button"
 											disabled={busy}
 											onClick={() => {
-												setWrongGuess(null)
+												setSelectedCode("")
 												void send({ type: "SKIP" })
 											}}
 											className={secondaryButton}
@@ -165,6 +150,7 @@ export function FlagGuessGame({
 										</button>
 									</div>
 								</form>
+								<RecentAttempts guesses={round.guesses} />
 							</>
 						) : (
 							<>
@@ -198,7 +184,9 @@ export function FlagGuessGame({
 								<button
 									type="button"
 									disabled={busy}
-									onClick={isLastRound ? () => setShowSummary(true) : advance}
+									onClick={
+										isLastRound ? () => setShowSummary(true) : () => void send({ type: "NEXT" })
+									}
 									className={`${primaryButton} w-full max-w-xl`}
 								>
 									{isLastRound ? "Ver resultado" : "Próxima rodada"}
@@ -217,6 +205,44 @@ export function FlagGuessGame({
 				</section>
 			</AppContainer>
 		</main>
+	)
+}
+
+const RECENT_ATTEMPTS_LIMIT = 5
+
+function RecentAttempts({ guesses }: { guesses: PublicFlagGuessState["round"]["guesses"] }) {
+	const recent = guesses.slice(-RECENT_ATTEMPTS_LIMIT).reverse()
+	return (
+		<section aria-labelledby="recent-attempts" className="w-full max-w-xl">
+			<h2
+				id="recent-attempts"
+				className="text-muted text-sm font-extrabold tracking-[.14em] uppercase"
+			>
+				Últimas tentativas
+			</h2>
+			{recent.length === 0 ? (
+				<p className="text-muted mt-2 text-sm">Nenhuma tentativa nesta rodada ainda.</p>
+			) : (
+				<ul className="mt-2 space-y-2" aria-live="polite">
+					{recent.map((attempt) => (
+						<li
+							key={attempt.code}
+							className="border-border bg-surface flex items-center gap-3 rounded-xl border p-2"
+						>
+							<FlagImage
+								src={attempt.flagUrl}
+								alt={`Bandeira de ${attempt.name}`}
+								className="w-12 shrink-0 rounded-md border"
+							/>
+							<span className="min-w-0 flex-1 truncate font-bold">{attempt.name}</span>
+							<span className="text-danger font-bold" aria-label="Errou">
+								✗
+							</span>
+						</li>
+					))}
+				</ul>
+			)}
+		</section>
 	)
 }
 
