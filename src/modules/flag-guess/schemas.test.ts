@@ -21,14 +21,16 @@ describe("contratos de Adivinhe a Bandeira", () => {
 	})
 
 	test("valida as ações da rodada", () => {
-		expect(flagGuessActionSchema.parse({ type: "GUESS", guess: "  Brasil " })).toEqual({
+		expect(flagGuessActionSchema.parse({ type: "GUESS", countryCode: "br" })).toEqual({
 			type: "GUESS",
-			guess: "Brasil",
+			countryCode: "br",
 		})
 		expect(flagGuessActionSchema.safeParse({ type: "SKIP" }).success).toBe(true)
 		expect(flagGuessActionSchema.safeParse({ type: "NEXT" }).success).toBe(true)
-		expect(flagGuessActionSchema.safeParse({ type: "GUESS", guess: "   " }).success).toBe(false)
-		expect(flagGuessActionSchema.safeParse({ type: "GUESS" }).success).toBe(false)
+		expect(flagGuessActionSchema.safeParse({ type: "GUESS", countryCode: "BRA" }).success).toBe(
+			false,
+		)
+		expect(flagGuessActionSchema.safeParse({ type: "GUESS", countryCode: "" }).success).toBe(false)
 		expect(flagGuessActionSchema.safeParse({ type: "REVEAL" }).success).toBe(false)
 	})
 })

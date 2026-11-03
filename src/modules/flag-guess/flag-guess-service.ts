@@ -6,7 +6,6 @@ import { GameSessionCookie, GameSessionService, type SessionOwner } from "@/modu
 import { FLAG_GUESS_SLUG } from "@/modules/games"
 import { findFlagGuessCountry, getFlagUrl } from "./countries"
 import { CryptoFlagGuessRandomProvider, pickFlagGuessCountries } from "./engine"
-import { isCorrectGuess } from "./matching"
 import type {
 	FlagGuessAction,
 	FlagGuessActionResult,
@@ -96,14 +95,20 @@ export class FlagGuessService {
 			}
 
 			if (round.status !== "PENDING") throw new Error("Esta rodada já foi encerrada.")
-			const correct = action.type === "GUESS" && isCorrectGuess(country, action.guess)
-			if (action.type === "GUESS" && !correct) {
-				await tx.flagGuessRound.update({
-					where: { id: round.id },
-					data: { attempts: { increment: 1 } },
-				})
-				await this.touch(tx, sessionId, now)
-				return { correct: false, state: this.publicState(await this.load(sessionId, tx)) }
+			let correct = false
+			if (action.type === "GUESS") {
+				if (!findFlagGuessCountry(action.countryCode)) throw new Error("País indisponível.")
+				if (round.guesses.includes(action.countryCode))
+					throw new Error("Você já tentou este país nesta rodada.")
+				correct = action.countryCode === country.code
+				if (!correct) {
+					await tx.flagGuessRound.update({
+						where: { id: round.id },
+						data: { attempts: { increment: 1 }, guesses: { push: action.countryCode } },
+					})
+					await this.touch(tx, sessionId, now)
+					return { correct: false, state: this.publicState(await this.load(sessionId, tx)) }
+				}
 			}
 
 			const resolved = await tx.flagGuessRound.updateMany({
@@ -111,6 +116,7 @@ export class FlagGuessService {
 				data: {
 					status: correct ? "SOLVED" : "SKIPPED",
 					attempts: correct ? { increment: 1 } : undefined,
+					guesses: correct ? { push: country.code } : undefined,
 					resolvedAt: now,
 				},
 			})
@@ -143,6 +149,10 @@ export class FlagGuessService {
 				number: current.roundNumber,
 				flagUrl: getFlagUrl(current.countryCode),
 				attempts: current.attempts,
+				guesses: current.guesses.map((code) => ({
+					...toAnswer(code),
+					correct: code === current.countryCode,
+				})),
 				status: currentStatus,
 				answer: currentStatus === "pending" ? null : toAnswer(current.countryCode),
 			},

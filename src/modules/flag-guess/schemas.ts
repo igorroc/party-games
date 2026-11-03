@@ -7,7 +7,7 @@ export const createFlagGuessSchema = z.object({
 })
 
 export const flagGuessActionSchema = z.discriminatedUnion("type", [
-	z.object({ type: z.literal("GUESS"), guess: z.string().trim().min(1).max(64) }),
+	z.object({ type: z.literal("GUESS"), countryCode: z.string().regex(/^[a-z]{2}$/) }),
 	z.object({ type: z.literal("SKIP") }),
 	z.object({ type: z.literal("NEXT") }),
 ])

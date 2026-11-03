@@ -1,34 +1,23 @@
-import type { FlagGuessCountry, FlagGuessDifficulty } from "./types"
+import type { FlagGuessCountry, FlagGuessCountryOption, FlagGuessDifficulty } from "./types"
 
-const easy = (code: string, name: string, aliases?: readonly string[]): FlagGuessCountry => ({
+const easy = (code: string, name: string): FlagGuessCountry => ({ code, name, difficulty: "EASY" })
+const medium = (code: string, name: string): FlagGuessCountry => ({
 	code,
 	name,
-	aliases,
-	difficulty: "EASY",
-})
-const medium = (code: string, name: string, aliases?: readonly string[]): FlagGuessCountry => ({
-	code,
-	name,
-	aliases,
 	difficulty: "MEDIUM",
 })
-const hard = (code: string, name: string, aliases?: readonly string[]): FlagGuessCountry => ({
-	code,
-	name,
-	aliases,
-	difficulty: "HARD",
-})
+const hard = (code: string, name: string): FlagGuessCountry => ({ code, name, difficulty: "HARD" })
 
 export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	easy("br", "Brasil"),
 	easy("ar", "Argentina"),
-	easy("us", "Estados Unidos", ["EUA", "Estados Unidos da América", "USA"]),
+	easy("us", "Estados Unidos"),
 	easy("pt", "Portugal"),
 	easy("es", "Espanha"),
 	easy("fr", "França"),
 	easy("it", "Itália"),
 	easy("de", "Alemanha"),
-	easy("gb", "Reino Unido", ["Inglaterra", "Grã-Bretanha", "UK"]),
+	easy("gb", "Reino Unido"),
 	easy("jp", "Japão"),
 	easy("cn", "China"),
 	easy("ru", "Rússia"),
@@ -42,7 +31,7 @@ export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	easy("pe", "Peru"),
 	easy("py", "Paraguai"),
 	easy("ve", "Venezuela"),
-	easy("nl", "Países Baixos", ["Holanda"]),
+	easy("nl", "Países Baixos"),
 	easy("be", "Bélgica"),
 	easy("ch", "Suíça"),
 	easy("se", "Suécia"),
@@ -64,7 +53,7 @@ export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	medium("dk", "Dinamarca"),
 	medium("fi", "Finlândia"),
 	medium("at", "Áustria"),
-	medium("cz", "Tchéquia", ["República Tcheca"]),
+	medium("cz", "Tchéquia"),
 	medium("hu", "Hungria"),
 	medium("ro", "Romênia"),
 	medium("hr", "Croácia"),
@@ -84,11 +73,11 @@ export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	medium("ni", "Nicarágua"),
 	medium("ir", "Irã"),
 	medium("iq", "Iraque"),
-	medium("ae", "Emirados Árabes Unidos", ["Emirados Árabes"]),
-	medium("qa", "Catar", ["Qatar"]),
+	medium("ae", "Emirados Árabes Unidos"),
+	medium("qa", "Catar"),
 	medium("kp", "Coreia do Norte"),
 	medium("th", "Tailândia"),
-	medium("vn", "Vietnã", ["Vietnam"]),
+	medium("vn", "Vietnã"),
 	medium("id", "Indonésia"),
 	medium("ph", "Filipinas"),
 	medium("my", "Malásia"),
@@ -123,7 +112,7 @@ export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	medium("ee", "Estônia"),
 	medium("lv", "Letônia"),
 	medium("lt", "Lituânia"),
-	medium("by", "Bielorrússia", ["Belarus"]),
+	medium("by", "Bielorrússia"),
 	medium("kz", "Cazaquistão"),
 	medium("mn", "Mongólia"),
 
@@ -131,16 +120,16 @@ export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	hard("ad", "Andorra"),
 	hard("am", "Armênia"),
 	hard("az", "Azerbaijão"),
-	hard("ba", "Bósnia e Herzegovina", ["Bósnia"]),
+	hard("ba", "Bósnia e Herzegovina"),
 	hard("ge", "Geórgia"),
 	hard("mc", "Mônaco"),
 	hard("me", "Montenegro"),
-	hard("mk", "Macedônia do Norte", ["Macedônia"]),
+	hard("mk", "Macedônia do Norte"),
 	hard("md", "Moldávia"),
 	hard("mt", "Malta"),
 	hard("li", "Liechtenstein"),
 	hard("sm", "San Marino"),
-	hard("va", "Vaticano", ["Cidade do Vaticano"]),
+	hard("va", "Vaticano"),
 	hard("cy", "Chipre"),
 	hard("uz", "Uzbequistão"),
 	hard("tm", "Turcomenistão"),
@@ -150,11 +139,11 @@ export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	hard("bn", "Brunei"),
 	hard("kh", "Camboja"),
 	hard("la", "Laos"),
-	hard("mm", "Mianmar", ["Myanmar", "Birmânia"]),
+	hard("mm", "Mianmar"),
 	hard("mv", "Maldivas"),
-	hard("tl", "Timor-Leste", ["Timor Leste"]),
+	hard("tl", "Timor-Leste"),
 	hard("bh", "Bahrein"),
-	hard("kw", "Kuwait", ["Cuaite"]),
+	hard("kw", "Kuwait"),
 	hard("om", "Omã"),
 	hard("ye", "Iêmen"),
 	hard("bs", "Bahamas"),
@@ -170,7 +159,7 @@ export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	hard("dm", "Dominica"),
 	hard("kn", "São Cristóvão e Nevis"),
 	hard("fj", "Fiji"),
-	hard("pg", "Papua-Nova Guiné", ["Papua Nova Guiné"]),
+	hard("pg", "Papua-Nova Guiné"),
 	hard("ws", "Samoa"),
 	hard("to", "Tonga"),
 	hard("vu", "Vanuatu"),
@@ -185,23 +174,23 @@ export const FLAG_GUESS_COUNTRIES: readonly FlagGuessCountry[] = [
 	hard("bi", "Burundi"),
 	hard("bj", "Benin"),
 	hard("bw", "Botsuana"),
-	hard("cd", "República Democrática do Congo", ["RD Congo", "Congo Kinshasa"]),
-	hard("cg", "Congo", ["República do Congo", "Congo Brazzaville"]),
+	hard("cd", "República Democrática do Congo"),
+	hard("cg", "Congo"),
 	hard("cf", "República Centro-Africana"),
 	hard("td", "Chade"),
 	hard("km", "Comores"),
 	hard("dj", "Djibuti"),
 	hard("er", "Eritreia"),
-	hard("sz", "Essuatíni", ["Suazilândia"]),
+	hard("sz", "Essuatíni"),
 	hard("ga", "Gabão"),
 	hard("gm", "Gâmbia"),
 	hard("gn", "Guiné"),
-	hard("gw", "Guiné-Bissau", ["Guiné Bissau"]),
+	hard("gw", "Guiné-Bissau"),
 	hard("gq", "Guiné Equatorial"),
 	hard("ls", "Lesoto"),
 	hard("lr", "Libéria"),
 	hard("mg", "Madagascar"),
-	hard("mw", "Malaui", ["Malawi"]),
+	hard("mw", "Malaui"),
 	hard("ml", "Mali"),
 	hard("mr", "Mauritânia"),
 	hard("mu", "Maurício"),
@@ -230,4 +219,10 @@ export function listFlagGuessCountries(difficulty: FlagGuessDifficulty) {
 
 export function getFlagUrl(code: string) {
 	return `https://flagcdn.com/w640/${code}.png`
+}
+
+export function listFlagGuessOptions(): FlagGuessCountryOption[] {
+	return FLAG_GUESS_COUNTRIES.map(({ code, name }) => ({ code, name })).sort((a, b) =>
+		a.name.localeCompare(b.name, "pt-BR"),
+	)
 }

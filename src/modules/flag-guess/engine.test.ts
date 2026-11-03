@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test"
-import { FLAG_GUESS_COUNTRIES, getFlagUrl, listFlagGuessCountries } from "./countries"
+import {
+	FLAG_GUESS_COUNTRIES,
+	getFlagUrl,
+	listFlagGuessCountries,
+	listFlagGuessOptions,
+} from "./countries"
 import { FLAG_GUESS_MAX_ROUNDS } from "./constants"
 import { CryptoFlagGuessRandomProvider, pickFlagGuessCountries } from "./engine"
 import type { FlagGuessDifficulty } from "./types"
@@ -16,6 +21,14 @@ describe("catálogo de países", () => {
 	test("cada dificuldade comporta o máximo de rodadas", () => {
 		for (const difficulty of difficulties)
 			expect(listFlagGuessCountries(difficulty).length >= FLAG_GUESS_MAX_ROUNDS).toBe(true)
+	})
+
+	test("lista todos os países em ordem alfabética para o seletor", () => {
+		const options = listFlagGuessOptions()
+		expect(options).toHaveLength(FLAG_GUESS_COUNTRIES.length)
+		const names = options.map((option) => option.name)
+		expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, "pt-BR")))
+		expect(options.find((option) => option.code === "br")?.name).toBe("Brasil")
 	})
 
 	test("monta a URL da bandeira", () => {

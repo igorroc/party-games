@@ -3,18 +3,22 @@ export type FlagGuessDifficulty = "EASY" | "MEDIUM" | "HARD"
 export type FlagGuessCountry = {
 	code: string
 	name: string
-	aliases?: readonly string[]
 	difficulty: FlagGuessDifficulty
 }
+
+export type FlagGuessCountryOption = { code: string; name: string }
 
 export type FlagGuessRoundStatus = "pending" | "solved" | "skipped"
 
 export type FlagGuessAnswer = { code: string; name: string; flagUrl: string }
 
+export type FlagGuessAttempt = FlagGuessAnswer & { correct: boolean }
+
 export type PublicFlagGuessRound = {
 	number: number
 	flagUrl: string
 	attempts: number
+	guesses: FlagGuessAttempt[]
 	status: FlagGuessRoundStatus
 	answer: FlagGuessAnswer | null
 }
@@ -35,6 +39,7 @@ export type PublicFlagGuessState = {
 	results: FlagGuessResult[]
 }
 
-export type FlagGuessAction = { type: "GUESS"; guess: string } | { type: "SKIP" } | { type: "NEXT" }
+export type FlagGuessAction =
+	{ type: "GUESS"; countryCode: string } | { type: "SKIP" } | { type: "NEXT" }
 
 export type FlagGuessActionResult = { correct: boolean | null; state: PublicFlagGuessState }
