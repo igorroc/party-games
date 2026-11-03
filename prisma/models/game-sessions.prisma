@@ -15,6 +15,7 @@ model GameSession {
   nemAPatoSession NemAPatoSession?
   magicalRaceSession MagicalRaceSession?
   hiddenFaceSession HiddenFaceSession?
+  flagGuessSession FlagGuessSession?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

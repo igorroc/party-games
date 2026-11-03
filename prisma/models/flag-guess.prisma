@@ -1,0 +1,40 @@
+enum FlagGuessDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum FlagGuessRoundStatus {
+  PENDING
+  SOLVED
+  SKIPPED
+}
+
+model FlagGuessSession {
+  sessionId    String              @id
+  difficulty   FlagGuessDifficulty
+  totalRounds  Int
+  currentRound Int                 @default(1)
+  score        Int                 @default(0)
+
+  session GameSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  rounds  FlagGuessRound[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FlagGuessRound {
+  id          String               @id @default(cuid())
+  sessionId   String
+  roundNumber Int
+  countryCode String
+  status      FlagGuessRoundStatus @default(PENDING)
+  attempts    Int                  @default(0)
+  resolvedAt  DateTime?
+
+  session FlagGuessSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@unique([sessionId, roundNumber])
+  @@unique([sessionId, countryCode])
+}
