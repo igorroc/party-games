@@ -8,5 +8,6 @@ export type {
 	FlagGuessActionResult,
 	FlagGuessCountryOption,
 	FlagGuessDifficulty,
+	FlagGuessMode,
 	PublicFlagGuessState,
 } from "./types"

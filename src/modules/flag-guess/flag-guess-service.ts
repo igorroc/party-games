@@ -11,6 +11,7 @@ import type {
 	FlagGuessActionResult,
 	FlagGuessAnswer,
 	FlagGuessDifficulty,
+	FlagGuessMode,
 	FlagGuessRoundStatus,
 	PublicFlagGuessState,
 } from "./types"
@@ -23,7 +24,7 @@ type LoadedSession = Prisma.FlagGuessSessionGetPayload<{ include: typeof session
 
 export class FlagGuessService {
 	static async create(
-		input: { difficulty: FlagGuessDifficulty; totalRounds: number },
+		input: { difficulty: FlagGuessDifficulty; mode: FlagGuessMode; totalRounds: number },
 		userId: string | null,
 	) {
 		const game = await db.game.findFirst({
@@ -47,6 +48,7 @@ export class FlagGuessService {
 				flagGuessSession: {
 					create: {
 						difficulty: input.difficulty,
+						mode: input.mode,
 						totalRounds: input.totalRounds,
 						rounds: {
 							create: countries.map((country, index) => ({
@@ -80,6 +82,11 @@ export class FlagGuessService {
 			const country = findFlagGuessCountry(round.countryCode)
 			if (!country) throw new Error("País indisponível.")
 			const now = new Date()
+			const isRevealMode = session.mode === "REVEAL"
+			if (isRevealMode && (action.type === "GUESS" || action.type === "SKIP"))
+				throw new Error("Este modo não aceita palpites.")
+			if (!isRevealMode && action.type === "REVEAL")
+				throw new Error("Revelar só está disponível no modo simplificado.")
 
 			if (action.type === "NEXT") {
 				if (round.status === "PENDING") throw new Error("Resolva a rodada antes de avançar.")
@@ -114,7 +121,7 @@ export class FlagGuessService {
 			const resolved = await tx.flagGuessRound.updateMany({
 				where: { id: round.id, status: "PENDING" },
 				data: {
-					status: correct ? "SOLVED" : "SKIPPED",
+					status: correct ? "SOLVED" : action.type === "REVEAL" ? "REVEALED" : "SKIPPED",
 					attempts: correct ? { increment: 1 } : undefined,
 					guesses: correct ? { push: country.code } : undefined,
 					resolvedAt: now,
@@ -142,6 +149,7 @@ export class FlagGuessService {
 		return {
 			status: isFinished ? "finished" : "active",
 			difficulty: session.difficulty,
+			mode: session.mode,
 			totalRounds: session.totalRounds,
 			currentRound: session.currentRound,
 			score: session.score,
@@ -184,8 +192,15 @@ export class FlagGuessService {
 	}
 }
 
-function toStatus(status: "PENDING" | "SOLVED" | "SKIPPED"): FlagGuessRoundStatus {
-	return status === "SOLVED" ? "solved" : status === "SKIPPED" ? "skipped" : "pending"
+const roundStatuses = {
+	PENDING: "pending",
+	SOLVED: "solved",
+	SKIPPED: "skipped",
+	REVEALED: "revealed",
+} as const satisfies Record<string, FlagGuessRoundStatus>
+
+function toStatus(status: keyof typeof roundStatuses): FlagGuessRoundStatus {
+	return roundStatuses[status]
 }
 
 function toAnswer(code: string): FlagGuessAnswer {

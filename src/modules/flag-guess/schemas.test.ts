@@ -5,8 +5,12 @@ describe("contratos de Adivinhe a Bandeira", () => {
 	test("aceita configuração válida", () => {
 		expect(createFlagGuessSchema.parse({ difficulty: "HARD", totalRounds: 10 })).toEqual({
 			difficulty: "HARD",
+			mode: "GUESS",
 			totalRounds: 10,
 		})
+		expect(
+			createFlagGuessSchema.parse({ difficulty: "EASY", mode: "REVEAL", totalRounds: 5 }).mode,
+		).toBe("REVEAL")
 	})
 
 	test("rejeita dificuldade e rodadas inválidas", () => {
@@ -16,6 +20,7 @@ describe("contratos de Adivinhe a Bandeira", () => {
 			{ difficulty: "EASY", totalRounds: 21 },
 			{ difficulty: "EASY", totalRounds: 2.5 },
 			{ difficulty: "EASY" },
+			{ difficulty: "EASY", mode: "TYPE", totalRounds: 5 },
 		])
 			expect(createFlagGuessSchema.safeParse(input).success).toBe(false)
 	})
@@ -26,11 +31,12 @@ describe("contratos de Adivinhe a Bandeira", () => {
 			countryCode: "br",
 		})
 		expect(flagGuessActionSchema.safeParse({ type: "SKIP" }).success).toBe(true)
+		expect(flagGuessActionSchema.safeParse({ type: "REVEAL" }).success).toBe(true)
 		expect(flagGuessActionSchema.safeParse({ type: "NEXT" }).success).toBe(true)
 		expect(flagGuessActionSchema.safeParse({ type: "GUESS", countryCode: "BRA" }).success).toBe(
 			false,
 		)
 		expect(flagGuessActionSchema.safeParse({ type: "GUESS", countryCode: "" }).success).toBe(false)
-		expect(flagGuessActionSchema.safeParse({ type: "REVEAL" }).success).toBe(false)
+		expect(flagGuessActionSchema.safeParse({ type: "PEEK" }).success).toBe(false)
 	})
 })
