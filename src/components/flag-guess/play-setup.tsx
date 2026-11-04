@@ -13,7 +13,7 @@ const optionClass =
 
 export function FlagGuessSetup() {
 	const router = useRouter()
-	const [mode, setMode] = useState<FlagGuessMode>("GUESS")
+	const [mode, setMode] = useState<FlagGuessMode>("REVEAL")
 	const [totalRounds, setTotalRounds] = useState<number>(10)
 	const [difficulty, setDifficulty] = useState<FlagGuessDifficulty>("EASY")
 	const [busy, setBusy] = useState(false)
